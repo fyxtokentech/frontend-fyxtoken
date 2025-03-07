@@ -1,0 +1,181 @@
+.content-container {
+  padding-left: 20px;
+  padding-right: 20px;
+}
+
+.content-container-2 {
+  padding: 30px;
+}
+
+.of-contain {
+  object-fit: contain;
+}
+
+.oc-lt {
+  object-position: left top;
+}
+
+.tw-balance {
+  text-wrap: balance;
+}
+
+.d-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.flex-wrap {
+  flex-wrap: wrap;
+}
+
+.d-flex-wrap {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.d-flex-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.d-flex-col-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+.flex-wrap {
+  flex-wrap: wrap;
+}
+
+.to-right-center {
+  transform-origin: 100% center;
+}
+
+.ws-nowrap {
+  white-space: nowrap;
+}
+
+.tt-uppercase {
+  text-transform: uppercase;
+}
+
+.h-full {
+  min-height: 100vh;
+}
+
+.square {
+  aspect-ratio: 1;
+}
+
+.circle {
+  aspect-ratio: 1;
+  border-radius: 50%;
+}
+
+.fw-bolder {
+  font-weight: bolder;
+}
+
+.b-error {
+  border: 1px solid red;
+}
+
+.p-absolute {
+  position: absolute;
+}
+
+.p-relative {
+  position: relative;
+}
+
+.z-index0 {
+  z-index: 0;
+}
+
+.z-index1 {
+  z-index: 1;
+}
+
+.z-index2 {
+  z-index: 2;
+}
+
+.of-hidden {
+  overflow: hidden;
+}
+
+@each $value
+  in (
+    normal,
+    multiply,
+    screen,
+    overlay,
+    darken,
+    lighten,
+    color-dodge,
+    color-burn,
+    hard-light,
+    soft-light,
+    difference,
+    exclusion,
+    hue,
+    saturation,
+    color,
+    luminosity
+  )
+{
+  .#{$value} {
+    mix-blend-mode: $value;
+  }
+}
+
+.mask-to-right {
+  mask: linear-gradient(to right, transparent, black);
+}
+
+.sepia-red {
+  filter: sepia(1) saturate(4) hue-rotate(-38deg);
+}
+
+.sepia-deeppink {
+  filter: sepia(1) saturate(4) hue-rotate(-38deg) hue-rotate(328deg);
+}
+
+.top-0 {
+  top: 0;
+}
+.top-50p {
+  top: 50%;
+}
+.right-0 {
+  right: 0;
+}
+.bottom-0 {
+  bottom: 0;
+}
+.left-0 {
+  left: 0;
+}
+.left-50p {
+  left: 50%;
+}
+
+.h-max-side-window {
+  height: max(100vw, 100vh);
+}
+
+.tY--100p {
+  transform: translateY(-100%);
+}
+
+.square-1px {
+  width: 1px;
+  height: 1px;
+}
+
+.c-pointer{
+  cursor: pointer;
+}

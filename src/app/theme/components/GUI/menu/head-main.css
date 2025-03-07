@@ -1,0 +1,13 @@
+:root{
+  --border-section: rgba(255, 63, 255, 0.1);
+}
+
+.menu-top {
+  border-bottom: 3px solid var(--border-section);
+  background-color: rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(5px);
+}
+
+.footer {
+  border-top: 3px solid var(--border-section);
+}
