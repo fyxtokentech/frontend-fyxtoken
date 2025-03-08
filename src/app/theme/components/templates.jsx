@@ -9,7 +9,7 @@ import { ThemeProvider } from "@mui/material/styles";
 import Footer from "@components/GUI/menu/footer.jsx";
 import MenuTopUnlog from "@components/GUI/menu/head-main.jsx";
 
-import { theme, themename } from "@theme/theme-manager.jsx";
+import { theme, themename, isDark } from "@theme/theme-manager";
 
 import JS2CSS from "js2css-tool";
 import fluidCSS from "fluid-css-lng";
@@ -34,12 +34,12 @@ function Notifier({ children }) {
   }
 }
 
-function ThemeSwitcher({ children, bgtype = "1", h_init="0", h_fin="0" }) {
+function ThemeSwitcher({ children, bgtype = "1", h_init = "0", h_fin = "0" }) {
   const [theme_ref, updateTheme] = useState(theme());
 
   if (theme_ref != theme()) {
     theme(theme_ref);
-    window.localStorage.setItem("theme", JSON.stringify(themename()));
+    window.localStorage.setItem("theme", themename());
   }
 
   return (
@@ -50,30 +50,37 @@ function ThemeSwitcher({ children, bgtype = "1", h_init="0", h_fin="0" }) {
   );
 
   function FirstPart() {
-    return <div className="p-relative">
-      <div
-        className={(() => {
-          const fluid = fluidCSS();
-          switch (bgtype) {
-            case "1":
-              create_bgdynamic();
-              break;
-            case "2":
-              create_bgdynamic_portal();
-              fluid.btwX(550, 800, {
-                opacity: ["0", "0.5", "0.9"],
-              });
-              break;
-          }
-          return fluid.end("expand bg-dynamic z-index-1");
-        })()} />
-      <div className={`${minH}`}>
-        <MenuTopUnlog updateTheme={updateTheme} />
-        <div style={{ minHeight: h_init }} />
-        {children}
-        <div style={{ minHeight: h_fin }} />
+    return (
+      <div className="p-relative">
+        <div
+          className={(() => {
+            const fluid = fluidCSS();
+            switch (bgtype) {
+              case "1":
+                create_bgdynamic();
+                break;
+              case "2":
+                create_bgdynamic_portal();
+                fluid.btwX(550, 800, {
+                  opacity: ["0", "0.5", "0.9"],
+                });
+                break;
+            }
+            return fluid.end(
+              `expand bg-dynamic dyn-filter z-index-1 ${
+                isDark() ? "" : "invert hue-rotate180deg"
+              }`
+            );
+          })()}
+        />
+        <div className={`${minH}`}>
+          <MenuTopUnlog updateTheme={updateTheme} />
+          <div style={{ minHeight: h_init }} />
+          {children}
+          <div style={{ minHeight: h_fin }} />
+        </div>
       </div>
-    </div>;
+    );
   }
 }
 
@@ -164,6 +171,15 @@ function create_bgdynamic() {
     objJs: {
       ".bg-dynamic": {
         background: [
+          linear({
+            angle: "to bottom",
+            colors: [
+              "transparent 70%",
+              "rgba(120,20,255,0.2)",
+              "rgba(220,100,255,0.2) 98%",
+              "rgba(220,100,255,0.3) calc(100% - 20px)",
+            ],
+          }),
           radio({
             colores: [`rgba(255,255,255,0.1)`, "transparent"],
             radio: "max(70dvw, 600px)",

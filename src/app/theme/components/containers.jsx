@@ -15,7 +15,7 @@ function DivM(props) {
         .lerpX(400, 1000, {
           margin: [m_min, m_max],
         })
-        .end(`DivM tw-balance ${props.className}`)}
+        .end(`DivM tw-balance ${props.className??""}`)}
     />
   );
 }
@@ -29,7 +29,7 @@ function PaperP(props) {
         .lerpX(400, 1000, {
           Padding: [p_min, p_max],
         })
-        .end(`PaperP tw-balance ${props.className}`)}
+        .end(`PaperP tw-balance ${props.className??""}`)}
     />
   );
 }

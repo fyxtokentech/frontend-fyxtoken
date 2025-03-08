@@ -1,5 +1,5 @@
 :root{
-  --border-section: rgba(255, 63, 255, 0.1);
+  --border-section: hsl(var(--verde-cielo-h), var(--verde-cielo-s), 40%, 0.2);
 }
 
 .menu-top {

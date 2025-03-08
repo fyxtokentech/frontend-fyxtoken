@@ -1,10 +1,10 @@
-import { createTheme, responsiveFontSizes } from "@mui/material";
+import { createTheme, lighten, responsiveFontSizes } from "@mui/material";
 
 var _theme_;
 var _isThemeDark_;
 
 var _themename_ = (() => {
-  const tema_almacenado = localStorage.getItem("theme");
+  const tema_almacenado = window.localStorage.getItem("theme");
   const tema_sistema = window.matchMedia("(prefers-color-scheme: dark)").matches
     ? "dark"
     : "light";
@@ -31,7 +31,7 @@ function theme(name) {
     switch (_themename_) {
       case "light":
         return createTheme({
-          ...customizePropsMUI(),
+          ...customizePropsMUI(false),
           palette: {
             mode: "light",
             ...calculatePalette(false),
@@ -40,7 +40,7 @@ function theme(name) {
       case "dark":
       default:
         return createTheme({
-          ...customizePropsMUI(),
+          ...customizePropsMUI(true),
           palette: {
             mode: "dark",
             background: {
@@ -57,13 +57,28 @@ function theme(name) {
 
   return _theme_;
 
-  function customizePropsMUI() {
+  function colors(darkmode) {
+    const index_color = darkmode ? 0 : 1;
+    const color_contrast = ["#FFFFFF", "#000000"];
+
+    return {
+      color_primary: ["#682BA1", "#1e9cde"][index_color],
+      color_secondary: ["#B9A6CE", "#387FC7"][index_color],
+      contrastText: color_contrast[index_color],
+      uncontrastText: color_contrast[1 - index_color],
+    };
+  }
+
+  function customizePropsMUI(darkmode) {
     const typography = {
-      fontSize: 16, /* Exigencia en [CARTA DE PROTOTIPO Ⓐ] */
+      fontSize: 16 /* Exigencia en [CARTA DE PROTOTIPO Ⓐ] */,
       button: {
         textTransform: "none",
       },
     };
+
+    const { color_primary, color_secondary, contrastText, uncontrastText } =
+      colors(darkmode);
 
     const components = {
       MuiAccordionDetails: {
@@ -85,6 +100,12 @@ function theme(name) {
       },
       MuiButton: {
         styleOverrides: {
+          containedPrimary: {
+            color: "white",
+            "&:hover": {
+              backgroundColor: lighten(color_primary, 0.2),
+            },
+          },
           root: {
             margin: 0,
           },
@@ -98,6 +119,9 @@ function theme(name) {
   function calculatePalette(darkmode) {
     _isThemeDark_ = darkmode;
 
+    const { color_primary, color_secondary, contrastText, uncontrastText } =
+      colors(darkmode);
+
     const white = {
       main: "#FFFFFF",
       contrastText: "#000000",
@@ -106,15 +130,14 @@ function theme(name) {
       main: "#000000",
       contrastText: "#FFFFFF",
     };
-    const contrastText = _isThemeDark_ ? "#FFFFFF" : "#000000";
-    const uncontrastText = _isThemeDark_ ? "#000000" : "#FFFFFF";
+
     return {
       primary: {
-        main: _isThemeDark_ ? "#682BA1" : "#B0E0E6",
+        main: color_primary,
         contrastText,
       },
       secondary: {
-        main: _isThemeDark_ ? "#B9A6CE" : "#387FC7",
+        main: color_secondary,
         contrastText,
       },
       verde_cielo: {

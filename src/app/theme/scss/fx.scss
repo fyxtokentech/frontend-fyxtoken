@@ -12,6 +12,20 @@
   }
 }
 
+.dyn-filter{
+  --invert: 0;
+  --hue-rotate: 0;
+  filter: invert(var(--invert)) hue-rotate(var(--hue-rotate));
+}
+
+.hue-rotate180deg{
+  --hue-rotate: 180deg;
+}
+
+.invert{
+  --invert: 1;
+}
+
 .rotate-left{
   animation: rotate-left 12s infinite linear;
 }

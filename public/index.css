@@ -35,6 +35,10 @@
   --morado-s: 85%;
   --morado-l: 13%;
   --morado: hsl(var(--morado-h), var(--morado-s), var(--morado-l));
+  
+  --morado-enfasis: hsl(264, 45%, 53%); /* Alias de --morado */
+
+  --bg-table-dark: hsl(var(--morado-h), 40%, 20%);
 }
 
 @font-face {

@@ -1,16 +1,29 @@
 import React, { useState } from "react";
 
+import DriverParams from "@routes/DriverParams";
+import fluidCSS from "fluid-css-lng";
+
 import { ThemeSwitcher } from "@components/templates.jsx";
 import { DivM, PaperP } from "@components/containers.jsx";
-import { Button, Typography } from "@mui/material";
-import fluidCSS from "fluid-css-lng";
+import { Button, Paper, Typography } from "@mui/material";
+
+import DynTable from "@components/GUI/DynTable";
+
+import { isDark } from "@theme/theme-manager.jsx";
+
+import Investment from "./investment.jsx";
+import "./wallet.css";
 
 const wbrk = 950;
 
 export default Wallet;
 
 function Wallet() {
-  const [actionSelected, setActionSelected] = useState("");
+  const driverParams = DriverParams();
+
+  const [actionSelected, setActionSelected] = useState(
+    driverParams.get("action-id") ?? ""
+  );
 
   return (
     <ThemeSwitcher h_init="40px" h_fin="300px">
@@ -29,7 +42,7 @@ function Wallet() {
   function PanelActionSelected() {
     switch (actionSelected) {
       case "investment":
-        return <Investment />;
+        return <InvestmentPanel />;
       case "movements":
         return <Movements />;
       case "withdrawal":
@@ -38,12 +51,12 @@ function Wallet() {
         return null;
     }
 
-    function Investment() {
+    function InvestmentPanel() {
       return (
-        <PaperP elevation={0}>
-          <Typography variant="h3">Invierte en nuestras acciones</Typography>
-          <br />
-          En construcción... 🚧
+        <PaperP variant="outlined">
+          <Investment>
+            <TitlePanel>Paquetes de inversión:</TitlePanel>
+          </Investment>
         </PaperP>
       );
     }
@@ -51,7 +64,7 @@ function Wallet() {
     function Movements() {
       return (
         <PaperP elevation={0}>
-          <Typography variant="h3">Historial de movimientos</Typography>
+          <TitlePanel>Historial de movimientos</TitlePanel>
           <br />
           En construcción... 🚧
         </PaperP>
@@ -61,11 +74,15 @@ function Wallet() {
     function Withdrawal() {
       return (
         <PaperP elevation={0}>
-          <Typography variant="h3">Retirar dinero de tu billetera</Typography>
+          <TitlePanel>Retirar dinero de tu billetera</TitlePanel>
           <br />
           En construcción... 🚧
         </PaperP>
       );
+    }
+
+    function TitlePanel({ children }) {
+      return <Typography variant="h4">{children}</Typography>;
     }
   }
 
@@ -120,8 +137,9 @@ function Wallet() {
             .ltX(550, {
               width: "100%",
             })
-            .end(props.className)}
+            .end(props.className ?? "")}
           onClick={() => {
+            driverParams.set("action-id", action_id, true);
             setActionSelected(action_id);
           }}
           disabled={actionSelected == action_id}
@@ -133,15 +151,18 @@ function Wallet() {
 
 function Balance() {
   return (
-    <PaperP
-      elevation={24}
-      className={fluidCSS()
-        .ltX(wbrk, { textAlign: "center" })
-        .end("d-space-between-center flex-wrap gap-20px min-h-150px")}
-    >
-      <Label_AvailableBalance />
-      <Value_AvailableBalance />
-    </PaperP>
+    <div className="Balance">
+      <div className="borde"/>
+      <PaperP
+        elevation={isDark() ? 24 : 6}
+        className={fluidCSS()
+          .ltX(wbrk, { textAlign: "center" })
+          .end("d-space-between-center p-relative flex-wrap gap-20px min-h-150px")}
+      >
+        <Label_AvailableBalance />
+        <Value_AvailableBalance />
+      </PaperP>
+    </div>
   );
 
   function Cell_Field(props) {
@@ -149,7 +170,9 @@ function Balance() {
       <Typography
         {...props}
         variant="h3"
-        className={fluidCSS().ltX(wbrk, { width: "100%" }).end(props.className)}
+        className={fluidCSS()
+          .ltX(wbrk, { width: "100%" })
+          .end(props.className ?? "")}
       />
     );
   }

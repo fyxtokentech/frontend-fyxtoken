@@ -72,7 +72,7 @@ function LoginForm() {
               color="secondary"
               className="d-flex fd-row-reverse"
               control={
-                <Checkbox id="remerber-me" color="verde_lima" defaultChecked />
+                <Checkbox id="remerber-me" color="verde_cielo" defaultChecked />
               }
               label={<small>Recordarme</small>}
               sx={{

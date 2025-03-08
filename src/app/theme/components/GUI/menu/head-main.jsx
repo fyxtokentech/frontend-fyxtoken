@@ -1,12 +1,12 @@
 import "./head-main.css";
 
-import { Button, Link, Paper, Typography } from "@mui/material";
+import { Button, Link, Paper, Typography, Tooltip } from "@mui/material";
 
 import { _img } from "../../repetitives";
 import fluidCSS from "fluid-css-lng";
 import { ThemeSwitch } from "@components/GUI/switch.jsx";
 
-import { theme, isDark } from "@app/theme/theme-manager.jsx";
+import { theme, isDark } from "@theme/theme-manager";
 
 const hideIcon = 500;
 const wbrk = 600;
@@ -24,10 +24,12 @@ function Menu({ updateTheme = () => 0 }) {
         .end("menu-top d-space-between-center")}
     >
       <BotonInicio />
-      <ThemeSwitch
-        checked={isDark()}
-        onChange={() => updateTheme(isDark() ? "light" : "dark")}
-      />
+      <Tooltip title={"Cambiar a tema " + (isDark() ? "claro" : "oscuro")}>
+        <ThemeSwitch
+          checked={isDark()}
+          onChange={() => updateTheme(isDark() ? "light" : "dark")}
+        />
+      </Tooltip>
     </div>
   );
 }
@@ -45,6 +47,11 @@ function BotonInicio() {
         className={fluidCSS()
           .lerpX([450, 1000], { width: [30, 40] })
           .end()}
+        style={{
+          filter: isDark()
+            ? ""
+            : "brightness(0.3) hue-rotate(60deg) saturate(1.5)",
+        }}
       />
       <div
         className={fluidCSS()
@@ -54,7 +61,7 @@ function BotonInicio() {
         <span
           style={{
             fontFamily: "goodtimes-rg",
-            color: "#C6E50E",
+            color: isDark() ? "#C6E50E" : "var(--morado)",
           }}
           className={fluidCSS()
             .lerpX([400, 1000], { fontSize: [15, 20] })
@@ -66,7 +73,7 @@ function BotonInicio() {
           style={{
             fontFamily: "lemonmilk-rg",
             fontSize: "40%",
-            color: "#21EBEF",
+            color: isDark() ? "#21EBEF" : "var(--morado)",
           }}
         >
           Futuro financiero
