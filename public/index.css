@@ -1,0 +1,53 @@
+/* 
+  Fuentes y Colores corporativos proporcionado en Manual de identidad Logo Fyxtoken
+  https://drive.google.com/file/d/1bXzEgG3Q4JOxc74UFQnlbetrJ5O7RVVp/view?usp=sharing 
+*/
+
+:root {
+  --verde-cielo_: #1e9cde; /* Alias de --verde-cielo */
+  --verde-cielo-h: 201deg;
+  --verde-cielo-s: 76%;
+  --verde-cielo-l: 49%;
+  --verde-cielo: hsl(
+    var(--verde-cielo-h),
+    var(--verde-cielo-s),
+    var(--verde-cielo-l)
+  );
+
+  --verde-lima_: #c6e50e; /* Alias de --verde-lima */
+  --verde-lima-h: 69;
+  --verde-lima-s: 88%;
+  --verde-lima-l: 48%;
+  --verde-lima: hsl(
+    var(--verde-lima-h),
+    var(--verde-lima-s),
+    var(--verde-lima-l)
+  );
+
+  --azul-agua_: #21ebef; /* Alias de --azul-agua */
+  --azul-agua-h: 181deg;
+  --azul-agua-s: 87%;
+  --azul-agua-l: 53%;
+  --azul-agua: hsl(var(--azul-agua-h), var(--azul-agua-s), var(--azul-agua-l));
+
+  --morado_: #1b053d; /* Alias de --morado */
+  --morado-h: 264deg;
+  --morado-s: 85%;
+  --morado-l: 13%;
+  --morado: hsl(var(--morado-h), var(--morado-s), var(--morado-l));
+}
+
+@font-face {
+  font-family: "goodtimes-rg";
+  src: url("typography/goodtimes-rg.otf") format("opentype");
+}
+
+@font-face {
+  font-family: "lemonmilk-rg";
+  src: url("typography/lemonmilk-rg.otf") format("opentype");
+}
+
+hr {
+  width: 100%;
+  opacity: 0.2;
+}

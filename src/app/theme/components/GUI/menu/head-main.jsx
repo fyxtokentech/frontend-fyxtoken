@@ -11,7 +11,9 @@ import { theme, isDark } from "@app/theme/theme-manager.jsx";
 const hideIcon = 500;
 const wbrk = 600;
 
-function Menu({ }) {
+export default Menu;
+
+function Menu({ updateTheme = () => 0 }) {
   const { pathname } = window.location;
   const inLogin = pathname.toLowerCase().endsWith("/auth/login");
 
@@ -22,7 +24,10 @@ function Menu({ }) {
         .end("menu-top d-space-between-center")}
     >
       <BotonInicio />
-      <ThemeSwitch checked={isDark()}/>
+      <ThemeSwitch
+        checked={isDark()}
+        onChange={() => updateTheme(isDark() ? "light" : "dark")}
+      />
     </div>
   );
 }
@@ -35,24 +40,38 @@ function BotonInicio() {
       className="d-center bright-hover-1-5 gap-10px c-pointer"
     >
       <_img
-        src="img/Fyxtoken_Negro_128x127.png"
-        style={{
-          filter: "invert()",
-        }}
+        src="img/Logo_Fyxtoken_Icono_Color_Principal.svg"
+        width="40"
         className={fluidCSS()
-          .lerpX([400, 1000], { width: [20, 30] })
+          .lerpX([450, 1000], { width: [30, 40] })
           .end()}
       />
-      <Typography
+      <div
         className={fluidCSS()
           .lerpX([400, 1000], { fontSize: [15, 20] })
-          .end()}
+          .end("d-flex-col")}
       >
-        Fyxtoken
-      </Typography>
+        <span
+          style={{
+            fontFamily: "goodtimes-rg",
+            color: "#C6E50E",
+          }}
+          className={fluidCSS()
+            .lerpX([400, 1000], { fontSize: [15, 20] })
+            .end()}
+        >
+          Fyxtoken
+        </span>
+        <span
+          style={{
+            fontFamily: "lemonmilk-rg",
+            fontSize: "40%",
+            color: "#21EBEF",
+          }}
+        >
+          Futuro financiero
+        </span>
+      </div>
     </Link>
   );
 }
-
-
-export default Menu;

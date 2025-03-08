@@ -44,8 +44,8 @@ function theme(name) {
           palette: {
             mode: "dark",
             background: {
-              default: "#1D0A3D",
-              paper: "#381E62",
+              default: "#1B053D",
+              paper: "#2C0F57",
             },
             ...calculatePalette(true),
           },
@@ -59,7 +59,7 @@ function theme(name) {
 
   function customizePropsMUI() {
     const typography = {
-      fontSize: 14,
+      fontSize: 16, /* Exigencia en [CARTA DE PROTOTIPO Ⓐ] */
       button: {
         textTransform: "none",
       },
@@ -99,44 +99,56 @@ function theme(name) {
     _isThemeDark_ = darkmode;
 
     const white = {
-      main: "#fff",
-      contrastText: "#000",
+      main: "#FFFFFF",
+      contrastText: "#000000",
     };
     const black = {
-      main: "#000",
-      contrastText: "#fff",
+      main: "#000000",
+      contrastText: "#FFFFFF",
     };
-    const contrastText = darkmode ? "#fff" : "#000";
-    const uncontrastText = darkmode ? "#000" : "#fff";
+    const contrastText = _isThemeDark_ ? "#FFFFFF" : "#000000";
+    const uncontrastText = _isThemeDark_ ? "#000000" : "#FFFFFF";
     return {
       primary: {
         main: _isThemeDark_ ? "#682BA1" : "#B0E0E6",
         contrastText,
       },
-      darkprimary: {
-        main: "#003366",
+      secondary: {
+        main: _isThemeDark_ ? "#B9A6CE" : "#387FC7",
         contrastText,
       },
-      secondary: {
-        main: darkmode ? "#387FC7" : "#ccccff",
+      verde_cielo: {
+        main: "#1E9CDE",
+        contrastText,
+      },
+      verde_lima: {
+        main: "#C6E50E",
+        contrastText,
+      },
+      azul_agua: {
+        main: "#21EBEF",
+        contrastText,
+      },
+      morado: {
+        main: "#1b053d",
+        contrastText,
+      },
+      morado_enfasis: {
+        main: "#9C51BD",
+        contrastText,
+      },
+      morado_brillante: {
+        main: "#B79FDA",
         contrastText,
       },
       success: {
         main: "#32CD32",
         contrastText,
       },
-      atentionBlue: {
-        main: "#00BFFF",
-        contrastText: uncontrastText,
-      },
-      atentionGreen: {
-        main: "#00FA9A",
-        contrastText: uncontrastText,
-      },
       white,
       black,
-      contrast: darkmode ? white : black,
-      uncontrast: darkmode ? black : white,
+      contrast: _isThemeDark_ ? white : black,
+      uncontrast: _isThemeDark_ ? black : white,
     };
   }
 }

@@ -7,14 +7,15 @@ export {
 }
 
 function DivM(props) {
+  const { m_min = 15, m_max = 30 } = props;
   return (
     <div
       {...props}
       className={fluidCSS()
         .lerpX(400, 1000, {
-          margin: [10, 20],
+          margin: [m_min, m_max],
         })
-        .end(`tw-balance ${props.className}`)}
+        .end(`DivM tw-balance ${props.className}`)}
     />
   );
 }
@@ -28,7 +29,7 @@ function PaperP(props) {
         .lerpX(400, 1000, {
           Padding: [p_min, p_max],
         })
-        .end(`tw-balance ${props.className}`)}
+        .end(`PaperP tw-balance ${props.className}`)}
     />
   );
 }

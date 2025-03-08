@@ -1,17 +1,17 @@
-import { Paper } from "@mui/material";
+import { PaperP } from "@components/containers";
 
 export default Footer;
 
 function Footer() {
   return (
-    <Paper
+    <PaperP
       elevation={0}
-      className="content-container d-flex jc-end ai-end gap-10px pad-20px min-h-250px footer"
+      className="content-container d-end-wrap gap-10px min-h-200px footer"
     >
       <span>El futuro es digital y tokenizado.</span>
       <strong className="c-deepskyblue">
         &copy; {new Date().getFullYear()} Fixtoken
       </strong>
-    </Paper>
+    </PaperP>
   );
 }

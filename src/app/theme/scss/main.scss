@@ -37,60 +37,127 @@
   }
 }
 
-.d-space-between-center {
-  @extend .d-flex;
-  @extend .jc-space-between;
-  @extend .ai-center;
-}
+@for $i from 1 through 20 {
+  $val: 5 * $i;
+  $valpx: $val + px !important;
 
-.f-wrap {
-  flex-wrap: wrap;
-}
-
-@for $i from 1 through 8 {
-  .gap-#{$i * 10}px {
+  .gap-#{$val}px {
     @extend .d-flex;
-    gap: $i * 10px;
+    gap: $valpx;
   }
-  .pad-#{$i * 5}px {
-    padding: $i * 5px;
+
+  .pad-#{$val}px {
+    padding: $valpx;
   }
-  .padw-#{$i * 5}px {
-    padding-left: $i * 5px;
-    padding-right: $i * 5px;
+
+  .padh-#{$val}px {
+    padding-top: $valpx;
+    padding-bottom: $valpx;
   }
-  .padh-#{$i * 5}px {
-    padding-top: $i * 5px;
-    padding-bottom: $i * 5px;
+
+  .padw-#{$val}px {
+    padding-left: $valpx;
+    padding-right: $valpx;
+  }
+
+  .padt-#{$val}px {
+    padding-top: $valpx;
+  }
+
+  .padr-#{$val}px {
+    padding-right: $valpx;
+  }
+
+  .padb-#{$val}px {
+    padding-bottom: $valpx;
+  }
+
+  .padl-#{$val}px {
+    padding-left: $valpx;
+  }
+
+  .m-#{$val}px {
+    margin: $valpx;
+  }
+
+  .mh-#{$val}px {
+    margin-top: $valpx;
+    margin-bottom: $valpx;
+  }
+
+  .mw-#{$val}px {
+    margin-left: $valpx;
+    margin-right: $valpx;
+  }
+
+  .mt-#{$val}px {
+    margin-top: $valpx;
+  }
+
+  .mr-#{$val}px {
+    margin-right: $valpx;
+  }
+
+  .mb-#{$val}px {
+    margin-bottom: $valpx;
+  }
+
+  .ml-#{$val}px {
+    margin-left: $valpx;
   }
 }
 
-@for $i from 11 through 50 {
-  .fs-#{$i * 2}px {
-    font-size: #{$i * 2}px;
+// ---------------------------------------------
+// 1. Tipografía
+// ---------------------------------------------
+@for $i from 1 through 10 {
+  $fontSizePx:   ($i * 2) + 8;     // Genera: 10px, 12px, 14px, ... 26px
+  $fontSizePct1: $i * 10;          // Genera: 10, 20, 30, ... 100 (porcentaje)
+  $fontSizePct2: ($i * 10) + 100;  // Genera: 110, 120, 130, ... 200 (porcentaje)
+
+  .fs-#{$fontSizePx}-px {
+    font-size: $fontSizePx * 1px;
+  }
+
+  .fs-#{$fontSizePct1}p {
+    font-size: $fontSizePct1 * 1%;
+  }
+
+  .fs-#{$fontSizePct2}p {
+    font-size: $fontSizePct2 * 1%;
   }
 }
-@for $i from 1 through 10 {
-  .fw-#{$i * 100} {
-    font-weight: #{$i * 100};
+
+@for $i from 1 through 12 {
+  $vhVal: $i * 10; // 10, 20, 30, ..., 120
+  $pxVal: $i * 50; // 50, 100, 150, ..., 600
+
+  // Clases que usan vh y vw
+  .h-#{$vhVal}vh {
+    height: #{$vhVal}dvh;
   }
-  .w-#{$i * 50}px {
-    width: #{$i * 50}px;
+  .min-h-#{$vhVal}vh {
+    min-height: #{$vhVal}dvh;
   }
-  .min-w-#{$i * 50}px {
-    min-width: #{$i * 50}px;
+  .w-#{$vhVal}vw {
+    width: #{$vhVal}dvw;
   }
-  .max-w-#{$i * 50}px {
-    max-width: #{$i * 50}px;
+  .min-w-#{$vhVal}vw {
+    min-width: #{$vhVal}dvw;
   }
-  .min-h-#{$i * 50}px {
-    min-height: #{$i * 50}px;
+
+  // Clases que usan px
+  .min-h-#{$pxVal}px {
+    min-height: #{$pxVal}px;
   }
-  .min-h-#{$i * 20}vh {
-    min-height: #{$i * 20}vh;
+  .max-h-#{$pxVal}px {
+    max-height: #{$pxVal}px;
   }
-  .max-h-#{$i * 50}px {
-    max-height: #{$i * 50}px;
+  .min-w-#{$pxVal}px {
+    min-width: #{$pxVal}px;
+  }
+  .max-w-#{$pxVal}px {
+    max-width: #{$pxVal}px;
   }
 }
 
@@ -100,7 +167,7 @@
   }
 
   .w-#{$i * 10}vw {
-    width: $i * 10vw;
+    width: $i * 10dvw;
   }
 
   .z-index#{$i} {

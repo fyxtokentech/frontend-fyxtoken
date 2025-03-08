@@ -10,6 +10,7 @@ Fuente usada en el logo.
 ---
 
 Documento (POR HACER) Manifiesto:
+        Se usará jsx en vez de tsx, porque se usarán librerías que no usan tipos y muestra error, se considera que jsx es más general y da herramientas suficientes para el desarrollo.
         Organización inicial
             Recursos estáticos en ./public
             lógica en ./src
