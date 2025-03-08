@@ -15,7 +15,7 @@ function Investment({ children }) {
         variant="outlined"
         sx={{
           height: "80vh",
-          background: isDark() ? "rgba(0,0,0,0.25)" : "",
+          background: isDark() ? "rgba(0,0,0,0.1)" : "",
         }}
       >
         <TableInvestment />

@@ -3,15 +3,16 @@ import React, { useState } from "react";
 import DriverParams from "@routes/DriverParams";
 import fluidCSS from "fluid-css-lng";
 
-import { ThemeSwitcher } from "@components/templates.jsx";
-import { DivM, PaperP } from "@components/containers.jsx";
+import { ThemeSwitcher } from "@components/templates";
+import { DivM, PaperP } from "@components/containers";
 import { Button, Paper, Typography } from "@mui/material";
 
 import DynTable from "@components/GUI/DynTable";
 
 import { isDark } from "@theme/theme-manager.jsx";
 
-import Investment from "./investment.jsx";
+import Investment from "./investment";
+import Withdrawal from "./withdrawal";
 import "./wallet.css";
 
 const wbrk = 950;
@@ -46,7 +47,13 @@ function Wallet() {
       case "movements":
         return <Movements />;
       case "withdrawal":
-        return <Withdrawal />;
+        return (
+          <PaperP variant="outlined">
+            <Withdrawal>
+              <TitlePanel>Retirar dinero de tu billetera</TitlePanel>
+            </Withdrawal>
+          </PaperP>
+        );
       default:
         return null;
     }
@@ -65,16 +72,6 @@ function Wallet() {
       return (
         <PaperP elevation={0}>
           <TitlePanel>Historial de movimientos</TitlePanel>
-          <br />
-          En construcción... 🚧
-        </PaperP>
-      );
-    }
-
-    function Withdrawal() {
-      return (
-        <PaperP elevation={0}>
-          <TitlePanel>Retirar dinero de tu billetera</TitlePanel>
           <br />
           En construcción... 🚧
         </PaperP>
@@ -152,12 +149,17 @@ function Wallet() {
 function Balance() {
   return (
     <div className="Balance">
-      <div className="borde"/>
+      <div
+        className="borde"
+        style={{ filter: isDark() ? "" : "hue-rotate(130deg)" }}
+      />
       <PaperP
         elevation={isDark() ? 24 : 6}
         className={fluidCSS()
           .ltX(wbrk, { textAlign: "center" })
-          .end("d-space-between-center p-relative flex-wrap gap-20px min-h-150px")}
+          .end(
+            "d-space-between-center p-relative flex-wrap gap-20px min-h-150px"
+          )}
       >
         <Label_AvailableBalance />
         <Value_AvailableBalance />

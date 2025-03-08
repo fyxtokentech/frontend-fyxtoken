@@ -61,9 +61,13 @@ function ThemeSwitcher({ children, bgtype = "1", h_init = "0", h_fin = "0" }) {
                 break;
               case "2":
                 create_bgdynamic_portal();
-                fluid.btwX(550, 800, {
-                  opacity: ["0", "0.5", "0.9"],
-                });
+                fluid
+                  .btwX(550, 800, {
+                    opacity: ["0", "0.5", "0.9"],
+                  })
+                  .ltX(550, {
+                    display: "none",
+                  });
                 break;
             }
             return fluid.end(
