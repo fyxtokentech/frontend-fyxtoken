@@ -2,6 +2,8 @@ import React from "react";
 
 import { ThemeSwitcher } from "@components/templates";
 import { DivM, PaperP } from "@components/containers.jsx";
+import { isDark } from "@theme/theme-manager.jsx";
+
 import {
   Box,
   Button,
@@ -72,11 +74,16 @@ function LoginForm() {
               color="secondary"
               className="d-flex fd-row-reverse"
               control={
-                <Checkbox id="remerber-me" color="verde_cielo" defaultChecked />
+                <Checkbox
+                  id="remerber-me"
+                  color={isDark() ? "verde_lima" : "verde_cielo"}
+                  defaultChecked
+                />
               }
               label={<small>Recordarme</small>}
               sx={{
                 marginRight: 0,
+                transition: "opacity 0.25s",
                 ".MuiCheckbox-root": {
                   paddingRight: 0,
                 },
