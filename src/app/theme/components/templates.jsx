@@ -98,8 +98,8 @@ function create_bgdynamic_portal() {
               radio: ri + 4 + `px`,
               ...(() => {
                 return {
-                  x: `calc(${percent(r)} * cos(${a}deg) + 50dvw)`,
-                  y: `calc(${percent(r)} * sin(${a}deg) + 50dvh)`,
+                  x: `calc(${percent(r)} * cos(${a}deg) + 50%)`,
+                  y: `calc(${percent(r)} * sin(${a}deg) + 50%)`,
                 };
               })(),
             });

@@ -1,11 +1,12 @@
 Instalación
-Instalar node y npm
-Ejecutar npm install
 
----
+> Instalar node y npm
 
-Se necesita:
-Fuente usada en el logo.
+Ejecutar 
+
+```
+npm install
+```
 
 ---
 
