@@ -2,7 +2,7 @@ import React from "react";
 
 import { ThemeSwitcher } from "@components/templates";
 import { DivM, PaperP } from "@components/containers.jsx";
-import { isDark } from "@theme/theme-manager.jsx";
+import { isDark, theme_component } from "@theme/theme-manager.jsx";
 
 import {
   Box,
@@ -14,7 +14,6 @@ import {
   Input,
   InputAdornment,
   Link,
-  TextField,
   Typography,
 } from "@mui/material";
 import fluidCSS from "fluid-css-lng";
@@ -130,6 +129,8 @@ function Credentials({
   handleMouseDownPassword,
   handleMouseUpPassword,
 }) {
+  const { enfasis_input } = theme_component();
+
   return (
     <div className="d-flex-col gap-40px">
       <div className="d-flex-col">
@@ -142,7 +143,7 @@ function Credentials({
             fullWidth
             id="email"
             placeholder="Ingresa Correo electrónico"
-            color="morado_enfasis"
+            color={enfasis_input}
             variant="filled"
           />
         </Box>
@@ -158,7 +159,7 @@ function Credentials({
               id="password"
               type={showPassword ? "text" : "password"}
               placeholder="Ingresa Contraseña"
-              color="morado_enfasis"
+              color={enfasis_input}
               fullWidth
               endAdornment={
                 <InputAdornment position="end">

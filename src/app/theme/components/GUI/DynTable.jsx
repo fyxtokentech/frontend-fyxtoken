@@ -1,4 +1,6 @@
-import React, { useLayoutEffect } from "react";
+import React, { useLayoutEffect, useRef } from "react";
+
+import "./DynTable.css";
 
 import {
   DataGrid,
@@ -87,18 +89,42 @@ const localeTextES = {
 
 function DynTable({ rows, columns, paginationModel }) {
   const apiRef = useGridApiRef();
+  const refDataGrid = useRef();
 
-  paginationModel ??= { page: 0, pageSize:  20 };
+  paginationModel ??= { page: 0, pageSize: 20 };
 
   useLayoutEffect(() => {
     if (apiRef.current) {
       // Llamada única a autosizeColumns
-      apiRef.current.autosizeColumns(DEFAULT_GRID_AUTOSIZE_OPTIONS);
+      // apiRef.current.autosizeColumns(DEFAULT_GRID_AUTOSIZE_OPTIONS);
     }
-  }, [apiRef]);
+    const table = refDataGrid.current;
+    if (table) {
+      table.querySelectorAll(".MuiToolbar-root *").forEach((e) => {
+        if (e.innerHTML.toLowerCase().trim() == "rows per page:") {
+          e.innerHTML = "Filas por página:";
+        }
+      });
+    }
+  }, [apiRef, refDataGrid]);
+
+  let width = (window.innerWidth - 120) / columns.length;
+
+  if (width > 150) {
+    width = 150;
+  }
+
+  columns = columns.map((c) => {
+    c.minWidth = c.headerName.length * (14 * 0.55) + 30;
+    return {
+      ...c,
+      width: Math.max(width, c.minWidth),
+    };
+  });
 
   return (
     <DataGrid
+      ref={refDataGrid}
       apiRef={apiRef}
       rows={rows}
       columns={columns}
@@ -109,12 +135,29 @@ function DynTable({ rows, columns, paginationModel }) {
       }}
       pageSizeOptions={[20, 50, 100]}
       density="compact"
-      autosizeOptions={DEFAULT_GRID_AUTOSIZE_OPTIONS}
-      sx={{ border: 0 }}
+      sx={{
+        "& .MuiDataGrid-row:hover": {
+          backgroundColor: `hsla(
+            var(--verde-cielo-h),
+            var(--verde-cielo-s),
+            var(--verde-cielo-l),
+            0.2
+          )`,
+        },
+        "& .MuiDataGrid-cell": {
+          border: "none", // Remueve bordes de cada celda
+        },
+        "& .MuiDataGrid-columnHeaders": {
+          borderBottom: "none", // Remueve borde inferior de los encabezados
+        },
+        "& .MuiDataGrid-row": {
+          borderBottom: "none", // Remueve borde inferior de las filas
+        },
+        "& .MuiDataGrid-root": {
+          border: "none", // Remueve bordes de la tabla completa
+        },
+      }}
       localeText={localeTextES}
     />
   );
-
-
-
 }

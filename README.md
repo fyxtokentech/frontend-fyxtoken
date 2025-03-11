@@ -40,3 +40,12 @@ Documento (POR HACER) Manifiesto:
 ---
 
 Resumen de Librerías usadas
+
+---
+
+quitar bordes a paneles ✅
+restringir animacion (loop) ✅
+maximizar columnas
+revisar paneles de publicidad en php
+colores de gráfico (rojo para venta verde para inversión) ✅
+colores de hover en filas

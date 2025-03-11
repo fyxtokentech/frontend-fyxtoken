@@ -1,4 +1,5 @@
 import { createTheme, lighten, responsiveFontSizes } from "@mui/material";
+import JS2CSS from "js2css-tool";
 
 var _theme_;
 var _isThemeDark_;
@@ -19,17 +20,22 @@ function isDark() {
   return _isThemeDark_;
 }
 
-/*
-  set y get del tema
-*/
-function theme(name) {
+function theme(name, update = true) {
   if (!name) {
     return _theme_;
   }
-  _themename_ = name;
-  const retorno = (() => {
-    switch (_themename_) {
+  if (update) {
+    _themename_ = name;
+  }
+  const resultadoTema = (() => {
+    switch (name) {
       case "light":
+        generarScrollbar({
+          main: "var(--verde-cielo)",
+          maindark: "deepskyblue",
+          maindarker: "dodgerblue",
+          back: "white",
+        });
         return createTheme({
           ...customizePropsMUI(false),
           palette: {
@@ -39,6 +45,12 @@ function theme(name) {
         });
       case "dark":
       default:
+        generarScrollbar({
+          main: "var(--morado-enfasis)",
+          maindark: "RebeccaPurple",
+          maindarker: "Indigo",
+          back: "var(--morado)",
+        });
         return createTheme({
           ...customizePropsMUI(true),
           palette: {
@@ -53,9 +65,13 @@ function theme(name) {
     }
   })();
 
-  _theme_ = responsiveFontSizes(retorno);
+  const r = responsiveFontSizes(resultadoTema);
 
-  return _theme_;
+  if (update) {
+    _theme_ = r;
+  }
+
+  return r;
 
   function colors(darkmode) {
     const index_color = darkmode ? 0 : 1;
@@ -69,9 +85,57 @@ function theme(name) {
     };
   }
 
+  function generarScrollbar({ main, maindark, maindarker, back } = {}) {
+    if (!update) {
+      return;
+    }
+    JS2CSS.insertStyle({
+      id: "scrollbar",
+      objJs: {
+        "*": {
+          scrollbarWidth: "thin",
+          scrollbarColor: `${main} ${back}`,
+        },
+
+        "::-webkit-scrollbar": {
+          width: "12px",
+          height: "12px",
+        },
+
+        "::-webkit-scrollbar-track": {
+          background: back,
+          borderRadius: "10px",
+        },
+
+        "::-webkit-scrollbar-thumb": {
+          background: `linear-gradient(
+            180deg,
+            ${main},
+            ${maindark}
+          )`,
+          borderRadius: "10px",
+          border: `2px solid ${back}`,
+        },
+
+        "::-webkit-scrollbar-thumb:hover": {
+          background: `linear-gradient(
+            180deg,
+            ${maindark},
+            ${maindarker}
+          )`,
+        },
+
+        "textarea, pre, code, div": {
+          scrollbarWidth: "thin",
+          scrollbarColor: `${main} ${back}`,
+        },
+      },
+    });
+  }
+
   function customizePropsMUI(darkmode) {
     const typography = {
-      fontSize: 16 /* Exigencia en [CARTA DE PROTOTIPO Ⓐ] */,
+      fontSize: 14,
       button: {
         textTransform: "none",
       },
@@ -117,7 +181,9 @@ function theme(name) {
   }
 
   function calculatePalette(darkmode) {
-    _isThemeDark_ = darkmode;
+    if (update) {
+      _isThemeDark_ = darkmode;
+    }
 
     const { color_primary, color_secondary, contrastText, uncontrastText } =
       colors(darkmode);
@@ -178,4 +244,10 @@ function theme(name) {
 
 theme(_themename_);
 
-export { themename, isDark, theme };
+function theme_component(){
+  return {
+    enfasis_input: isDark() ? "morado_enfasis" : "verde_cielo"
+  }
+}
+
+export { themename, isDark, theme, theme_component };

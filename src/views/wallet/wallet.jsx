@@ -7,12 +7,9 @@ import { ThemeSwitcher } from "@components/templates";
 import { DivM, PaperP } from "@components/containers";
 import { Button, Paper, Typography } from "@mui/material";
 
-import DynTable from "@components/GUI/DynTable";
-
 import { isDark } from "@theme/theme-manager.jsx";
 
-import Investment from "./investment";
-import Withdrawal from "./withdrawal";
+import { Investment, Withdrawal, Movements } from "./panels/00-panels";
 import "./wallet.css";
 
 const wbrk = 950;
@@ -43,39 +40,25 @@ function Wallet() {
   function PanelActionSelected() {
     switch (actionSelected) {
       case "investment":
-        return <InvestmentPanel />;
+        return (
+          <Investment>
+            <TitlePanel>Paquetes de inversión</TitlePanel>
+          </Investment>
+        );
       case "movements":
-        return <Movements />;
+        return (
+          <Movements>
+            <TitlePanel>Historial de movimientos</TitlePanel>
+          </Movements>
+        );
       case "withdrawal":
         return (
-          <PaperP variant="outlined">
-            <Withdrawal>
-              <TitlePanel>Retirar dinero de tu billetera</TitlePanel>
-            </Withdrawal>
-          </PaperP>
+          <Withdrawal>
+            <TitlePanel>Retirar dinero de tu billetera</TitlePanel>
+          </Withdrawal>
         );
       default:
         return null;
-    }
-
-    function InvestmentPanel() {
-      return (
-        <PaperP variant="outlined">
-          <Investment>
-            <TitlePanel>Paquetes de inversión:</TitlePanel>
-          </Investment>
-        </PaperP>
-      );
-    }
-
-    function Movements() {
-      return (
-        <PaperP elevation={0}>
-          <TitlePanel>Historial de movimientos</TitlePanel>
-          <br />
-          En construcción... 🚧
-        </PaperP>
-      );
     }
 
     function TitlePanel({ children }) {
