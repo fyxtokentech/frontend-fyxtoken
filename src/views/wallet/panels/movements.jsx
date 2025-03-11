@@ -1,6 +1,9 @@
 import React from "react";
 
 import fluidCSS  from 'fluid-css-lng';
+
+import { TitlePanel } from "./comun";
+
 import { PaperP } from "@components/containers";
 
 import { LineChart, areaElementClasses } from "@mui/x-charts/LineChart";
@@ -107,7 +110,7 @@ function Graph({ i, ...props }) {
   );
 }
 
-function Movements({ children: prev_content }) {
+function Movements() {
   const xData = Array.from(
     { length: 6 },
     (_, i) => new Date(2024, 9, 15, i, 0)
@@ -132,7 +135,7 @@ function Movements({ children: prev_content }) {
 
   return (
     <PaperP elevation={0}>
-      {prev_content}
+      <TitlePanel>Historial de movimientos</TitlePanel>
       <br />
       <div
         className="p-relative"

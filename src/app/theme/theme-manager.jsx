@@ -1,4 +1,9 @@
-import { createTheme, lighten, responsiveFontSizes } from "@mui/material";
+import {
+  createTheme,
+  darken,
+  lighten,
+  responsiveFontSizes,
+} from "@mui/material";
 import JS2CSS from "js2css-tool";
 
 var _theme_;
@@ -79,7 +84,8 @@ function theme(name, update = true) {
 
     return {
       color_primary: ["#682BA1", "#1e9cde"][index_color],
-      color_secondary: ["#B9A6CE", "#387FC7"][index_color],
+      color_secondary: ["#B9A6CE", "#7B99B7"][index_color],
+      color_verde_lima: "#C6E50E",
       contrastText: color_contrast[index_color],
       uncontrastText: color_contrast[1 - index_color],
     };
@@ -141,10 +147,22 @@ function theme(name, update = true) {
       },
     };
 
-    const { color_primary, color_secondary, contrastText, uncontrastText } =
-      colors(darkmode);
+    const {
+      color_primary,
+      color_verde_lima,
+      color_secondary,
+      contrastText,
+      uncontrastText,
+    } = colors(darkmode);
 
     const components = {
+      MuiTooltip: {
+        styleOverrides: {
+          tooltip: {
+            backgroundColor: darkmode ? darken(color_primary, 0.6) : null,
+          },
+        },
+      },
       MuiAccordionDetails: {
         styleOverrides: {
           root: {
@@ -164,6 +182,12 @@ function theme(name, update = true) {
       },
       MuiButton: {
         styleOverrides: {
+          containedVerde_lima: {
+            background: darkmode ? darken(color_verde_lima, 0.2) : null,
+            "&:hover": {
+              backgroundColor: color_verde_lima,
+            },
+          },
           containedPrimary: {
             color: "white",
             "&:hover": {
@@ -185,8 +209,13 @@ function theme(name, update = true) {
       _isThemeDark_ = darkmode;
     }
 
-    const { color_primary, color_secondary, contrastText, uncontrastText } =
-      colors(darkmode);
+    const {
+      color_primary,
+      color_verde_lima,
+      color_secondary,
+      contrastText,
+      uncontrastText,
+    } = colors(darkmode);
 
     const white = {
       main: "#FFFFFF",
@@ -211,7 +240,7 @@ function theme(name, update = true) {
         contrastText,
       },
       verde_lima: {
-        main: "#C6E50E",
+        main: color_verde_lima,
         contrastText,
       },
       azul_agua: {
@@ -244,10 +273,10 @@ function theme(name, update = true) {
 
 theme(_themename_);
 
-function theme_component(){
+function theme_component() {
   return {
-    enfasis_input: isDark() ? "morado_enfasis" : "verde_cielo"
-  }
+    enfasis_input: isDark() ? "morado_enfasis" : "verde_cielo",
+  };
 }
 
 export { themename, isDark, theme, theme_component };

@@ -2,13 +2,9 @@ import React, { useLayoutEffect, useRef } from "react";
 
 import "./DynTable.css";
 
-import {
-  DataGrid,
-  useGridApiRef,
-  DEFAULT_GRID_AUTOSIZE_OPTIONS,
-} from "@mui/x-data-grid";
+import { isDark } from "@theme/theme-manager.jsx";
 
-export default DynTable;
+import { DataGrid, useGridApiRef } from "@mui/x-data-grid";
 
 const localeTextES = {
   // Textos generales
@@ -108,56 +104,60 @@ function DynTable({ rows, columns, paginationModel }) {
     }
   }, [apiRef, refDataGrid]);
 
-  let width = (window.innerWidth - 120) / columns.length;
-
-  if (width > 150) {
-    width = 150;
-  }
+  let width = (0.96 * window.innerWidth - 120) / columns.length;
 
   columns = columns.map((c) => {
     c.minWidth = c.headerName.length * (14 * 0.55) + 30;
-    return {
-      ...c,
-      width: Math.max(width, c.minWidth),
-    };
+    c.width = Math.max(width, c.minWidth);
+    return c;
   });
 
   return (
-    <DataGrid
-      ref={refDataGrid}
-      apiRef={apiRef}
-      rows={rows}
-      columns={columns}
-      initialState={{
-        pagination: {
-          paginationModel,
-        },
+    <div
+      className="DynTable-container"
+      style={{
+        maxHeight: "80vh",
+        background: isDark() ? "rgba(0,0,0,0.1)" : "",
       }}
-      pageSizeOptions={[20, 50, 100]}
-      density="compact"
-      sx={{
-        "& .MuiDataGrid-row:hover": {
-          backgroundColor: `hsla(
+    >
+      <DataGrid
+        ref={refDataGrid}
+        apiRef={apiRef}
+        rows={rows}
+        columns={columns}
+        initialState={{
+          pagination: {
+            paginationModel,
+          },
+        }}
+        pageSizeOptions={[20, 50, 100]}
+        density="compact"
+        sx={{
+          "& .MuiDataGrid-row:hover": {
+            backgroundColor: `hsla(
             var(--verde-cielo-h),
             var(--verde-cielo-s),
             var(--verde-cielo-l),
             0.2
           )`,
-        },
-        "& .MuiDataGrid-cell": {
-          border: "none", // Remueve bordes de cada celda
-        },
-        "& .MuiDataGrid-columnHeaders": {
-          borderBottom: "none", // Remueve borde inferior de los encabezados
-        },
-        "& .MuiDataGrid-row": {
-          borderBottom: "none", // Remueve borde inferior de las filas
-        },
-        "& .MuiDataGrid-root": {
-          border: "none", // Remueve bordes de la tabla completa
-        },
-      }}
-      localeText={localeTextES}
-    />
+          },
+          "& .MuiDataGrid-cell": {
+            border: "none", // Remueve bordes de cada celda
+          },
+          "& .MuiDataGrid-columnHeaders": {
+            borderBottom: "none", // Remueve borde inferior de los encabezados
+          },
+          "& .MuiDataGrid-row": {
+            borderBottom: "none", // Remueve borde inferior de las filas
+          },
+          "& .MuiDataGrid-root": {
+            border: "none", // Remueve bordes de la tabla completa
+          },
+        }}
+        localeText={localeTextES}
+      />
+    </div>
   );
 }
+
+export default DynTable;

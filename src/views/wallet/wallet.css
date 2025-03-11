@@ -11,24 +11,26 @@
 
     overflow: hidden;
 
-    &::after {
-      content: "";
-      position: absolute;
-      --m: -10%;
-      --mh: -50%;
-      left: var(--mh);
-      top: var(--m);
-      right: var(--mh);
-      bottom: var(--m);
-      background: conic-gradient(
-        from 0 at center,
-        transparent 0deg 90deg,
-        var(--verde-lima) 100deg,
-        transparent 100deg 270deg,
-        var(--verde-lima) 280deg,
-        transparent 280deg 360deg
-      );
-      animation: rotar 10s linear forwards;
+    &.animate {
+      &::after {
+        content: "";
+        position: absolute;
+        --m: -10%;
+        --mh: -50%;
+        left: var(--mh);
+        top: var(--m);
+        right: var(--mh);
+        bottom: var(--m);
+        background: conic-gradient(
+          from 0 at center,
+          transparent 0deg 90deg,
+          var(--verde-lima) 100deg,
+          transparent 100deg 270deg,
+          var(--verde-lima) 280deg,
+          transparent 280deg 360deg
+        );
+        animation: rotar 10s linear forwards;
+      }
     }
   }
 }
@@ -38,10 +40,11 @@
     transform: rotate(0deg);
     opacity: 1;
   }
-  40%, 60%{
+  40%,
+  60% {
     opacity: 0;
   }
-  61%{
+  61% {
     opacity: 1;
   }
   100% {

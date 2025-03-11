@@ -1,13 +1,14 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 
 import DriverParams from "@routes/DriverParams";
 import fluidCSS from "fluid-css-lng";
 
 import { ThemeSwitcher } from "@components/templates";
 import { DivM, PaperP } from "@components/containers";
-import { Button, Paper, Typography } from "@mui/material";
+import { Info } from "@components/repetitives";
+import { Button, Paper, Tooltip, Typography } from "@mui/material";
 
-import { isDark } from "@theme/theme-manager.jsx";
+import { isDark } from "@theme/theme-manager";
 
 import { Investment, Withdrawal, Movements } from "./panels/00-panels";
 import "./wallet.css";
@@ -33,6 +34,16 @@ function Wallet() {
         <WalletActions />
         <br />
         <PanelActionSelected />
+        <br />
+        {(() => {
+          if (!actionSelected) {
+            return (
+              <Paper className="min-h-300px d-center">
+                Slider en construcción... 🚧
+              </Paper>
+            );
+          }
+        })()}
       </DivM>
     </ThemeSwitcher>
   );
@@ -40,29 +51,13 @@ function Wallet() {
   function PanelActionSelected() {
     switch (actionSelected) {
       case "investment":
-        return (
-          <Investment>
-            <TitlePanel>Paquetes de inversión</TitlePanel>
-          </Investment>
-        );
+        return <Investment />;
       case "movements":
-        return (
-          <Movements>
-            <TitlePanel>Historial de movimientos</TitlePanel>
-          </Movements>
-        );
+        return <Movements />;
       case "withdrawal":
-        return (
-          <Withdrawal>
-            <TitlePanel>Retirar dinero de tu billetera</TitlePanel>
-          </Withdrawal>
-        );
+        return <Withdrawal />;
       default:
         return null;
-    }
-
-    function TitlePanel({ children }) {
-      return <Typography variant="h4">{children}</Typography>;
     }
   }
 
@@ -108,32 +103,45 @@ function Wallet() {
     );
 
     function WalletAction(props) {
-      const { action_id } = props;
+      const { action_id, children } = props;
       return (
-        <Button
-          {...props}
-          variant="contained"
-          className={fluidCSS()
-            .ltX(550, {
-              width: "100%",
-            })
-            .end(props.className ?? "")}
-          onClick={() => {
-            driverParams.set("action-id", action_id, true);
-            setActionSelected(action_id);
-          }}
-          disabled={actionSelected == action_id}
-        />
+        <Tooltip
+          title={
+            (actionSelected == action_id
+              ? "Visualizando panel "
+              : "Visualizar panel de ") + children
+          }
+        >
+          <div>
+            <Button
+              {...props}
+              variant="contained"
+              className={fluidCSS()
+                .ltX(550, {
+                  width: "100%",
+                })
+                .end(props.className ?? "")}
+              onClick={() => {
+                driverParams.set("action-id", action_id, true);
+                setActionSelected(action_id);
+              }}
+              disabled={actionSelected == action_id}
+            />
+          </div>
+        </Tooltip>
       );
     }
   }
 }
+var border_animate = true;
 
 function Balance() {
+  setTimeout(() => (border_animate = false), 5 * 1000);
+
   return (
     <div className="Balance">
       <div
-        className="borde"
+        className={`borde ${border_animate ? "animate" : ""}`}
         style={{ filter: isDark() ? "" : "hue-rotate(130deg)" }}
       />
       <PaperP

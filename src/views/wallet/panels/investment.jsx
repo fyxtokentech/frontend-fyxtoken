@@ -1,8 +1,14 @@
-import { useLayoutEffect, useRef, useState } from "react";
+import { useState } from "react";
 
 import fluidCSS from "fluid-css-lng";
 
-import { isDark, theme_component } from "@theme/theme-manager.jsx";
+import { TitlePanel } from "./comun";
+
+import {
+  generate_inputs,
+  generate_selects,
+  Info,
+} from "@components/repetitives";
 
 import DynTable from "@components/GUI/DynTable";
 import { PaperP } from "@components/containers";
@@ -10,26 +16,24 @@ import { PaperP } from "@components/containers";
 import PriceCheckIcon from "@mui/icons-material/PriceCheck";
 import MonetizationOnIcon from "@mui/icons-material/MonetizationOn";
 
-import {
-  Button,
-  FormControl,
-  Input,
-  InputLabel,
-  MenuItem,
-  Select,
-  Typography,
-} from "@mui/material";
+import { Button, Typography } from "@mui/material";
 
-export default Investment;
-
-function Investment({ children }) {
+function Investment() {
   const [packtype, setPacktype] = useState("");
   const [time, setTime] = useState("");
   const [rechargeType, setRechargeType] = useState("PSE");
 
   return (
     <PaperP elevation={0}>
-      {children}
+      <TitlePanel>Paquetes de inversión</TitlePanel>
+      <div className="mh-10px">
+        <Typography variant="caption" color="secondary">
+          Selecciona entre diferentes paquetes de inversión diseñados para
+          maximizar tus rendimientos y adaptarse a tus metas financieras. Conoce
+          sus detalles, plazos y beneficios para tomar la mejor decisión de
+          inversión.
+        </Typography>
+      </div>
       <br />
       <Investment_actions
         {...{
@@ -42,16 +46,24 @@ function Investment({ children }) {
         }}
       />
       <br />
-      <Typography variant="h6">Activas</Typography>
+      <hr />
       <br />
-      <div
-        style={{
-          maxHeight: "80vh",
-          background: isDark() ? "rgba(0,0,0,0.1)" : "",
-        }}
-      >
-        <TableInvestment />
-      </div>
+      <Typography variant="h5">
+        Activas{" "}
+        <Info
+          placement="right"
+          className="ml-20px"
+          title={
+            <>
+              Revisa y gestiona todos tus activos de manera centralizada.
+              Visualiza su estado, rendimiento y valor, y toma decisiones
+              estratégicas basadas en información actualizada.
+            </>
+          }
+        />
+      </Typography>
+      <br />
+      <TableInvestment />
     </PaperP>
   );
 
@@ -172,17 +184,30 @@ function Investment_actions({
   return (
     <div className="d-flex flex-wrap gap-10px jc-space-between">
       <Investment_action_recharge {...{ rechargeType, setRechargeType }} />
-      <Investment_action_invertion
-        {...{ packtype, setPacktype, time, setTime }}
-      />
+      <Investment_action_invert {...{ packtype, setPacktype, time, setTime }} />
     </div>
   );
 }
 
-function Investment_action_invertion({ packtype, setPacktype, time, setTime }) {
+function Investment_action_invert({ packtype, setPacktype, time, setTime }) {
   return (
     <Investment_action
-      title="Inversión"
+      title={
+        <>
+          Inversión
+          <Info
+            placement="right"
+            className="ml-20px"
+            title={
+              <>
+                Invierte tu dinero eligiendo el paquete y el plazo que mejor se
+                ajusten a tus metas financieras. Ingresa el monto, confirma la
+                operación y comienza a generar rendimientos.
+              </>
+            }
+          />
+        </>
+      }
       button_action={
         <Button variant="contained" startIcon={<MonetizationOnIcon />}>
           Hacer inversión
@@ -193,6 +218,7 @@ function Investment_action_invertion({ packtype, setPacktype, time, setTime }) {
         {
           placeholder: "Ingresa el monto a invertir",
           label: "Monto inversión",
+          id: "money-to-invest",
         },
       ])}
       {generate_selects([
@@ -218,16 +244,31 @@ function Investment_action_invertion({ packtype, setPacktype, time, setTime }) {
 function Investment_action_recharge({ rechargeType, setRechargeType }) {
   return (
     <Investment_action
-      title="Recarga"
+      title={
+        <>
+          Recarga
+          <Info
+            placement="right"
+            className="ml-20px"
+            title={
+              <>
+                Añade fondos a tu cuenta de forma rápida y segura. Selecciona el
+                método de recarga, ingresa el monto deseado y confirma la
+                operación para disponer de tu saldo inmediatamente.
+              </>
+            }
+          />
+        </>
+      }
       button_action={
         <Button variant="contained" startIcon={<PriceCheckIcon />}>
-          Hacer Recarga
+          Hacer Recarga{" "}
         </Button>
       }
     >
       {generate_selects([
         {
-          label: "Recarga wallet",
+          label: "Tipo",
           name: "recharge",
           value: rechargeType,
           setter: setRechargeType,
@@ -238,6 +279,7 @@ function Investment_action_recharge({ rechargeType, setRechargeType }) {
         {
           placeholder: "Ingresa el monto a recargar",
           label: "Monto recarga",
+          id: "money-to-recharge",
         },
       ])}
     </Investment_action>
@@ -262,52 +304,4 @@ function Investment_action({ title, children, button_action }) {
   );
 }
 
-function generate_inputs(array) {
-  const { enfasis_input } = theme_component();
-
-  return array.map(({ placeholder, label }, i) => (
-    <Input
-      key={i}
-      id="money-to-invest"
-      placeholder={placeholder}
-      label={label}
-      color={enfasis_input}
-      variant="filled"
-      type="number"
-      style={{
-        minWidth: placeholder.length * (14 * 0.55) + 30,
-      }}
-      inputProps={{ min: 1 }}
-    />
-  ));
-}
-
-function generate_selects(array) {
-  const { enfasis_input } = theme_component();
-
-  return array.map(({ label, name, value, setter, opns }, i) => (
-    <FormControl
-      key={i}
-      variant="standard"
-      color={enfasis_input}
-      style={{
-        minWidth: label.length * (14 * 0.55) + 80,
-      }}
-    >
-      <InputLabel id={`lbl-${name}`}>{label}</InputLabel>
-      <Select
-        labelId={`lbl-${name}`}
-        id={`select-${name}`}
-        value={value}
-        label="Age"
-        onChange={(event) => setter(event.target.value)}
-      >
-        {opns.map((o, j) => (
-          <MenuItem key={j} value={o}>
-            {o}
-          </MenuItem>
-        ))}
-      </Select>
-    </FormControl>
-  ));
-}
+export default Investment;
