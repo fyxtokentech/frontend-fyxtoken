@@ -10,7 +10,7 @@ import { Button, Paper, Tooltip, Typography } from "@mui/material";
 
 import { isDark } from "@theme/theme-manager";
 
-import { Investment, Withdrawal, Movements } from "./panels/00-panels";
+import { Investment, Withdrawal, Movements } from "./panels/Main";
 import "./wallet.css";
 
 const wbrk = 950;
@@ -105,30 +105,38 @@ function Wallet() {
     function WalletAction(props) {
       const { action_id, children } = props;
       return (
-        <Tooltip
-          title={
-            (actionSelected == action_id
-              ? "Visualizando panel "
-              : "Visualizar panel de ") + children
-          }
+        <div
+          className={fluidCSS()
+            .ltX(550, {
+              width: "100%",
+            })
+            .end()}
         >
-          <div>
-            <Button
-              {...props}
-              variant="contained"
-              className={fluidCSS()
-                .ltX(550, {
-                  width: "100%",
-                })
-                .end(props.className ?? "")}
-              onClick={() => {
-                driverParams.set("action-id", action_id, true);
-                setActionSelected(action_id);
-              }}
-              disabled={actionSelected == action_id}
-            />
-          </div>
-        </Tooltip>
+          <Tooltip
+            title={
+              (actionSelected == action_id
+                ? "Visualizando panel "
+                : "Visualizar panel de ") + children
+            }
+          >
+            <div>
+              <Button
+                {...props}
+                className={fluidCSS()
+                  .ltX(550, {
+                    width: "100%",
+                  })
+                  .end(props.className ?? "")}
+                variant="contained"
+                onClick={() => {
+                  driverParams.set("action-id", action_id, true);
+                  setActionSelected(action_id);
+                }}
+                disabled={actionSelected == action_id}
+              />
+            </div>
+          </Tooltip>
+        </div>
       );
     }
   }

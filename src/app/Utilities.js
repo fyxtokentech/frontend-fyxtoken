@@ -12,7 +12,19 @@ function isMobile() {
   );
 }
 
+function centrar_verticalmente_scroll(elemento){
+  const elementRect = elemento.getBoundingClientRect();
+  const absoluteElementTop = elementRect.top + window.pageYOffset;
+  const middle = absoluteElementTop - (window.innerHeight / 2) + (elemento.offsetHeight / 2);
+  
+  window.scrollTo({
+    top: middle,
+    behavior: "smooth" 
+  });
+}
+
 export {
   isTouchDevice,
   isMobile,
+  centrar_verticalmente_scroll
 };
