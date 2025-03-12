@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useRef } from "react";
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 
 import "./DynTable.css";
 
@@ -104,13 +104,27 @@ function DynTable({ rows, columns, paginationModel }) {
     }
   }, [apiRef, refDataGrid]);
 
-  let width = (0.96 * window.innerWidth - 120) / columns.length;
+  const [, setWindowWidth] = useState(window.innerWidth);
 
-  columns = columns.map((c) => {
-    c.minWidth = c.headerName.length * (14 * 0.55) + 30;
-    c.width = Math.max(width, c.minWidth);
-    return c;
-  });
+  const rsz = () => {
+    let width = (0.96 * window.innerWidth - 120) / columns.length;
+    columns = columns.map((c) => {
+      c.minWidth = c.headerName.length * (14 * 0.55) + 90;
+      c.width = Math.max(width, c.minWidth);
+      return c;
+    });
+  };
+
+  useEffect(() => {
+    const handleResize = () => {
+      rsz();
+      setWindowWidth(window.innerWidth);
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  rsz();
 
   return (
     <div

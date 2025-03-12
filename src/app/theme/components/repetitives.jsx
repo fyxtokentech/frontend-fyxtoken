@@ -1,6 +1,9 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 
 import { theme_component } from "@theme/theme-manager";
+import { isTouchDevice } from "@app/Utilities";
+
+import FyxDialog from "@components/GUI/FyxDialog";
 
 import {
   FormControl,
@@ -19,16 +22,25 @@ function _img(props) {
   return <img alt="" {...props} src={`${PUBLIC_URL}/${src}`} />;
 }
 
-function Info(props ) {
+function Info(props) {
+  const [, setWindowWidth] = useState(0);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowWidth(Math.random());
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   return (
-    <Tooltip {...props}>
-      <Typography
-        color="secondary"
-        className="d-inline-block c-pointer"
-      >
-        <i className="fa-solid fa-info-circle" />
-      </Typography>
-    </Tooltip>
+    <FyxDialog {...props} text={props.title} title_text="Información">
+      <Tooltip {...props}>
+        <Typography color="secondary" className="d-inline-block c-pointer">
+          <i className="fa-solid fa-info-circle" />
+        </Typography>
+      </Tooltip>
+    </FyxDialog>
   );
 }
 

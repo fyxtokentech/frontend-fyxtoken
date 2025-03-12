@@ -83,7 +83,7 @@ function theme(name, update = true) {
     const color_contrast = ["#FFFFFF", "#000000"];
 
     return {
-      color_primary: ["#682BA1", "#1e9cde"][index_color],
+      color_primary: ["#9F61D8", "#1e9cde"][index_color],
       color_secondary: ["#B9A6CE", "#7B99B7"][index_color],
       color_verde_lima: "#C6E50E",
       contrastText: color_contrast[index_color],

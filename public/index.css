@@ -3,6 +3,8 @@
   https://drive.google.com/file/d/1bXzEgG3Q4JOxc74UFQnlbetrJ5O7RVVp/view?usp=sharing 
 */
 
+@import url("https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
+
 :root {
   --verde-cielo_: #1e9cde; /* Alias de --verde-cielo */
   --verde-cielo-h: 201deg;
@@ -35,10 +37,21 @@
   --morado-s: 85%;
   --morado-l: 13%;
   --morado: hsl(var(--morado-h), var(--morado-s), var(--morado-l));
-  
+
   --morado-enfasis: hsl(264, 45%, 53%); /* Alias de --morado */
 
   --bg-table-dark: hsl(var(--morado-h), 40%, 20%);
+}
+
+div,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: "Poppins", sans-serif !important;
+  font-style: normal;
 }
 
 @font-face {
@@ -49,6 +62,14 @@
 @font-face {
   font-family: "lemonmilk-rg";
   src: url("typography/lemonmilk-rg.otf") format("opentype");
+}
+
+.lemonmilk-rg {
+  font-family: "lemonmilk-rg" !important;
+}
+
+.goodtimes-rg {
+  font-family: "goodtimes-rg" !important;
 }
 
 hr {

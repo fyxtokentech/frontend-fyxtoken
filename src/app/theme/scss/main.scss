@@ -22,7 +22,8 @@
       sb: space-between,
       space-between: space-between,
       se: space-evenly,
-      end: end
+      end: end,
+      start: start
     )
 {
   .jc-#{$abrev} {
@@ -30,7 +31,9 @@
   }
 }
 
-@each $abrev, $value in (c: center, center: center, s: start, e: end, end: end)
+@each $abrev,
+  $value
+    in (c: center, center: center, s: start, e: end, end: end, start: start)
 {
   .ai-#{$abrev} {
     align-items: $value;
@@ -111,9 +114,9 @@
 // 1. Tipografía
 // ---------------------------------------------
 @for $i from 1 through 10 {
-  $fontSizePx:   ($i * 2) + 8;     // Genera: 10px, 12px, 14px, ... 26px
-  $fontSizePct1: $i * 10;          // Genera: 10, 20, 30, ... 100 (porcentaje)
-  $fontSizePct2: ($i * 10) + 100;  // Genera: 110, 120, 130, ... 200 (porcentaje)
+  $fontSizePx: ($i * 2) + 8; // Genera: 10px, 12px, 14px, ... 26px
+  $fontSizePct1: $i * 10; // Genera: 10, 20, 30, ... 100 (porcentaje)
+  $fontSizePct2: ($i * 10) + 100; // Genera: 110, 120, 130, ... 200 (porcentaje)
 
   .fs-#{$fontSizePx}-px {
     font-size: $fontSizePx * 1px;

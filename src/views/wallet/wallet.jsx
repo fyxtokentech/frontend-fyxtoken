@@ -171,11 +171,7 @@ function Balance() {
   }
 
   function Value_AvailableBalance() {
-    return (
-      <Cell_Field>
-        <b>$10.000,00</b> USDC
-      </Cell_Field>
-    );
+    return <Cell_Field>$10.000,00 USDC</Cell_Field>;
   }
 
   function Label_AvailableBalance() {

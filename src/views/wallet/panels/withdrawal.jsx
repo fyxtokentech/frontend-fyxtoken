@@ -181,7 +181,7 @@ function Panel_IWishToWithdraw({ mode, setMode }) {
   return (
     <PaperP elevation={0}>
       <div className="padb-20px">
-        <Typography variant="h6">Deseo Retirar</Typography>
+        <Typography variant="h6">Solicitud de Retiro</Typography>
         <div className="padt-10px" />
         <Typography variant="caption" color="secondary">
           Completa los campos del formulario para realizar tu retiro. Una vez
