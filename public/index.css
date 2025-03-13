@@ -77,7 +77,13 @@ h6 {
   font-family: "goodtimes-rg" !important;
 }
 
+.PaperP{
+  hr {
+    opacity: 0.2;
+  }  
+}
+
 hr {
   width: 100%;
-  opacity: 0.2;
+  opacity: 0.4;
 }

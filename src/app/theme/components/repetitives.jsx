@@ -21,8 +21,8 @@ import {
 const PUBLIC_URL = process.env.PUBLIC_URL;
 
 function _img(props) {
-  const { src = "" } = props;
-  return <img alt="" {...props} src={`${PUBLIC_URL}/${src}`} />;
+  const { src, ...rest_props } = props;
+  return <img {...{ alt: "", ...rest_props }} src={`${PUBLIC_URL}/${src}`} />;
 }
 
 function BoxForm(props) {

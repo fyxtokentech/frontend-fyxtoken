@@ -7,16 +7,24 @@
   padding: 30px;
 }
 
-.of-contain {
+.object-fit-contain {
   object-fit: contain;
 }
 
-.oc-lt {
-  object-position: left top;
+.object-fit-cover {
+  object-fit: cover;
 }
 
 .tw-balance {
   text-wrap: balance;
+}
+
+.no-border-focus{
+  &:focus{
+    border: none !important;
+    outline: none;
+    box-shadow: none;
+  }
 }
 
 .d-center {

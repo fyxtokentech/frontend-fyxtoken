@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 import DriverParams from "@routes/DriverParams";
 import fluidCSS from "fluid-css-lng";
@@ -6,7 +6,9 @@ import fluidCSS from "fluid-css-lng";
 import { ThemeSwitcher } from "@components/templates";
 import { DivM, PaperP } from "@components/containers";
 import { Info } from "@components/repetitives";
-import { Button, Paper, Tooltip, Typography } from "@mui/material";
+import FyxCarrusel from "@components/GUI/FyxCarrusel";
+import { Button, ButtonGroup, Paper, Tooltip, Typography } from "@mui/material";
+import NewspaperIcon from "@mui/icons-material/Newspaper";
 
 import { isDark } from "@theme/theme-manager";
 
@@ -24,6 +26,8 @@ function Wallet() {
     driverParams.get("action-id") ?? ""
   );
 
+  const refcontainer = useRef();
+
   return (
     <ThemeSwitcher h_init="40px" h_fin="300px">
       <DivM>
@@ -31,18 +35,47 @@ function Wallet() {
         <br />
         <Balance />
         <br />
-        <WalletActions />
-        <br />
-        <PanelActionSelected />
+        <div
+          ref={refcontainer}
+          style={{
+            position: "relative",
+            padding: "10px 0",
+            height: "fit-content",
+          }}
+        >
+          <WalletActions refcontainer={refcontainer} />
+          <PanelActionSelected />
+        </div>
         <br />
         {(() => {
-          if (!actionSelected) {
-            return (
-              <Paper className="min-h-300px d-center">
-                Slider en construcción... 🚧
-              </Paper>
-            );
-          }
+          return (
+            <>
+              {actionSelected ? (
+                <>
+                  <br />
+                  <br />
+                  <br />
+                </>
+              ) : null}
+              <br />
+              <hr />
+              <br />
+              <br />
+              <Typography variant="h4" className="d-flex ai-center gap-20px">
+                <NewspaperIcon color="secondary" fontSize="large" />{" "}
+                <span>Novedades</span>
+              </Typography>
+              <br />
+              <br />
+              <FyxCarrusel
+                style={{
+                  width: "100%",
+                  minHeight: "clamp(390px, 50vh, 90vw)",
+                  margin: "0 auto",
+                }}
+              />
+            </>
+          );
         })()}
       </DivM>
     </ThemeSwitcher>
@@ -74,36 +107,60 @@ function Wallet() {
     );
   }
 
-  function WalletActions() {
+  function WalletActions({ refcontainer }) {
+    const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+
+    useEffect(() => {
+      const handleResize = () => {
+        setWindowWidth(window.innerWidth);
+      };
+      window.addEventListener("resize", handleResize);
+      return () => window.removeEventListener("resize", handleResize);
+    }, []);
+
     return (
-      <div
-        className={fluidCSS()
-          .ltX(wbrk, { justifyContent: "center" })
-          .end("d-flex-wrap gap-20px padh-10px")}
+      <Paper
+        elevation={2}
+        style={{
+          position: "sticky",
+          top: "0",
+          zIndex: "9999",
+          padding: "10px",
+        }}
       >
-        <WalletAction
-          startIcon={<i className="fa-solid fa-money-bill-trend-up" />}
-          action_id="investment"
+        <ButtonGroup
+          fullWidth
+          size={windowWidth > 600 ? "medium" : "small"}
+          variant="contained"
+          sx={{ boxShadow: "none" }}
         >
-          Inversión
-        </WalletAction>
-        <WalletAction
-          startIcon={<i className="fa-solid fa-money-bill-transfer" />}
-          action_id="movements"
-        >
-          Movimientos
-        </WalletAction>
-        <WalletAction
-          startIcon={<i className="fa-solid fa-wallet" />}
-          action_id="withdrawal"
-        >
-          Retiros
-        </WalletAction>
-      </div>
+          <WalletAction
+            startIcon={<i className="fa-solid fa-money-bill-trend-up" />}
+            action_id="investment"
+            refcontainer={refcontainer}
+          >
+            Inversión
+          </WalletAction>
+          <WalletAction
+            startIcon={<i className="fa-solid fa-money-bill-transfer" />}
+            action_id="movements"
+            refcontainer={refcontainer}
+          >
+            Movimientos
+          </WalletAction>
+          <WalletAction
+            startIcon={<i className="fa-solid fa-wallet" />}
+            action_id="withdrawal"
+            refcontainer={refcontainer}
+          >
+            Retiros
+          </WalletAction>
+        </ButtonGroup>
+      </Paper>
     );
 
     function WalletAction(props) {
-      const { action_id, children } = props;
+      const { action_id, children, refcontainer } = props;
       return (
         <div
           className={fluidCSS()
@@ -129,6 +186,14 @@ function Wallet() {
                   .end(props.className ?? "")}
                 variant="contained"
                 onClick={() => {
+                  if (refcontainer) {
+                    const elemento = refcontainer.current;
+                    const offsetTop = elemento.offsetTop;
+                    window.scrollTo({
+                      top: offsetTop,
+                      behavior: "smooth",
+                    });
+                  }
                   driverParams.set("action-id", action_id, true);
                   setActionSelected(action_id);
                 }}
