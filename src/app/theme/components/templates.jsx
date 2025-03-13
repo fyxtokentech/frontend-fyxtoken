@@ -57,13 +57,16 @@ function ThemeSwitcher({ children, bgtype = "1", h_init = "0", h_fin = "0" }) {
             const fluid = fluidCSS();
             switch (bgtype) {
               case "1":
+                fluid.ltX(800, {
+                  opacity: ["0.5", "1"],
+                });
                 create_bgdynamic();
                 break;
               case "2":
                 create_bgdynamic_portal();
                 fluid
                   .btwX(550, 800, {
-                    opacity: ["0", "0.5", "0.9"],
+                    opacity: ["0", "0.5", "1"],
                   })
                   .ltX(550, {
                     display: "none",
