@@ -5,12 +5,11 @@ import fluidCSS from "fluid-css-lng";
 
 import { ThemeSwitcher } from "@components/templates";
 import { DivM, PaperP } from "@components/containers";
-import { Info } from "@components/repetitives";
 import FyxCarrusel from "@components/GUI/FyxCarrusel";
 import { Button, ButtonGroup, Paper, Tooltip, Typography } from "@mui/material";
 import NewspaperIcon from "@mui/icons-material/Newspaper";
 
-import { isDark } from "@theme/theme-manager";
+import { isDark, zIndex } from "@theme/theme-manager";
 
 import { Investment, Withdrawal, Movements } from "./panels/Main";
 import "./wallet.css";
@@ -69,9 +68,11 @@ function Wallet() {
               <br />
               <FyxCarrusel
                 style={{
+                  position: "relative",
                   width: "100%",
                   minHeight: "clamp(390px, 50vh, 90vw)",
                   margin: "0 auto",
+                  zIndex: zIndex.MinOverMouseFx
                 }}
               />
             </>
@@ -124,7 +125,7 @@ function Wallet() {
         style={{
           position: "sticky",
           top: "0",
-          zIndex: "9999",
+          zIndex: zIndex.MinOverscroll,
           padding: "10px",
         }}
       >

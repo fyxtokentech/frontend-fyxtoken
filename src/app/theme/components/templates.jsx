@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 
 import "@theme/scss/main.scss";
 
@@ -6,8 +6,9 @@ import { Toaster } from "react-hot-toast";
 import { CssBaseline } from "@mui/material";
 import { ThemeProvider } from "@mui/material/styles";
 
-import Footer from "@components/GUI/menu/footer.jsx";
-import MenuTopUnlog from "@components/GUI/menu/head-main.jsx";
+import CursorLight from "@components/Fx/CursorLight";
+import Footer from "@components/GUI/menu/footer";
+import MenuTopUnlog from "@components/GUI/menu/head-main";
 
 import { theme, themename, isDark } from "@theme/theme-manager";
 
@@ -46,6 +47,7 @@ function ThemeSwitcher({ children, bgtype = "1", h_init = "0", h_fin = "0" }) {
     <Notifier>
       <FirstPart />
       <Footer />
+      <CursorLight />
     </Notifier>
   );
 

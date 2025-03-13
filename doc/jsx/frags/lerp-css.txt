@@ -1,0 +1,26 @@
+:root {
+    --i: 500px; /* Ancho inicial */
+    --ni: 500; /* Ancho inicial en número entero */
+    --f: 1000px; /* Ancho final */
+    --nf: 1000; /* Ancho final en número entero */
+
+    --vis: 15px; /* Valor inicial */
+    --vi: 15; /* Valor inicial en número entero */
+    --vf: 30; /* Valor final en número entero */
+
+    /* lerp: Proyección abierta */
+    --t: calc((100vw - var(--i)) / (var(--nf) - var(--ni)));
+    --lerp: calc((var(--vf) - var(--vi)) * var(--t) + var(--vis));
+
+    /* lerp: Proyección cerrada */
+    --t-ends: clamp(0px, var(--t), 1px); /* 0 <= t <= 1 */
+    --lerp-ends: calc((var(--vf) - var(--vi)) * var(--t-ends) + var(--vis));
+
+    /* lerp: Proyección mixta [ ) */
+    --t-end-open: max(0px, var(--t)); /* t >= 0 */
+    --lerp-end-open: calc((var(--vf) - var(--vi)) * var(--t-end-open) + var(--vis));
+
+    /* lerp: Proyección mixta ( ] */
+    --t-open-end: clamp(-1px, var(--t), 1px); /* t <= 1 */
+    --lerp-open-end: calc((var(--vf) - var(--vi)) * var(--t-open-end) + var(--vis));
+}

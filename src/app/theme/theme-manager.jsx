@@ -279,4 +279,13 @@ function theme_component() {
   };
 }
 
-export { themename, isDark, theme, theme_component };
+const mouseFxBackall = "-1", mouseFxOverall = "8", MinOverscroll = "7";
+
+const zIndex = {
+  mouseFxBackall,
+  mouseFxOverall,
+  MinOverMouseFx: (Number(mouseFxOverall) + 1).toString(),
+  MinOverscroll,
+};
+
+export { themename, isDark, theme, theme_component, zIndex };

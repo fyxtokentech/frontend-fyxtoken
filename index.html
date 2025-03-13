@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <title>FyxToken | Inversión Digital</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#000000" />
+    <meta
+      name="description"
+      content="FyxToken - Plataforma de inversión digital para la gestión y visualización de tokens digitales. Accede a nuevos mercados financieros a través de DeFi."
+    />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="FyxToken | Inversión Digital" />
+    <meta
+      property="og:description"
+      content="Accede a nuevos mercados financieros. Gestiona tus activos digitales de forma segura y eficiente a través de DeFi."
+    />
+    <meta
+      property="og:image"
+      content="public/img/Logo_Fyxtoken_Icono_Color_Principal.svg"
+    />
+
+    <!-- Favicon -->
+    <link rel="icon" href="public/img/tabicon_259x256.png" />
+    <link rel="apple-touch-icon" href="public/img/tabicon_259x256.png" />
+
+    <!-- Font Awesome -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"
+    />
+
+    <!-- Incluir jQuery primero -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <!-- Lightbox2 -->
+    <script src="https://cdn.jsdelivr.net/npm/lightbox2@2.11.5/dist/js/lightbox.min.js"></script>
+    <link
+      href="https://cdn.jsdelivr.net/npm/lightbox2@2.11.5/dist/css/lightbox.min.css"
+      rel="stylesheet"
+    />
+
+    <script>
+      if (!window.location.href.includes("github")) {
+        // window["jeff-aporta-default"] = "../";
+      }
+    </script>
+
+    <script
+      type="text/javascript"
+      src="https://jeff-aporta.github.io/ascii-maploader/static/js/index.all.min.js"
+    ></script>
+
+    <script>
+      asciiMap.CLI.JS2CSS();
+      asciiMap.CLI.fluidCSS();
+      asciiMap.CLI.myUI().DocuDesignPR();
+      asciiMap.CLI.myUI().playground();
+
+      asciiMap
+        .tree("doc")
+        .css("index.css")
+        .newBranch("jsx", (jsx) => {
+          jsx.jsx("initApp").newBranch("contents", (contents) => {
+            contents.jsx(
+              "intro",
+              "wallet",
+              "investments",
+              "movements",
+              "withdrawals",
+              "news",
+              "charts",
+              "intervals",
+              "tech",
+              "components",
+              "themes"
+            );
+          });
+        })
+        .writehtml();
+    </script>
+  </head>
+  <body>
+    <script>
+      asciiMap.CLI.myUI().DocuDesignBody();
+    </script>
+    <!-- Lightbox2 JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.4/js/lightbox.min.js"></script>
+    <script>
+      // Configuración de Lightbox
+      lightbox.option({
+        resizeDuration: 200,
+        wrapAround: true,
+        albumLabel: "Imagen %1 de %2",
+        fadeDuration: 300,
+      });
+    </script>
+  </body>
+</html>
