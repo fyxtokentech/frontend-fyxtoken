@@ -16,13 +16,13 @@
 Proyecto frontend desarrollado en React para gestión y visualización de tokens digitales. Ofrece una interfaz intuitiva y potente para el seguimiento, análisis y gestión de activos digitales en tiempo real.
 
 ## 📋 Tabla de Contenidos
-- [Características](#-características)
-- [Tecnologías](#-tecnologías)
-- [Instalación](#-instalación)
-- [Estructura del Proyecto](#-estructura-del-proyecto)
-- [Vistas](#-vistas)
-- [Desarrollo](#-desarrollo)
-- [Licencia](#-licencia)
+- [✨ Características](#-caracteristicas)
+- [🛠️ Tecnologías](#-tecnologias)
+- [💻 Instalación](#-instalacion)
+- [📁 Estructura del Proyecto](#-estructura-del-proyecto)
+- [📱 Vistas](#-vistas)
+- [🔧 Desarrollo](#-desarrollo)
+- [📄 Licencia](#-licencia)
 
 ## ✨ Características
 
