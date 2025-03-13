@@ -1,8 +1,10 @@
 # FyxToken Frontend
 
 <div align="center">
-  <img src="./public/img/Fyxtoken_Negro_BGWHITE_128x127.png" alt="FyxToken Logo" width="128" height="127">
+  <img src="./public/img/Logo_Fyxtoken_Icono_Color_Principal.svg"  alt="FyxToken Logo" width="128" height="120">
 </div>
+
+<br>
 
 <div align="center">
   
@@ -16,15 +18,15 @@
 Proyecto frontend desarrollado en React para gestión y visualización de tokens digitales. Ofrece una interfaz intuitiva y potente para el seguimiento, análisis y gestión de activos digitales en tiempo real.
 
 ## 📋 Tabla de Contenidos
-- [✨ Características](#-caracteristicas)
-- [🛠️ Tecnologías](#-tecnologias)
-- [💻 Instalación](#-instalacion)
+- [✨ Caracteristicas](#-caracteristicas)
+- [🛠️ Tecnologias](#-tecnologias)
+- [💻 Instalacion](#-instalacion)
 - [📁 Estructura del Proyecto](#-estructura-del-proyecto)
 - [📱 Vistas](#-vistas)
 - [🔧 Desarrollo](#-desarrollo)
 - [📄 Licencia](#-licencia)
 
-## ✨ Características
+## ✨ Caracteristicas
 
 ### Core
 - 📊 Sistema de trading en tiempo real
@@ -40,7 +42,7 @@ Proyecto frontend desarrollado en React para gestión y visualización de tokens
 - 🔄 Estado global eficiente
 - 📦 Componentes reutilizables
 
-## 🛠️ Tecnologías
+## 🛠️ Tecnologias
 
 ### Frontend Core
 - React 18
@@ -57,7 +59,7 @@ Proyecto frontend desarrollado en React para gestión y visualización de tokens
 - npm para gestión de paquetes
 - Git para control de versiones
 
-## 💻 Instalación
+## 💻 Instalacion
 
 1. **Clonar el repositorio**
 
