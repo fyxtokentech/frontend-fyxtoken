@@ -1,13 +1,19 @@
 import { useState } from "react";
 
-import { TitlePanel } from "./comun";
+import { TitlePanel } from "../comun";
 
 import { Info } from "@components/repetitives";
 import { PaperP } from "@components/containers";
-import { generate_inputs, generate_selects } from "@components/repetitives";
+import {
+  generate_inputs,
+  TitleInfo,
+  generate_selects,
+} from "@components/repetitives";
 import DynTable from "@components/GUI/DynTable";
 
 import { Button, Tooltip, Typography } from "@mui/material";
+
+import { custom_styles } from "../comun";
 
 let _platform_staking_ = "";
 let _currency_staking_ = "";
@@ -18,32 +24,27 @@ function Withdrawal() {
   _mode_ = mode;
   return (
     <PaperP elevation={0}>
-      <TitlePanel>
-        Retirar dinero de tu billetera
-        <Info
-          placement="right"
-          className="ml-20px"
-          title={
-            <>
-              Retira tu dinero de manera sencilla y segura. Selecciona tu método
-              de retiro, ingresa los datos requeridos y confirma tu solicitud
-              para recibir el monto en la cuenta o tarjeta seleccionada.
-            </>
-          }
-        />
-      </TitlePanel>
+      <TitleInfo
+        variant="h5"
+        title="Retirar dinero de tu billetera"
+        information={
+          <>
+            Retira tu dinero de manera sencilla y segura. Selecciona tu método
+            de retiro, ingresa los datos requeridos y confirma tu solicitud para
+            recibir el monto en la cuenta o tarjeta seleccionada.
+          </>
+        }
+      />
       <br />
-      <PaperP>
-        <Panel_IWishToWithdraw {...{ mode, setMode }} />
-        <br />
-        <hr />
-        <br />
-        <Panel_PendingWithdrawals />
-        <br />
-        <hr />
-        <br />
-        <Panel_OfWithdrawalsMade />
-      </PaperP>
+      <Panel_IWishToWithdraw {...{ mode, setMode }} />
+      <br />
+      <hr />
+      <br />
+      <Panel_PendingWithdrawals />
+      <br />
+      <hr />
+      <br />
+      <Panel_OfWithdrawalsMade />
     </PaperP>
   );
 }
@@ -51,20 +52,16 @@ function Withdrawal() {
 function Panel_OfWithdrawalsMade() {
   return (
     <>
-      <Typography variant="h6">
-        Retiros Realizados{" "}
-        <Info
-          placement="right"
-          className="ml-20px"
-          title={
-            <>
-              Lista los retiros realizados, mostrando la información esencial de
-              cada transacción completada para facilitar su verificación,
-              seguimiento y análisis histórico.
-            </>
-          }
-        />
-      </Typography>
+      <TitleInfo
+        title="Retiros Realizados"
+        information={
+          <>
+            Lista los retiros realizados, mostrando la información esencial de
+            cada transacción completada para facilitar su verificación,
+            seguimiento y análisis histórico.
+          </>
+        }
+      />
       <br />
       <TableOfWithdrawalsMade />
     </>
@@ -115,20 +112,16 @@ function Panel_OfWithdrawalsMade() {
 function Panel_PendingWithdrawals() {
   return (
     <>
-      <Typography variant="h6">
-        Retiros Pendientes
-        <Info
-          className="ml-20px"
-          placement="right"
-          title={
-            <>
-              Lista los retiros pendientes, mostrando la información esencial de
-              cada solicitud para facilitar su verificación, seguimiento y
-              gestión oportuna.
-            </>
-          }
-        />
-      </Typography>
+      <TitleInfo
+        title="Retiros Pendientes"
+        information={
+          <>
+            Lista los retiros pendientes, mostrando la información esencial de
+            cada solicitud para facilitar su verificación, seguimiento y gestión
+            oportuna.
+          </>
+        }
+      />
       <br />
       <Table_PendingWithdrawals />
     </>
@@ -179,17 +172,22 @@ function Panel_PendingWithdrawals() {
 
 function Panel_IWishToWithdraw({ mode, setMode }) {
   return (
-    <PaperP elevation={0}>
+    <PaperP>
       <div className="padb-20px">
-        <Typography variant="h6">Solicitud de Retiro</Typography>
-        <div className="padt-10px" />
-        <Typography variant="caption" color="secondary">
-          Completa los campos del formulario para realizar tu retiro. Una vez
-          verificados tus datos, presiona 'Solicitar Retiro' para continuar y
-          recibir tu dinero en la cuenta o tarjeta seleccionada.
-        </Typography>
+        <TitleInfo
+          title="Solicitud de Retiro"
+          information={
+            <>
+              Completa los campos del formulario para realizar tu retiro. Una
+              vez verificados tus datos, presiona 'Solicitar Retiro' para
+              continuar y recibir tu dinero en la cuenta o tarjeta seleccionada.
+            </>
+          }
+        />
       </div>
-      <SelectModeWithDrawal mode={mode} setMode={setMode} />
+      <div className="d-inline-block padb-10px padt-5px padw-10px" style={custom_styles.controlInput}>
+        <SelectModeWithDrawal mode={mode} setMode={setMode} />
+      </div>
       <br />
       <br />
       <Panel_InfoFormOfWithdrawal />
@@ -200,17 +198,15 @@ function Panel_IWishToWithdraw({ mode, setMode }) {
   function Panel_InfoFormOfWithdrawal() {
     if (mode) {
       return (
-        <>
-          <PaperP>
-            <Typography variant="h6">Información de {mode}</Typography>
-            <div className="d-flex flex-wrap gap-30px padh-20px">
-              <ChooseForm />
-            </div>
-          </PaperP>
-        </>
+        <PaperP elevation={0}>
+          <Typography variant="h6">Información de {mode}</Typography>
+          <div className="d-flex flex-wrap gap-30px padh-20px">
+            <ChooseForm />
+          </div>
+        </PaperP>
       );
     } else {
-      return <PaperP />;
+      return <PaperP elevation={0} />;
     }
 
     function ChooseForm() {

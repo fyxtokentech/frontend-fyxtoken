@@ -5,7 +5,9 @@ import fluidCSS from "fluid-css-lng";
 import { TitlePanel } from "../comun";
 
 import { PaperP } from "@components/containers";
-import { Info } from "@components/repetitives";
+import {
+  TitleInfo,
+} from "@components/repetitives";
 
 import { isDark, theme } from "@theme/theme-manager";
 import { ThemeProvider } from "@mui/material/styles";
@@ -38,13 +40,13 @@ function Movements() {
   const series = [
     {
       data: investmentData,
-      label: "Invertido",
+      label: "Compra",
       color: isDark() ? "lime" : "SpringGreen",
       fillcolor: isDark() ? "#0F5733" : "lightgreen",
     },
     {
       data: withdrawalData,
-      label: "Retirado",
+      label: "Venta",
       color: isDark() ? "red" : "salmon",
       fillcolor: isDark() ? "#570F36" : "pink",
     },
@@ -105,14 +107,16 @@ function Movements() {
 
   return (
     <PaperP elevation={0} className="panel movements">
-      <TitlePanel>
-        Historial de movimientos
-        <Info
-          placement="right"
-          className="ml-20px"
-          title="Consulta y analiza tus transacciones pasadas para llevar un registro claro de depósitos, retiros y otros movimientos."
-        />
-      </TitlePanel>
+      <TitleInfo
+        variant="h5"
+        title="Historial de movimientos"
+        information={
+          <>
+            Consulta y analiza tus transacciones pasadas para llevar un registro
+            claro de depósitos, retiros y otros movimientos.
+          </>
+        }
+      />
       <br />
 
       <div className="d-inline-flex jc-space-between flex-wrap gap-10px padb-40px">
@@ -132,7 +136,7 @@ function Movements() {
         onFocus={(e) => {
           setIsActive(true);
           setTimeout(() => (document.body.style.overflow = "auto"));
-          centrar_verticalmente_scroll(e.target);
+          // centrar_verticalmente_scroll(e.target);
           setTimeout(() => (document.body.style.overflow = "hidden"));
         }}
         onBlur={() => {

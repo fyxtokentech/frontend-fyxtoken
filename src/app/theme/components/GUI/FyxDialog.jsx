@@ -38,7 +38,7 @@ function FyxDialog(props) {
           <DialogContentText>{text}</DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose} autoFocus>
+          <Button variant="contained" onClick={handleClose}>
             {button_text ?? "Entendido"}
           </Button>
         </DialogActions>

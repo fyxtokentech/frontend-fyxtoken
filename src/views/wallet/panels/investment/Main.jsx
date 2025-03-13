@@ -7,34 +7,44 @@ import { InvestmentActions } from "./InvestmentActions";
 import ActiveInvestments from "./ActiveInvestments";
 import { Typography } from "@mui/material";
 
+let _time_ = "";
+let _pack_type_ = "";
+let _recharge_type_ = "";
+
 function Investment() {
-  // State management for investment actions
-  const [packtype, setPacktype] = useState("");
-  const [time, setTime] = useState("");
-  const [rechargeType, setRechargeType] = useState("PSE");
+  const [packtype, setPacktype] = useState(_pack_type_);
+  _pack_type_ = packtype;
+
+  const [rechargeType, setRechargeType] = useState(_recharge_type_);
+  _recharge_type_ = rechargeType;
+
+  const [time, setTime] = useState(_time_);
+  _time_ = time;
 
   return (
     <PaperP elevation={0}>
       <TitlePanel>Paquetes de inversión</TitlePanel>
-      
+
       {/* Investment description */}
       <InvestmentHeader />
       <br />
-      
+
       {/* Investment actions section */}
       <InvestmentActions
-        time={time}
-        setTime={setTime}
-        rechargeType={rechargeType}
-        setRechargeType={setRechargeType}
-        packtype={packtype}
-        setPacktype={setPacktype}
+        {...{
+          time,
+          setTime,
+          rechargeType,
+          setRechargeType,
+          packtype,
+          setPacktype,
+        }}
       />
-      
+
       <br />
       <hr />
       <br />
-      
+
       {/* Active investments section */}
       <ActiveInvestments />
     </PaperP>

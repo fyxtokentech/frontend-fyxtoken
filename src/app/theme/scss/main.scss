@@ -33,7 +33,7 @@
 
 @each $abrev,
   $value
-    in (c: center, center: center, s: start, e: end, end: end, start: start)
+    in (c: center, center: center, s: start, e: end, end: end, start: start, stretch: stretch)
 {
   .ai-#{$abrev} {
     align-items: $value;

@@ -8,4 +8,12 @@ function TitlePanel({ children }) {
   );
 }
 
-export { TitlePanel };
+const custom_styles = {
+  controlInput: {
+    background: "rgba(255,255,255,0.12)",
+    border: "1px solid rgba(255,255,255,0.15)",
+    borderRadius: "5px",
+  },
+};
+
+export { TitlePanel, custom_styles };

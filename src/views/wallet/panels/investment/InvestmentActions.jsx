@@ -1,15 +1,24 @@
-import React from "react";
+import React, { useState } from "react";
 
 import fluidCSS from "fluid-css-lng";
 
 import { PaperP } from "@components/containers";
+import { BoxForm } from "@components/repetitives";
 import {
   generate_inputs,
   generate_selects,
   Info,
 } from "@components/repetitives";
 
-import { Button, Typography } from "@mui/material";
+import { isDark } from "@theme/theme-manager";
+
+import {
+  Box,
+  Button,
+  CircularProgress,
+  Tooltip,
+  Typography,
+} from "@mui/material";
 import PriceCheckIcon from "@mui/icons-material/PriceCheck";
 import MonetizationOnIcon from "@mui/icons-material/MonetizationOn";
 
@@ -37,6 +46,10 @@ function InvestmentActionInvest({ packtype, setPacktype, time, setTime }) {
   return (
     <InvestmentAction
       w={`${inv - hol}%`}
+      clean={() => {
+        setTime("");
+        setPacktype("");
+      }}
       title={
         <>
           Inversión
@@ -53,15 +66,17 @@ function InvestmentActionInvest({ packtype, setPacktype, time, setTime }) {
           />
         </>
       }
-      button_action={
-        <Button variant="contained" startIcon={<MonetizationOnIcon />}>
-          Hacer inversión
-        </Button>
-      }
+      button_action={{
+        tooltip_title: "Click para confirmar",
+        startIcon: <MonetizationOnIcon />,
+        text: "Hacer inversión",
+      }}
     >
       {generate_inputs([
         {
           placeholder: "Ingresa el monto a invertir",
+          required: true,
+          name: "investment_amount",
           label: "Monto inversión",
           type: "number",
           id: "money-to-invest",
@@ -69,18 +84,18 @@ function InvestmentActionInvest({ packtype, setPacktype, time, setTime }) {
       ])}
       {generate_selects([
         {
-          label: "Paquete",
-          name: "paquete",
           value: packtype,
           setter: setPacktype,
+          name: "investment_package",
+          label: "Paquete",
           opns: ["Pro", "Premium"],
+          required: true,
         },
         {
-          label: "Tiempo",
-          name: "tiempo",
+          model: "tiempo",
           value: time,
           setter: setTime,
-          opns: ["5 minutos", "10 minutos", "7 días", "15 días"],
+          required: true,
         },
       ])}
     </InvestmentAction>
@@ -91,6 +106,9 @@ function InvestmentActionRecharge({ rechargeType, setRechargeType }) {
   return (
     <InvestmentAction
       w={`${rec - hol}%`}
+      clean={() => {
+        setRechargeType("");
+      }}
       title={
         <>
           Recarga
@@ -107,11 +125,11 @@ function InvestmentActionRecharge({ rechargeType, setRechargeType }) {
           />
         </>
       }
-      button_action={
-        <Button variant="contained" startIcon={<PriceCheckIcon />}>
-          Hacer Recarga{" "}
-        </Button>
-      }
+      button_action={{
+        tooltip_title: "Click para confirmar",
+        startIcon: <PriceCheckIcon />,
+        text: "Hacer Recarga",
+      }}
     >
       {generate_selects([
         {
@@ -119,6 +137,7 @@ function InvestmentActionRecharge({ rechargeType, setRechargeType }) {
           name: "recharge",
           value: rechargeType,
           setter: setRechargeType,
+          required: true,
           opns: ["PSE", "Nequi (ejemplo)"],
         },
       ])}
@@ -127,6 +146,7 @@ function InvestmentActionRecharge({ rechargeType, setRechargeType }) {
           placeholder: "Ingresa el monto a recargar",
           label: "Monto recarga",
           id: "money-to-recharge",
+          required: true,
           type: "number",
         },
       ])}
@@ -134,7 +154,16 @@ function InvestmentActionRecharge({ rechargeType, setRechargeType }) {
   );
 }
 
-function InvestmentAction({ title, children, button_action, w }) {
+function InvestmentAction({
+  title,
+  children,
+  clean,
+  button_action,
+  onSubmit,
+  w,
+}) {
+  const [process_transaction, setProcessTransaction] = useState(false);
+
   return (
     <PaperP
       className={fluidCSS()
@@ -145,9 +174,61 @@ function InvestmentAction({ title, children, button_action, w }) {
     >
       <Typography variant="h6">{title}</Typography>
       <br />
-      <div className="d-flex flex-wrap gap-20px">{children}</div>
-      <br />
-      {button_action}
+      <BoxForm
+        component="form"
+        style={{
+          pointerEvents: process_transaction ? "none" : "auto",
+        }}
+        onSubmit={async (e, data, notify, form_reset) => {
+          console.log("procesar data:", data, "invocado por:", e.target);
+
+          setProcessTransaction(true);
+
+          notify({
+            severity: "info",
+            message: "Espera mientras se procesa tu solicitud",
+            icon: (
+              <CircularProgress
+                size="16px"
+                color={isDark() ? "verde_cielo" : "white"}
+              />
+            ),
+          });
+
+          // Espera 5 segundos
+          await new Promise((resolve) => setTimeout(resolve, 5000));
+
+          clean();
+          form_reset();
+
+          setProcessTransaction(false);
+          return {
+            severity: "success",
+            message: "Listo",
+          };
+        }}
+      >
+        <div
+          className="d-flex flex-wrap gap-20px"
+          style={{
+            pointerEvents: process_transaction ? "none" : "auto",
+            opacity: process_transaction ? 0.6 : 1,
+          }}
+        >
+          {children}
+        </div>
+        <br />
+        <Tooltip title={button_action.tooltip_title}>
+          <Button
+            type="submit"
+            variant="contained"
+            startIcon={button_action.startIcon}
+            disabled={process_transaction}
+          >
+            {button_action.text}
+          </Button>
+        </Tooltip>
+      </BoxForm>
     </PaperP>
   );
 }

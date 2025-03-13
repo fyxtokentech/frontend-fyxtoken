@@ -210,6 +210,27 @@ function create_bgdynamic() {
             x: "calc(20dvw + 50px)",
             y: "calc(40dvh + 50px)",
           }),
+          ring({
+            color: color_anillo,
+            agujero: radio_agujero,
+            radio: radio_anillo,
+            x: "10%",
+            y: "60%",
+          }),
+          ring({
+            color: color_anillo,
+            agujero: radio_agujero,
+            radio: radio_anillo,
+            x: "100%",
+            y: "100%",
+          }),
+          ring({
+            color: color_anillo,
+            agujero: radio_agujero,
+            radio: radio_anillo,
+            x: "70%",
+            y: "80%",
+          }),
           radio({
             colores: [`rgba(20, 0, 70, 1)`, "transparent"],
             radio: "max(70dvw, 600px)",
