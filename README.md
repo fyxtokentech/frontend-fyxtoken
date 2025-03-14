@@ -8,8 +8,8 @@
 
 <div align="center">
   
-[![React](https://img.shields.io/badge/React-18-blue?logo=react)](https://reactjs.org/)
 [![License: Proprietary](https://img.shields.io/badge/License-Proprietary-red.svg)](#)
+[![React](https://img.shields.io/badge/React-18-blue?logo=react)](https://reactjs.org/)
 [![Node](https://img.shields.io/badge/Node-%3E%3D14-success?logo=node.js)](https://nodejs.org/)
 
 </div>
