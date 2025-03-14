@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import { Typography } from "@mui/material";
 import { Info } from "@components/repetitives";
 import InvestmentTable from "./InvestmentTable";
@@ -21,7 +21,9 @@ function ActiveInvestments() {
         />
       </Typography>
       <br />
-      <InvestmentTable />
+      <div style={{ width: "100%", minHeight: "100px" }}>
+        <InvestmentTable />
+      </div>
     </>
   );
 }

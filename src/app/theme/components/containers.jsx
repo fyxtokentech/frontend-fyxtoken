@@ -7,7 +7,7 @@ export {
 }
 
 function DivM(props) {
-  const { m_min = 15, m_max = 30 } = props;
+  const { m_min = 10, m_max = 30 } = props;
   return (
     <div
       {...props}
@@ -15,7 +15,7 @@ function DivM(props) {
         .lerpX(400, 1000, {
           margin: [m_min, m_max],
         })
-        .end(`DivM tw-balance ${props.className??""}`)}
+        .end(`DivM m-30px tw-balance ${props.className??""}`)}
     />
   );
 }
@@ -29,7 +29,7 @@ function PaperP(props) {
         .lerpX(400, 1000, {
           Padding: [p_min, p_max],
         })
-        .end(`PaperP tw-balance ${props.className??""}`)}
+        .end(`PaperP pad-20px tw-balance ${props.className??""}`)}
     />
   );
 }

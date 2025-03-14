@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import { useLocation } from "react-router-dom";
 
 import DriverParams from "@routes/DriverParams";
 import fluidCSS from "fluid-css-lng";
@@ -19,11 +20,20 @@ const wbrk = 950;
 export default Wallet;
 
 function Wallet() {
+  const location = useLocation();
   const driverParams = DriverParams();
 
+  if (!driverParams.get("action-id")) {
+    driverParams.set("action-id", "investment", { reload: true });
+  }
+
   const [actionSelected, setActionSelected] = useState(
-    driverParams.get("action-id") ?? ""
+    driverParams.get("action-id") ?? "investment"
   );
+
+  useEffect(() => {
+    setActionSelected(driverParams.get("action-id") ?? "investment");
+  }, [location]);
 
   const refcontainer = useRef();
 
@@ -72,7 +82,7 @@ function Wallet() {
                   width: "100%",
                   minHeight: "clamp(390px, 50vh, 90vw)",
                   margin: "0 auto",
-                  zIndex: zIndex.MinOverMouseFx
+                  zIndex: zIndex.MinOverMouseFx,
                 }}
               />
             </>
@@ -195,7 +205,7 @@ function Wallet() {
                       behavior: "smooth",
                     });
                   }
-                  driverParams.set("action-id", action_id, true);
+                  driverParams.set("action-id", action_id);
                   setActionSelected(action_id);
                 }}
                 disabled={actionSelected == action_id}

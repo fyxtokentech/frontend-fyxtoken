@@ -4,20 +4,28 @@ function useSearchParams() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Retorna una instancia de URLSearchParams basada en la query string actual
   const getSearchParams = () => new URLSearchParams(location.search);
 
-  // Función para actualizar o agregar un parámetro en la URL
-  const set = (name, value, stayin = false) => {
+  const set = (name, value, options = {}) => {
     const searchParams = getSearchParams();
     searchParams.set(name, value);
+    const { replaceHistory = false, reload = false } = options;
+    if (reload) {
+      window.location.href = [
+        window.location.pathname,
+        searchParams.toString(),
+      ].join("?");
+      return;
+    }
     navigate(
-      { pathname: location.pathname, search: searchParams.toString() },
-      { replace: stayin }
+      {
+        pathname: location.pathname,
+        search: searchParams.toString(),
+      },
+      { replace: replaceHistory }
     );
   };
 
-  // Función para obtener el valor de un parámetro de la URL
   const get = (name) => {
     const searchParams = getSearchParams();
     return searchParams.get(name);
