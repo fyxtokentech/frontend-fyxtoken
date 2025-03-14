@@ -86,6 +86,7 @@ function theme(name, update = true) {
       color_primary: ["#9F61D8", "#1e9cde"][index_color],
       color_secondary: ["#B9A6CE", "#7B99B7"][index_color],
       color_verde_lima: "#C6E50E",
+      color_cancel: ["#FF6347", "#DC143C"][index_color],
       contrastText: color_contrast[index_color],
       uncontrastText: color_contrast[1 - index_color],
     };
@@ -150,6 +151,7 @@ function theme(name, update = true) {
     const {
       color_primary,
       color_verde_lima,
+      color_cancel,
       color_secondary,
       contrastText,
       uncontrastText,
@@ -188,6 +190,12 @@ function theme(name, update = true) {
               backgroundColor: color_verde_lima,
             },
           },
+          containedCancel: {
+            background: darkmode ? darken(color_cancel, 0.2) : null,
+            "&:hover": {
+              backgroundColor: color_cancel,
+            },
+          },
           containedPrimary: {
             color: "white",
             "&:hover": {
@@ -213,6 +221,7 @@ function theme(name, update = true) {
       color_primary,
       color_verde_lima,
       color_secondary,
+      color_cancel,
       contrastText,
       uncontrastText,
     } = colors(darkmode);
@@ -260,8 +269,12 @@ function theme(name, update = true) {
         contrastText,
       },
       success: {
-        main: "#32CD32",
-        contrastText,
+        main: "#29A529",
+        contrastText: "#FFFFFF",
+      },
+      cancel: {
+        main: color_cancel,
+        contrastText: "#FFFFFF",
       },
       white,
       black,
@@ -279,7 +292,9 @@ function theme_component() {
   };
 }
 
-const mouseFxBackall = "-1", mouseFxOverall = "8", MinOverscroll = "7";
+const mouseFxBackall = "-1",
+  mouseFxOverall = "8",
+  MinOverscroll = "7";
 
 const zIndex = {
   mouseFxBackall,

@@ -73,6 +73,11 @@
   width: fit-content;
 }
 
+.fit-content{
+  width: fit-content;
+  height: fit-content;
+}
+
 .v-hidden {
   visibility: hidden;
 }
@@ -92,6 +97,11 @@
 
 .d-inline-flex {
   display: inline-flex;
+}
+
+.d-inline-flex-col{
+  display: inline-flex;
+  flex-direction: column;
 }
 
 .d-flex-col {
@@ -254,6 +264,14 @@
 
 .fullWidth {
   width: 100% !important;
+}
+
+.halfWidth {
+  width: 50% !important;
+}
+
+.threeQuartersWidth{
+  width: 75% !important;
 }
 
 .expand {
