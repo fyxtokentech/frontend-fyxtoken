@@ -11,7 +11,6 @@
 [![React](https://img.shields.io/badge/React-18-blue?logo=react)](https://reactjs.org/)
 [![License: Proprietary](https://img.shields.io/badge/License-Proprietary-red.svg)](#)
 [![Node](https://img.shields.io/badge/Node-%3E%3D14-success?logo=node.js)](https://nodejs.org/)
-[![Dependencies](https://img.shields.io/badge/dependencies-up%20to%20date-brightgreen.svg)](https://github.com/fyxtokentech/frontend-fyxtoken)
 
 </div>
 
