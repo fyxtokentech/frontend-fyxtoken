@@ -6,7 +6,7 @@ import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 import useMediaQuery from "@mui/material/useMediaQuery";
 
-import { theme } from "@theme/theme-manager";
+import { Theme } from "@jeff-aporta/theme-manager";
 
 import { useState } from "react";
 

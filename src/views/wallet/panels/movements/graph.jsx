@@ -1,6 +1,6 @@
 import React from "react";
 import { LineChart, areaElementClasses } from "@mui/x-charts/LineChart";
-import { isDark } from "@theme/theme-manager";
+import { isDark } from "@jeff-aporta/theme-manager";
 import { ColorSwitch } from "./graph_colorswitch";
 
 const CHART_HEIGHT = 300;

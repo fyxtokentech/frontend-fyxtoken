@@ -1,21 +1,18 @@
 import React, { useState, useRef } from "react";
 import dayjs from "dayjs";
-import fluidCSS from "fluid-css-lng";
-
-import { TitlePanel } from "../comun";
+import fluidCSS from "@jeff-aporta/fluidcss";
 
 import { PaperP } from "@components/containers";
-import {
-  TitleInfo,
-} from "@components/repetitives";
+import { TitleInfo } from "@components/repetitives";
 
-import { isDark, theme } from "@theme/theme-manager";
+import { isDark, getTheme, paletteConfig } from "@jeff-aporta/theme-manager";
 import { ThemeProvider } from "@mui/material/styles";
 import { useDrag, usePinch } from "@use-gesture/react";
 
 import { ZoomControls, DateRangeControls } from "./controls";
 import { Graph, CHART_HEIGHT } from "./graph";
-import { centrar_verticalmente_scroll } from "@app/Utilities";
+
+import "./movements.css";
 
 const ZOOM_LIMITS = { MIN: 0.5, MAX: 2 };
 
@@ -106,7 +103,10 @@ function Movements() {
   };
 
   return (
-    <PaperP elevation={0} className="panel movements">
+    <PaperP
+      elevation={0}
+      className={`panel movements ${isDark() ? "dark" : "light"}`}
+    >
       <TitleInfo
         variant="h5"
         title="Historial de movimientos"
@@ -136,7 +136,6 @@ function Movements() {
         onFocus={(e) => {
           setIsActive(true);
           setTimeout(() => (document.body.style.overflow = "auto"));
-          // centrar_verticalmente_scroll(e.target);
           setTimeout(() => (document.body.style.overflow = "hidden"));
         }}
         onBlur={() => {
@@ -157,44 +156,38 @@ function Movements() {
         className="p-relative padl-20px padh-20px container-graph"
         style={{
           height: `${CHART_HEIGHT + 40}px`,
-          background: `rgba(0, 0, 0, ${isDark() ? "0.2" : "0"})`,
-          scrollbarColor: isDark()
-            ? "rgba(255,255,255,0.3) transparent"
-            : "rgba(0,0,0,0.3) transparent",
         }}
       >
-        <ThemeProvider theme={theme("dark", false)}>
-          {series.map((s, i) => (
-            <Graph
-              xdata={xData}
-              i={i}
-              key={i}
-              zoomlevel={zoomlevel}
-              series={series.map((s, j) => {
-                if (i != j) {
-                  return {
-                    ...s,
-                    area: true,
-                  };
-                }
-                if (j == series.length - 1) {
-                  return s;
-                }
+        {series.map((s, i) => (
+          <Graph
+            xdata={xData}
+            i={i}
+            key={i}
+            zoomlevel={zoomlevel}
+            series={series.map((s, j) => {
+              if (i != j) {
                 return {
                   ...s,
-                  color: "transparent",
+                  area: true,
                 };
-              })}
-              height={300}
-              className="p-absolute"
-              style={{
-                mixBlendMode: isDark() ? "lighten" : "normal",
-                transformOrigin: "right center",
-                margin: "auto",
-              }}
-            />
-          ))}
-        </ThemeProvider>
+              }
+              if (j == series.length - 1) {
+                return s;
+              }
+              return {
+                ...s,
+                color: "transparent",
+              };
+            })}
+            height={300}
+            className="p-absolute"
+            style={{
+              mixBlendMode: isDark() ? "lighten" : "normal",
+              transformOrigin: "right center",
+              margin: "auto",
+            }}
+          />
+        ))}
       </div>
     </PaperP>
   );

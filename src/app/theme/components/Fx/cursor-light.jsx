@@ -1,8 +1,9 @@
-import EventDriver from "@app/EventDriver.jsx";
+import EventDriver from "@app/events-driver";
 
-import { isDark } from "@theme/theme-manager";
 import { Component } from "react";
-import { zIndex } from "../../theme-manager";
+import { isDark } from "@jeff-aporta/theme-manager";
+
+import { zIndex } from "@theme/constants";
 
 class CursorLight extends Component {
   static ready = false;

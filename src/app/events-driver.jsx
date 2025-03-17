@@ -103,14 +103,17 @@ class EventDriver {
     return this;
   }
 
-  addIn(namesEvent, { fn, index }) {
+  addIn(namesEvent, { fn, index, component }) {
     if (typeof namesEvent == "string") {
       namesEvent = [namesEvent];
+    }
+    if (!component) {
+      component = window;
     }
     namesEvent.forEach((nameEvent) => {
       if (this[`${nameEvent}_listeners`] === undefined) {
         this[`${nameEvent}_listeners`] = [];
-        window.addEventListener(nameEvent, (event) => {
+        component.addEventListener(nameEvent, (event) => {
           this[`${nameEvent}_listeners`].forEach((listener) => {
             listener.trigger(event);
           });

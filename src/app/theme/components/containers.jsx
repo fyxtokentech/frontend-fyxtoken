@@ -1,5 +1,5 @@
 import { Paper } from "@mui/material";
-import fluidCSS from "fluid-css-lng";
+import fluidCSS from "@jeff-aporta/fluidcss";
 
 export {
     DivM,

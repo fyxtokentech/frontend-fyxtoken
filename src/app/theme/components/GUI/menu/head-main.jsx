@@ -3,10 +3,10 @@ import "./head-main.css";
 import { Button, Link, Paper, Typography, Tooltip } from "@mui/material";
 
 import { _img } from "../../repetitives";
-import fluidCSS from "fluid-css-lng";
-import { ThemeSwitch } from "@components/GUI/switch.jsx";
+import fluidCSS from "@jeff-aporta/fluidcss";
+import { ThemeSwitch } from "@identity/basic/switch.jsx";
 
-import { theme, isDark } from "@theme/theme-manager";
+import { isDark } from "@jeff-aporta/theme-manager";
 
 const hideIcon = 500;
 const wbrk = 600;

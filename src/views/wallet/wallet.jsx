@@ -2,17 +2,19 @@ import React, { useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 
 import DriverParams from "@routes/DriverParams";
-import fluidCSS from "fluid-css-lng";
+import fluidCSS from "@jeff-aporta/fluidcss";
 
 import { ThemeSwitcher } from "@components/templates";
 import { DivM, PaperP } from "@components/containers";
-import FyxCarrusel from "@components/GUI/FyxCarrusel";
+import FyxCarrusel from "@components/GUI/slick-carrousel";
 import { Button, ButtonGroup, Paper, Tooltip, Typography } from "@mui/material";
 import NewspaperIcon from "@mui/icons-material/Newspaper";
 
-import { isDark, zIndex } from "@theme/theme-manager";
+import { isDark } from "@jeff-aporta/theme-manager";
 
-import { Investment, Withdrawal, Movements } from "./panels/Main";
+import { zIndex } from "@theme/constants";
+
+import { Investment, Withdrawal, Movements } from "./panels/panels";
 import "./wallet.css";
 
 const wbrk = 950;
@@ -38,7 +40,7 @@ function Wallet() {
   const refcontainer = useRef();
 
   return (
-    <ThemeSwitcher h_init="40px" h_fin="300px">
+    <ThemeSwitcher h_init="1px" h_fin="300px">
       <DivM>
         <Title />
         <br />

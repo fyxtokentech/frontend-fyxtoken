@@ -10,42 +10,28 @@ body {
   overflow-y: scroll;
 }
 
-:root {
-  --verde-cielo_: #1e9cde; /* Alias de --verde-cielo */
-  --verde-cielo-h: 201deg;
-  --verde-cielo-s: 76%;
-  --verde-cielo-l: 49%;
-  --verde-cielo: hsl(
-    var(--verde-cielo-h),
-    var(--verde-cielo-s),
-    var(--verde-cielo-l)
-  );
+.verde-lima {
+  color: var(--verde-lima);
+}
 
-  --verde-lima_: #c6e50e; /* Alias de --verde-lima */
-  --verde-lima-h: 69;
-  --verde-lima-s: 88%;
-  --verde-lima-l: 48%;
-  --verde-lima: hsl(
-    var(--verde-lima-h),
-    var(--verde-lima-s),
-    var(--verde-lima-l)
-  );
+.verde-cielo {
+  color: var(--verde-cielo);
+}
 
-  --azul-agua_: #21ebef; /* Alias de --azul-agua */
-  --azul-agua-h: 181deg;
-  --azul-agua-s: 87%;
-  --azul-agua-l: 53%;
-  --azul-agua: hsl(var(--azul-agua-h), var(--azul-agua-s), var(--azul-agua-l));
+.azul-agua {
+  color: var(--azul-agua);
+}
 
-  --morado_: #1b053d; /* Alias de --morado */
-  --morado-h: 264deg;
-  --morado-s: 85%;
-  --morado-l: 13%;
-  --morado: hsl(var(--morado-h), var(--morado-s), var(--morado-l));
+.morado {
+  color: var(--morado);
+}
 
-  --morado-enfasis: hsl(264, 45%, 53%); /* Alias de --morado */
+.morado-enfasis {
+  color: var(--morado-enfasis);
+}
 
-  --bg-table-dark: hsl(var(--morado-h), 40%, 20%);
+.morado-enfasis-brillante {
+  color: var(--morado-enfasis-brillante);
 }
 
 div,
@@ -55,7 +41,7 @@ h3,
 h4,
 h5,
 h6 {
-  font-family: "Poppins", sans-serif !important;
+  font-family: "Poppins", sans-serif, Arial, Helvetica !important;
   font-style: normal;
 }
 

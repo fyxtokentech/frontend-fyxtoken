@@ -3,15 +3,15 @@ import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 
-import JS2CSS from "js2css-tool";
+import JS2CSS from "@jeff-aporta/js2css";
 
-import { theme, isDark } from "@theme/theme-manager";
+import { getTheme, isDark } from "@jeff-aporta/theme-manager";
 import { _img } from "@components/repetitives";
 
 import { lighten } from "@mui/material";
 import { Box } from "@mui/material";
 
-import "./FyxCarrusel.css";
+import "./slick-carrousel.css";
 
 function CustomArrow(props) {
   const { className, style, onClick } = props;
@@ -21,7 +21,7 @@ function CustomArrow(props) {
       onClick={onClick}
       style={{
         ...style,
-        background: theme().palette.primary.main,
+        background: getTheme().palette.primary.main,
       }}
     />
   );
@@ -73,23 +73,23 @@ function FyxCarrusel(props) {
     autoplaySpeed: 3000, // Intervalo de reproducción
   };
 
-  const h = props.style.minHeight ?? "40vh";
+  const h = props.style?.minHeight ?? "40vh";
 
   const sliderStyles = {
     container: {
       margin: "0 auto",
       backgroundColor: isDark()
-        ? theme().palette.background.paper
-        : lighten(theme().palette.verde_cielo.main, 0.9),
+        ? getTheme().palette.background.paper
+        : lighten(getTheme().palette.verde_cielo.main, 0.9),
       padding: "20px 32px",
       borderRadius: "8px",
     },
     button: {
       zIndex: 1,
-      backgroundColor: theme().palette.primary.main,
+      backgroundColor: getTheme().palette.primary.main,
       border: "none",
       padding: "8px 16px",
-      color: theme().palette.getContrastText(theme().palette.primary.main),
+      color: getTheme().palette.getContrastText(getTheme().palette.primary.main),
       cursor: "pointer",
       borderRadius: "4px",
     },

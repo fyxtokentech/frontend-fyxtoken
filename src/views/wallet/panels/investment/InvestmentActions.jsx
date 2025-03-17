@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-import fluidCSS from "fluid-css-lng";
+import fluidCSS from "@jeff-aporta/fluidcss";
 
 import { PaperP } from "@components/containers";
 import { BoxForm } from "@components/repetitives";
@@ -10,7 +10,7 @@ import {
   Info,
 } from "@components/repetitives";
 
-import { isDark } from "@theme/theme-manager";
+import { isDark } from "@jeff-aporta/theme-manager";
 
 import {
   Box,
@@ -74,28 +74,22 @@ function InvestmentActionInvest({ packtype, setPacktype, time, setTime }) {
     >
       {generate_inputs([
         {
-          placeholder: "Ingresa el monto a invertir",
-          required: true,
           name: "investment_amount",
-          label: "Monto inversión",
+          label: "Monto de inversión",
           type: "number",
           id: "money-to-invest",
         },
       ])}
       {generate_selects([
         {
+          model: "plan",
           value: packtype,
           setter: setPacktype,
-          name: "investment_package",
-          label: "Paquete",
-          opns: ["Pro", "Premium"],
-          required: true,
         },
         {
-          model: "tiempo",
+          model: "interval",
           value: time,
           setter: setTime,
-          required: true,
         },
       ])}
     </InvestmentAction>
@@ -143,8 +137,7 @@ function InvestmentActionRecharge({ rechargeType, setRechargeType }) {
       ])}
       {generate_inputs([
         {
-          placeholder: "Ingresa el monto a recargar",
-          label: "Monto recarga",
+          label: "Monto a recargar",
           id: "money-to-recharge",
           required: true,
           type: "number",

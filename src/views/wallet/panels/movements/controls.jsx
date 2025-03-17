@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 
 // Ownlibs
-import fluidCSS from "fluid-css-lng";
+import fluidCSS from "@jeff-aporta/fluidcss";
 
 // FyxGUI
 import {
@@ -9,7 +9,7 @@ import {
   generate_selects,
   Info,
 } from "@components/repetitives";
-import { isDark } from "@theme/theme-manager";
+import { isDark } from "@jeff-aporta/theme-manager";
 import { custom_styles } from "../comun";
 
 // MUI
@@ -81,7 +81,7 @@ export function DateRangeControls({ dateRangeInit, dateRangeFin }) {
       <div className="padw-10px" style={custom_styles.controlInput}>
         {generate_selects([
           {
-            model: "tiempo",
+            model: "interval",
             value: time,
             setter: setTime,
           },

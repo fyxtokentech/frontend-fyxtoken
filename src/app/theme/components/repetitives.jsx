@@ -1,8 +1,16 @@
 import React, { useEffect, useRef, useState } from "react";
 
-import { isDark, theme_component } from "@theme/theme-manager";
+import JS2CSS from "@jeff-aporta/js2css";
 
-import FyxDialog from "@components/GUI/FyxDialog";
+import {
+  isDark,
+  themized,
+  controlComponents,
+  colorsTheme,
+  typographyTheme,
+} from "@jeff-aporta/theme-manager";
+
+import FyxDialog from "@components/GUI/dialog";
 
 import {
   Alert,
@@ -21,13 +29,13 @@ import {
 const PUBLIC_URL = process.env.PUBLIC_URL;
 
 function _img(props) {
-  const { src, ...rest_props } = props;
-  return <img {...{ alt: "", ...rest_props }} src={`${PUBLIC_URL}/${src}`} />;
+  const { src, ...rest } = props;
+  return <img {...{ alt: "", ...rest }} src={`${PUBLIC_URL}/${src}`} />;
 }
 
 function BoxForm(props) {
   const refForm = useRef();
-  const { onSubmit, ...rest_props } = props;
+  const { onSubmit, ...rest } = props;
   const [alert, setAlert] = useState({});
   const [open, setOpen] = React.useState(false);
 
@@ -38,7 +46,7 @@ function BoxForm(props) {
 
   return (
     <Box
-      {...rest_props}
+      {...rest}
       ref={refForm}
       component="form"
       onSubmit={async (e) => {
@@ -83,7 +91,7 @@ function TitleInfo(props) {
         title_text={
           <>
             <div style={{ opacity: 0.8, fontSize: "10px" }} className="mb-20px">
-              <Chip label={"Información"} />
+              <Chip label="Información" />
             </div>
             {title}
           </>
@@ -122,113 +130,187 @@ function Info(props) {
   );
 }
 
+function Captionize({ children, style = {}, className = "", label, ...rest }) {
+  return (
+    <div className={`d-flex-col jc-space-between ${className}`}>
+      <Typography variant="caption" color="secondary">
+        <small>{label}</small>
+      </Typography>
+      <FormControl variant="standard" style={style} {...rest}>
+        {children}
+      </FormControl>
+    </div>
+  );
+}
+
 function generate_inputs(array) {
-  const { enfasis_input } = theme_component();
+  const { Input } = themized();
 
   return array.map((structure, i) => {
-    structure.placeholder ??= "Ingrese " + structure.label;
+    structure.placeholder ??=
+      `Ingresa ${structure.fem ? "la" : "el"} ` + structure.label.toLowerCase();
     return (
-      <Input
-        {...structure}
-        key={i}
-        color={enfasis_input}
-        variant="filled"
-        style={{
-          minWidth: structure.placeholder.length * (14 * 0.55) + 30,
-        }}
-        inputProps={{ min: 1 }}
-        sx={{
-          "& input::placeholder": {
-            fontSize: "14px",
-            transform: "translateY(7px)",
-            color: isDark() ? "white" : null,
-            opacity: isDark() ? 0.74 : null,
-          },
-          [[
-            `& input[type=number]::-webkit-outer-spin-button`,
-            `& input[type=number]::-webkit-inner-spin-button`,
-          ].join(", ")]: {
-            filter: isDark()
-              ? "invert(0.9) sepia() saturate(3) hue-rotate(210deg)"
-              : "",
-          },
-        }}
-      />
+      <Captionize key={i} label={structure.label}>
+        <AnInput {...structure} />
+      </Captionize>
     );
   });
 }
 
-function generate_selects(array) {
-  const { enfasis_input } = theme_component();
+function AnInput(props) {
+  const {
+    color = colorsTheme().primary.color,
+    required = true,
+    placeholder,
+    value,
+    ...rest
+  } = props;
+  return (
+    <Input
+      {...rest}
+      placeholder={placeholder}
+      required={required}
+      variant="filled"
+      color="morado_enfasis"
+      inputProps={{ min: 1 }}
+      value={value}
+      style={{
+        minWidth: typographyTheme().widthAproxString(placeholder) + 20,
+      }}
+      sx={{
+        "& input::placeholder": {
+          fontSize: `${typographyTheme().fontSize}px`,
+          opacity: 0.7,
+        },
+        [[
+          `& input[type=number]::-webkit-outer-spin-button`,
+          `& input[type=number]::-webkit-inner-spin-button`,
+        ].join(", ")]: {
+          filter: isDark()
+            ? `invert(0.9) sepia() hue-rotate(${color.hue()}deg)`
+            : "",
+        },
+      }}
+    />
+  );
+}
 
-  return array
-    .map((a) => {
-      const { model } = a;
-      if (!model) {
-        return a;
-      }
-      switch (model) {
-        case "tiempo":
-          return {
-            ...a,
-            label: "Intervalo",
-            name: "interval_time",
-            opns: [
-              "5 minutos",
-              "10 minutos",
-              "15 minutos",
-              "1 hora",
-              "1 día",
-              "1 semana",
-              "2 semanas",
-              "1 mes",
-            ],
-          };
-        default:
-          return "Model not recognized " + model;
-      }
-    })
-    .map((structure, i) => {
-      const { label, name, style, onChange, setter, opns, ...rest_structure } =
-        structure;
-      return (
-        <FormControl
-          key={i}
-          variant="standard"
-          color={enfasis_input}
+function generate_selects(array) {
+  return array.map((structure, i) => {
+    return <AnSelect {...structure} key={i} />;
+  });
+}
+
+function AnSelect(props) {
+  const {
+    onChange,
+    setter,
+    style,
+    label,
+    value,
+    name,
+    opns,
+    required = true,
+    ...rest
+  } = newProps();
+
+  const { enfasis_input } = controlComponents();
+
+  const lblID = `lbl-${name}`,
+    selectID = `select-${name}`,
+    captionizeID = `captionize-${name}`;
+
+  JS2CSS.insertStyle({
+    id: `js2css-${captionizeID}`,
+    objJs: {
+      [`#${lblID}`]: {
+        transition: "opacity 0.4s",
+        [`&[data-shrink="true"]`]: {
+          opacity: 0,
+        },
+      },
+    },
+  });
+
+  const inputlbl = "Selecciona el " + label.toLowerCase();
+
+  return (
+    <Captionize
+      id={captionizeID}
+      label={label}
+      color={enfasis_input}
+      style={style}
+    >
+      <div className="d-flex ai-end">
+        <InputLabel id={lblID}>{value ? "" : inputlbl}</InputLabel>
+        <Select
+          {...rest}
+          required={required}
+          fullWidth
           style={{
-            minWidth: label.length * (14 * 0.55) + 80,
             ...style,
+            minWidth: typographyTheme().widthAproxString(inputlbl) + 20,
+          }}
+          name={name}
+          labelId={lblID}
+          id={selectID}
+          value={value}
+          onChange={(event) => {
+            const newvalue = event.target.value;
+            if (setter) {
+              setter(newvalue);
+            }
+            if (onChange) {
+              onChange(event, newvalue);
+            }
+          }}
+          MenuProps={{
+            disableScrollLock: true, // Evita que se bloquee el scroll
           }}
         >
-          <InputLabel id={`lbl-${name}`}>{label}</InputLabel>
-          <Select
-            {...rest_structure}
-            name={name}
-            labelId={`lbl-${name}`}
-            id={`select-${name}`}
-            onChange={(event) => {
-              const newvalue = event.target.value;
-              if (setter) {
-                setter(newvalue);
-              }
-              if (onChange) {
-                onChange(event, newvalue);
-              }
-            }}
-            MenuProps={{
-              disableScrollLock: true, // Evita que se bloquee el scroll
-            }}
-          >
-            {opns.map((o, j) => (
-              <MenuItem key={j} value={o}>
-                {o}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-      );
-    });
+          {opns.map((o, j) => (
+            <MenuItem key={j} value={o}>
+              {o}
+            </MenuItem>
+          ))}
+        </Select>
+      </div>
+    </Captionize>
+  );
+
+  function newProps() {
+    const { model, ...rest } = props;
+    if (!model) {
+      return props;
+    }
+    switch (model.toLowerCase()) {
+      case "plan":
+        return {
+          ...rest,
+          label: "Plan",
+          name: "investment_package",
+          opns: ["Básico", "Avanzado", "Pro", "Élite", "Premium"],
+        };
+      case "interval":
+        return {
+          ...rest,
+          label: "Intervalo",
+          name: "interval_time",
+          opns: [
+            "5 minutos",
+            "10 minutos",
+            "15 minutos",
+            "1 hora",
+            "1 día",
+            "1 semana",
+            "2 semanas",
+            "1 mes",
+          ],
+        };
+      default:
+        return "Model not recognized " + model;
+    }
+  }
 }
 
 export { _img, generate_inputs, generate_selects, Info, BoxForm, TitleInfo };

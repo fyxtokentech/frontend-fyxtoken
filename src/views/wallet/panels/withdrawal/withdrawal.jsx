@@ -1,15 +1,12 @@
 import { useState } from "react";
 
-import { TitlePanel } from "../comun";
-
-import { Info } from "@components/repetitives";
 import { PaperP } from "@components/containers";
 import {
   generate_inputs,
   TitleInfo,
   generate_selects,
 } from "@components/repetitives";
-import DynTable from "@components/GUI/DynTable";
+import DynTable from "@components/GUI/dynamic-table";
 
 import { Button, Tooltip, Typography } from "@mui/material";
 
@@ -36,20 +33,20 @@ function Withdrawal() {
         }
       />
       <br />
-      <Panel_IWishToWithdraw {...{ mode, setMode }} />
+      <PanelIWishToWithdraw {...{ mode, setMode }} />
       <br />
       <hr />
       <br />
-      <Panel_PendingWithdrawals />
+      <PanelPendingWithdrawals />
       <br />
       <hr />
       <br />
-      <Panel_OfWithdrawalsMade />
+      <PanelOfWithdrawalsMade />
     </PaperP>
   );
 }
 
-function Panel_OfWithdrawalsMade() {
+function PanelOfWithdrawalsMade() {
   return (
     <>
       <TitleInfo
@@ -109,7 +106,7 @@ function Panel_OfWithdrawalsMade() {
   }
 }
 
-function Panel_PendingWithdrawals() {
+function PanelPendingWithdrawals() {
   return (
     <>
       <TitleInfo
@@ -170,7 +167,7 @@ function Panel_PendingWithdrawals() {
   }
 }
 
-function Panel_IWishToWithdraw({ mode, setMode }) {
+function PanelIWishToWithdraw({ mode, setMode }) {
   return (
     <PaperP>
       <div className="padb-20px">

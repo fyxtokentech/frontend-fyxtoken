@@ -12,6 +12,10 @@
   }
 }
 
+.bright-10{
+  filter: brightness(10);
+}
+
 .dyn-filter{
   --invert: 0;
   --hue-rotate: 0;

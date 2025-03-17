@@ -1,8 +1,8 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 
-import "./DynTable.css";
+import "./dynamic-table.css";
 
-import { isDark } from "@theme/theme-manager.jsx";
+import { isDark } from "@jeff-aporta/theme-manager";
 
 import { DataGrid, useGridApiRef } from "@mui/x-data-grid";
 
