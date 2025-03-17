@@ -4,7 +4,7 @@
   "homepage": ".",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Jeff-Aporta/Fyxtoken/"
+    "url": "https://github.com/fyxtokentech/frontend-fyxtoken"
   },
   "dependencies": {
     "@emotion/react": "^11.13.3",
