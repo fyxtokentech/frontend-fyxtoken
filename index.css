@@ -1,0 +1,75 @@
+/* 
+  Fuentes y Colores corporativos proporcionado en Manual de identidad Logo Fyxtoken
+  https://drive.google.com/file/d/1bXzEgG3Q4JOxc74UFQnlbetrJ5O7RVVp/view?usp=sharing 
+*/
+
+@import url("https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
+
+body {
+  /* La barra de scroll siempre se mostrará (aunque inactiva) */
+  overflow-y: scroll;
+}
+
+.verde-lima {
+  color: var(--verde-lima);
+}
+
+.verde-cielo {
+  color: var(--verde-cielo);
+}
+
+.azul-agua {
+  color: var(--azul-agua);
+}
+
+.morado {
+  color: var(--morado);
+}
+
+.morado-enfasis {
+  color: var(--morado-enfasis);
+}
+
+.morado-enfasis-brillante {
+  color: var(--morado-enfasis-brillante);
+}
+
+div,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: "Poppins", sans-serif, Arial, Helvetica !important;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "goodtimes-rg";
+  src: url("typography/goodtimes-rg.otf") format("opentype");
+}
+
+@font-face {
+  font-family: "lemonmilk-rg";
+  src: url("typography/lemonmilk-rg.otf") format("opentype");
+}
+
+.lemonmilk-rg {
+  font-family: "lemonmilk-rg" !important;
+}
+
+.goodtimes-rg {
+  font-family: "goodtimes-rg" !important;
+}
+
+.PaperP {
+  hr {
+    opacity: 0.2;
+  }
+}
+
+hr {
+  width: 100%;
+  opacity: 0.4;
+}

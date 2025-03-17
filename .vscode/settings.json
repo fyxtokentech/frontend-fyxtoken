@@ -1,0 +1,8 @@
+{
+  "files.exclude": {
+    "**/node_modules": true,
+    "**/*.ini": true,
+    "**/*.ico": true
+  },
+  "liveServer.settings.port": 5501
+}
