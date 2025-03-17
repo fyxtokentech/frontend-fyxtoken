@@ -33,6 +33,13 @@ export default (props) => {
       const enfasis_input = ["morado_enfasis", "verde_cielo"][Number(darkmode)];
       return {
         enfasis_input,
+        href: (url) => {
+          const stayinGit = window.location.href.includes("github.io");
+          if (true) {
+            return "?view-id=" + encodeURIComponent(url);
+          }
+          return url; 
+        },
         themized: {
           Checkbox(props) {
             return (

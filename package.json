@@ -1,7 +1,11 @@
 {
-  "name": "client",
-  "version": "0.1.0",
-  "private": true,
+  "name": "frontend-fyxtoken",
+  "version": "1.0.0",
+  "homepage": ".",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Jeff-Aporta/Fyxtoken/"
+  },
   "dependencies": {
     "@emotion/react": "^11.13.3",
     "@emotion/styled": "^11.13.0",
@@ -35,7 +39,7 @@
     "build": "react-app-rewired build",
     "test": "react-app-rewired test",
     "eject": "react-scripts eject",
-    "sass": "sass --no-source-map public/scss:public/css"
+    "deploy-gh": "npm run build && gh-pages -d build"
   },
   "eslintConfig": {
     "extends": [
@@ -57,6 +61,7 @@
   },
   "devDependencies": {
     "customize-cra": "^1.0.0",
+    "gh-pages": "^6.3.0",
     "react-app-rewired": "^2.2.1"
   }
 }

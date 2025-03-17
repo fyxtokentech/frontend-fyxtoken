@@ -7,8 +7,11 @@ function useSearchParams() {
   const getSearchParams = () => new URLSearchParams(location.search);
 
   const set = (name, value, options = {}) => {
+    if(!value || !name){
+      return;
+    }
     const searchParams = getSearchParams();
-    searchParams.set(name, value);
+    searchParams.set(name, encodeURIComponent(value));
     const { replaceHistory = false, reload = false } = options;
     if (reload) {
       window.location.href = [
@@ -28,7 +31,10 @@ function useSearchParams() {
 
   const get = (name) => {
     const searchParams = getSearchParams();
-    return searchParams.get(name);
+    const value = searchParams.get(name);
+    if(value){
+      return decodeURIComponent(value);
+    }
   };
 
   return { set, get };

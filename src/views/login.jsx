@@ -2,11 +2,7 @@ import React from "react";
 
 import { ThemeSwitcher } from "@components/templates";
 import { DivM, PaperP } from "@components/containers.jsx";
-import {
-  isDark,
-  controlComponents,
-} from "@jeff-aporta/theme-manager";
-
+import { isDark, controlComponents } from "@jeff-aporta/theme-manager";
 
 import {
   Box,
@@ -77,12 +73,7 @@ function LoginForm() {
             <FormControlLabel
               color="secondary"
               className="d-flex fd-row-reverse"
-              control={
-                <themized.Checkbox
-                  id="remerber-me"
-                  defaultChecked
-                />
-              }
+              control={<themized.Checkbox id="remerber-me" defaultChecked />}
               label={<small>Recordarme</small>}
               sx={{
                 marginRight: 0,
@@ -109,7 +100,11 @@ function LoginForm() {
           </Link>
         </div>
 
-        <Button variant="contained" fullWidth href="wallet">
+        <Button
+          variant="contained"
+          fullWidth
+          href={controlComponents().href("/wallet")}
+        >
           Iniciar
         </Button>
 

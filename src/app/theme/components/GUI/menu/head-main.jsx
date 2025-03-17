@@ -6,7 +6,7 @@ import { _img } from "../../repetitives";
 import fluidCSS from "@jeff-aporta/fluidcss";
 import { ThemeSwitch } from "@identity/basic/switch.jsx";
 
-import { isDark } from "@jeff-aporta/theme-manager";
+import { isDark, controlComponents } from "@jeff-aporta/theme-manager";
 
 const hideIcon = 500;
 const wbrk = 600;
@@ -38,7 +38,7 @@ function BotonInicio() {
     <Link
       color="inherit"
       underline="none"
-      href="/"
+      href={controlComponents().href("/")}
       className="d-center bright-hover-1-5 gap-10px c-pointer"
     >
       <_img

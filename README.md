@@ -196,6 +196,27 @@ npm run build    # Construye para producción
 
 <br><br>
 
+## Github Pages
+https://fyxtokentech.github.io/frontend-fyxtoken/
+
+**Requerimiento**
+```
+npm install -g serve
+```
+### Predeploy
+```
+npm run build
+```
+**verificar antes de hacer deploy-gh**
+```
+serve -s build
+```
+Si funciona entonces se procede a ejecutar
+```
+
+```
+
+
 ## 📄 Licencia
 
 Este es un proyecto propietario. Todos los derechos reservados.
