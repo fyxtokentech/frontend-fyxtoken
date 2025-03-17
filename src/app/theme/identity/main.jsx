@@ -35,7 +35,7 @@ export default (props) => {
         enfasis_input,
         href: (url) => {
           const stayinGit = window.location.href.includes("github.io");
-          if (true) {
+          if (stayinGit) {
             return "?view-id=" + encodeURIComponent(url);
           }
           return url; 
