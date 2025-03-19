@@ -38,7 +38,7 @@ export default (props) => {
           if (stayinGit) {
             return "?view-id=" + encodeURIComponent(url);
           }
-          return url; 
+          return url;
         },
         themized: {
           Checkbox(props) {
@@ -59,7 +59,7 @@ export default (props) => {
       return general.typography();
     },
     colors(darkmode) {
-      const index_color = darkmode ? 0 : 1;
+      const index_color = +darkmode;
       const index_color2 = 1 - index_color;
       const colors_contrast = [blanco, negro];
       const color_contrast = colors_contrast[index_color];

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { PaperP } from "@components/containers";
+import { PaperP } from "@containers";
 import { TitlePanel } from "../comun";
 
 // Import modular components

@@ -1,8 +1,8 @@
 import React from "react";
 
-import { ThemeSwitcher } from "@components/templates";
-import { DivM, PaperP } from "@components/containers.jsx";
-import { isDark, controlComponents } from "@jeff-aporta/theme-manager";
+import { ThemeSwitcher } from "@templates";
+import { DivM, PaperP } from "@containers";
+import { isDark, controlComponents, href } from "@jeff-aporta/theme-manager";
 
 import {
   Box,
@@ -25,7 +25,7 @@ export default Index;
 
 function Index() {
   return (
-    <ThemeSwitcher bgtype="2" h_init="100px" h_fin="100px">
+    <ThemeSwitcher bgtype="portal" h_init="100px" h_fin="100px">
       <DivM m_max={40} className="d-center min-h-50vh">
         <LoginForm />
       </DivM>
@@ -103,7 +103,7 @@ function LoginForm() {
         <Button
           variant="contained"
           fullWidth
-          href={controlComponents().href("/wallet")}
+          href={href("/wallet")}
         >
           Iniciar
         </Button>

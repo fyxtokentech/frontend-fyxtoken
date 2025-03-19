@@ -6,12 +6,18 @@ import "slick-carousel/slick/slick-theme.css";
 import JS2CSS from "@jeff-aporta/js2css";
 
 import { getTheme, isDark } from "@jeff-aporta/theme-manager";
-import { _img } from "@components/repetitives";
+import { ImageLocal } from "@recurrent";
 
 import { lighten } from "@mui/material";
 import { Box } from "@mui/material";
 
 import "./slick-carrousel.css";
+
+//-------------------------------------
+
+export default FyxCarrusel;
+
+//------------ definitions ------------
 
 function CustomArrow(props) {
   const { className, style, onClick } = props;
@@ -102,7 +108,7 @@ function FyxCarrusel(props) {
       <Slider {...settings} style={{ minHeight: h }}>
         {Array.from({ length: 4 }, (_, i) => (
           <div key={i} inert="true" className="no-border-focus" style={{ height: h }}>
-            <_img
+            <ImageLocal
               src={`img/test/${i + 1}.jpg`}
               className="object-fit-cover"
               style={{ width: "100%", height: h }}
@@ -113,5 +119,3 @@ function FyxCarrusel(props) {
     </Box>
   );
 }
-
-export default FyxCarrusel;

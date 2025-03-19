@@ -5,7 +5,7 @@ import "@theme/scss/main.scss";
 import JS2CSS from "@jeff-aporta/js2css";
 import fluidCSS from "@jeff-aporta/fluidcss";
 
-import {} from "@theme/identity/loader";
+import {} from "@interface/loader";
 import { bgdefault, portal } from "./back-texture";
 
 import { Toaster } from "react-hot-toast";
@@ -27,6 +27,8 @@ import {
 
 const minH = "min-h-80vh";
 
+const themeSwitch_listener = [];
+
 function Notifier({ children }) {
   return (
     <Themized>
@@ -44,8 +46,6 @@ function Notifier({ children }) {
     );
   }
 }
-
-const themeSwitch_listener = [];
 
 function ThemeSwitcher({ children, bgtype = "1", h_init = "0", h_fin = "0" }) {
   const [theme_name, updateThemeName] = useState(getThemeName());
@@ -80,6 +80,7 @@ function ThemeSwitcher({ children, bgtype = "1", h_init = "0", h_fin = "0" }) {
           className={(() => {
             const fluid = fluidCSS();
             switch (bgtype) {
+              default:
               case "1":
                 bgdefault();
                 fluid.ltX(800, {
@@ -87,6 +88,7 @@ function ThemeSwitcher({ children, bgtype = "1", h_init = "0", h_fin = "0" }) {
                 });
                 break;
               case "2":
+              case "portal":
                 fluid
                   .btwX(550, 800, {
                     opacity: ["0", "0.5", "1"],

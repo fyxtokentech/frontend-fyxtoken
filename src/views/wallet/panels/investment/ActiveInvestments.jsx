@@ -1,6 +1,6 @@
 import React from "react";
 import { Typography } from "@mui/material";
-import { Info } from "@components/repetitives";
+import { Info } from "@recurrent";
 import InvestmentTable from "./InvestmentTable";
 
 function ActiveInvestments() {

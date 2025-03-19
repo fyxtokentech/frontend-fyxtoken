@@ -4,8 +4,8 @@ import { useLocation } from "react-router-dom";
 import DriverParams from "@routes/DriverParams";
 import fluidCSS from "@jeff-aporta/fluidcss";
 
-import { ThemeSwitcher } from "@components/templates";
-import { DivM, PaperP } from "@components/containers";
+import { ThemeSwitcher } from "@templates";
+import { DivM, PaperP } from "@containers";
 import FyxCarrusel from "@components/GUI/slick-carrousel";
 import { Button, ButtonGroup, Paper, Tooltip, Typography } from "@mui/material";
 import NewspaperIcon from "@mui/icons-material/Newspaper";

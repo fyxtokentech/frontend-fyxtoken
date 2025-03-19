@@ -2,13 +2,13 @@ import React, { useState } from "react";
 
 import fluidCSS from "@jeff-aporta/fluidcss";
 
-import { PaperP } from "@components/containers";
-import { BoxForm } from "@components/repetitives";
+import { PaperP } from "@containers";
+import { BoxForm } from "@recurrent";
 import {
   generate_inputs,
   generate_selects,
   Info,
-} from "@components/repetitives";
+} from "@recurrent";
 
 import { isDark } from "@jeff-aporta/theme-manager";
 

@@ -1,11 +1,11 @@
 import { useState } from "react";
 
-import { PaperP } from "@components/containers";
+import { PaperP } from "@containers";
 import {
   generate_inputs,
   TitleInfo,
   generate_selects,
-} from "@components/repetitives";
+} from "@recurrent";
 import DynTable from "@components/GUI/dynamic-table";
 
 import { Button, Tooltip, Typography } from "@mui/material";

@@ -9,9 +9,9 @@
   "dependencies": {
     "@emotion/react": "^11.13.3",
     "@emotion/styled": "^11.13.0",
-    "@jeff-aporta/fluidcss": "^1.1.14",
+    "@jeff-aporta/fluidcss": "^1.1.28",
     "@jeff-aporta/js2css": "^1.0.6",
-    "@jeff-aporta/theme-manager": "^1.0.11",
+    "@jeff-aporta/theme-manager": "^1.0.13",
     "@mui/icons-material": "^5.15.11",
     "@mui/material": "^5.15.11",
     "@mui/x-charts": "^7.27.1",

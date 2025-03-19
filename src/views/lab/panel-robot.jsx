@@ -3,8 +3,8 @@ import React, { useRef, useState } from "react";
 import DriverParams from "@routes/DriverParams";
 import fluidCSS from "@jeff-aporta/fluidcss";
 
-import { ThemeSwitcher } from "@components/templates";
-import { DivM, PaperP } from "@components/containers";
+import { ThemeSwitcher } from "@templates";
+import { DivM, PaperP } from "@containers";
 import DynTable from "@components/GUI/dynamic-table";
 
 import { Button, IconButton, Paper, Tooltip, Typography } from "@mui/material";
@@ -14,7 +14,7 @@ import {
   generate_inputs,
   generate_selects,
   Info,
-} from "@components/repetitives";
+} from "@recurrent";
 
 let _currency_ = "";
 

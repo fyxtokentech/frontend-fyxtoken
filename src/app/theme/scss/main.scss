@@ -2,7 +2,7 @@
 @import "fx.scss";
 @import "colors.scss";
 
-@each $value in (flex, none, block, inline-block) {
+@each $value in (flex, inline-flex, none, block, inline-block) {
   .d-#{$value} {
     display: $value;
   }
@@ -22,6 +22,7 @@
       sb: space-between,
       space-between: space-between,
       se: space-evenly,
+      space-evenly: space-evenly,
       end: end,
       start: start
     )

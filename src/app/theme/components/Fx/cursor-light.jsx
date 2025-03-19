@@ -4,6 +4,7 @@ import { Component } from "react";
 import { isDark } from "@jeff-aporta/theme-manager";
 
 import { zIndex } from "@theme/constants";
+import fluidCSS from "@jeff-aporta/fluidcss";
 
 class CursorLight extends Component {
   static ready = false;
@@ -46,7 +47,17 @@ class CursorLight extends Component {
     function CursorEffectLight({ children, colors, ...styles }) {
       return (
         <div
-          className={`cursor-effect no-select minside-win p-fixed transform-centerized`}
+          className={fluidCSS()
+            .withTouchscreen({
+              display: "none",
+            })
+            .end([
+              "transform-centerized",
+              "cursor-effect",
+              "minside-win",
+              "no-select",
+              "p-fixed",
+            ])}
           data-opacity={styles.opacity ?? 1}
           style={{
             transition: "opacity 0.2s",

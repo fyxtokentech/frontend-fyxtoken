@@ -24,6 +24,10 @@
   text-wrap: balance;
 }
 
+.ta-center{
+  text-align: center;
+}
+
 .no-border-focus {
   &:focus {
     border: none !important;
@@ -181,7 +185,7 @@
   z-index: 2;
 }
 
-.of-hidden {
+.overflow-hidden {
   overflow: hidden;
 }
 

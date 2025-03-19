@@ -12,11 +12,10 @@ const {
 } = global;
 
 export default {
-  colors(props) {
-    const { isDark } = props;
+  colors({ isDark }) {
     return {
       cancel: {
-        color: [Color("tomato"), Color("crimson")][Number(isDark())],
+        color: Color(["tomato", "crimson"][+isDark()]),
         text: blanco,
       },
       success: {
@@ -25,8 +24,7 @@ export default {
       },
     };
   },
-  components(props) {
-    const { childs, darkmode, colors } = props;
+  components({ childs, darkmode, colors }) {
     const primary = colors.primary.color;
     return {
       AccordionDetails: {
@@ -46,7 +44,7 @@ export default {
       },
       Tooltip: {
         tooltip: {
-          backgroundColor: darkmode ? primary.darken(0.6).hex() : primary.hex(),
+          backgroundColor: [primary.darken(0.6), primary][+darkmode].hex(),
         },
       },
     };

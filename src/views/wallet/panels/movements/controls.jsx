@@ -8,7 +8,7 @@ import {
   generate_inputs,
   generate_selects,
   Info,
-} from "@components/repetitives";
+} from "@recurrent";
 import { isDark } from "@jeff-aporta/theme-manager";
 import { custom_styles } from "../comun";
 

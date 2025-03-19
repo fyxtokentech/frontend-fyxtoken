@@ -10,7 +10,7 @@ import {
   typographyTheme,
 } from "@jeff-aporta/theme-manager";
 
-import FyxDialog from "@components/GUI/dialog";
+import FyxDialog from "@components/GUI/dialog"; 
 
 import {
   Alert,
@@ -28,7 +28,7 @@ import {
 
 const PUBLIC_URL = process.env.PUBLIC_URL;
 
-function _img(props) {
+function ImageLocal(props) {
   const { src, ...rest } = props;
   return <img {...{ alt: "", ...rest }} src={`${PUBLIC_URL}/${src}`} />;
 }
@@ -313,4 +313,4 @@ function AnSelect(props) {
   }
 }
 
-export { _img, generate_inputs, generate_selects, Info, BoxForm, TitleInfo };
+export { ImageLocal, generate_inputs, generate_selects, Info, BoxForm, TitleInfo };

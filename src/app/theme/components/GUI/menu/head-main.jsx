@@ -2,20 +2,23 @@ import "./head-main.css";
 
 import { Button, Link, Paper, Typography, Tooltip } from "@mui/material";
 
-import { _img } from "../../repetitives";
+import { ImageLocal } from "@recurrent";
 import fluidCSS from "@jeff-aporta/fluidcss";
-import { ThemeSwitch } from "@identity/basic/switch.jsx";
+import { ThemeSwitch } from "@interface/basic/switch.jsx";
 
-import { isDark, controlComponents } from "@jeff-aporta/theme-manager";
+import { isDark, controlComponents, href } from "@jeff-aporta/theme-manager";
 
 const hideIcon = 500;
 const wbrk = 600;
 
-export default Menu;
+//-------------------------------------
 
-function Menu({ updateTheme = () => 0 }) {
+export default HeadMain;
+
+//------------ definitions ------------
+
+function HeadMain({ updateTheme = () => 0 }) {
   const { pathname } = window.location;
-  const inLogin = pathname.toLowerCase().endsWith("/auth/login");
 
   return (
     <div
@@ -38,19 +41,19 @@ function BotonInicio() {
     <Link
       color="inherit"
       underline="none"
-      href={controlComponents().href("/")}
+      href={href("/")}
       className="d-center bright-hover-1-5 gap-10px c-pointer"
     >
-      <_img
-        src="img/Logo_Fyxtoken_Icono_Color_Principal.svg"
+      <ImageLocal
+        src="img/logo-fyxtoken-main-color.svg"
         width="40"
         className={fluidCSS()
           .lerpX([450, 1000], { width: [30, 40] })
           .end()}
         style={{
-          filter: isDark()
-            ? ""
-            : "brightness(0.3) hue-rotate(60deg) saturate(1.5)",
+          filter: ["brightness(0.3) hue-rotate(60deg) saturate(1.5)", ""][
+            +isDark()
+          ],
         }}
       />
       <div

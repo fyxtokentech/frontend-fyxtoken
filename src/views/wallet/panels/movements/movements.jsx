@@ -2,8 +2,8 @@ import React, { useState, useRef } from "react";
 import dayjs from "dayjs";
 import fluidCSS from "@jeff-aporta/fluidcss";
 
-import { PaperP } from "@components/containers";
-import { TitleInfo } from "@components/repetitives";
+import { PaperP } from "@containers";
+import { TitleInfo } from "@recurrent";
 
 import { isDark, getTheme, paletteConfig } from "@jeff-aporta/theme-manager";
 import { ThemeProvider } from "@mui/material/styles";
