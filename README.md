@@ -1,7 +1,7 @@
 # FyxToken Frontend
 
 <div align="center">
-  <img src="./public/img/Logo_Fyxtoken_Icono_Color_Principal.svg"  alt="FyxToken Logo" width="128" height="120">
+  <img src="./public/img/logo-fyxtoken-main-color.svg" alt="FyxToken Logo" width="128" height="120">
 </div>
 
 <br>
