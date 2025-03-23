@@ -49,8 +49,8 @@ const retorno = {
       description: "Tipo de operación realizada.",
       renderInfo: {
         label: {
-          BUY: { text: "Compra", icon: <SellIcon />, color: "secondary" },
-          SELL: { text: "Venta", icon: <BuyIcon />, color: "ok" },
+          BUY: { text: "Compra", icon: <BuyIcon />, color: "secondary" },
+          SELL: { text: "Venta", icon: <SellIcon />, color: "ok" },
         },
       },
     },

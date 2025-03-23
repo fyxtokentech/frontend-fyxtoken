@@ -8,7 +8,7 @@ Ajustar a varios temas de color
 
 ----
 
-Agregar inputs de fecha y hora para filtrar operaciones
+✅ Agregar inputs de fecha y hora para filtrar operaciones
 
 ✅ agregar columna name_coin
 
