@@ -11,12 +11,14 @@
     "@emotion/styled": "^11.13.0",
     "@jeff-aporta/fluidcss": "^1.1.28",
     "@jeff-aporta/js2css": "^1.0.6",
-    "@jeff-aporta/theme-manager": "^1.0.13",
+    "@jeff-aporta/theme-manager": "^1.0.17",
     "@mui/icons-material": "^5.15.11",
     "@mui/material": "^5.15.11",
     "@mui/x-charts": "^7.27.1",
     "@mui/x-data-grid": "^7.27.3",
     "@mui/x-date-pickers": "^7.27.3",
+    "@react-three/drei": "^10.0.4",
+    "@react-three/fiber": "^9.1.0",
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
@@ -32,14 +34,17 @@
     "react-scripts": "5.0.1",
     "react-slick": "^0.30.3",
     "sass": "^1.80.4",
-    "slick-carousel": "^1.8.1"
+    "slick-carousel": "^1.8.1",
+    "three": "^0.174.0"
   },
   "scripts": {
     "start": "react-app-rewired start",
     "build": "react-app-rewired build",
-    "test": "react-app-rewired test",
+    "test": "npm run build && serve -s build",
     "eject": "react-scripts eject",
-    "deploy-gh": "npm run build && gh-pages -d build"
+    "deploy": "cross-env PUBLIC_URL=/ npm run test",
+    "deploy-gh": "cross-env PUBLIC_URL=. npm run build && npm run publish-gh",
+    "publish-gh": "gh-pages -d build"
   },
   "eslintConfig": {
     "extends": [
@@ -60,6 +65,7 @@
     ]
   },
   "devDependencies": {
+    "cross-env": "^7.0.3",
     "customize-cra": "^1.0.0",
     "gh-pages": "^6.3.0",
     "react-app-rewired": "^2.2.1"

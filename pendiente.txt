@@ -1,7 +1,21 @@
 vista de pricing
 
-ajustar el input para paquete
-
 Ajustar a varios temas de color
 
-Cambiar Paquetes de inversión a Plataforma
+✅ ajustar el input para paquete a plan
+
+✅ Cambiar Paquetes de inversión a Plataforma
+
+----
+
+Agregar inputs de fecha y hora para filtrar operaciones
+
+✅ agregar columna name_coin
+
+✅ formato de moneda
+        si moneda < 1, 8 decimales
+        si moneda > 1, 2 decimales
+
+✅ Informacion de operación en la transaccion, id, moneda, fecha inicio, fecha fin
+
+✅ Agregar Open y Close en operación

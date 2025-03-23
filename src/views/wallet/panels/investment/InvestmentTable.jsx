@@ -1,5 +1,5 @@
 import React from 'react';
-import DynTable from "@components/GUI/dynamic-table";
+import {DynTable} from "@components/GUI/dynamic-table";
 
 const INVESTMENT_PACKAGES = [
   {

@@ -9,6 +9,9 @@ import useMediaQuery from "@mui/material/useMediaQuery";
 import { Theme } from "@jeff-aporta/theme-manager";
 
 import { useState } from "react";
+import { Tooltip } from "@mui/material";
+
+export default FyxDialog;
 
 function FyxDialog(props) {
   const [open, setOpen] = useState(false);
@@ -21,7 +24,7 @@ function FyxDialog(props) {
     setOpen(false);
   };
 
-  const { children, text, title_text, button_text } = props;
+  const { children, text, title_text, button_text, placement } = props;
 
   return (
     <>
@@ -34,10 +37,8 @@ function FyxDialog(props) {
       </div>
       <Dialog open={open} onClose={handleClose}>
         <DialogTitle>{title_text}</DialogTitle>
-        <DialogContent>
-          <DialogContentText>{text}</DialogContentText>
-        </DialogContent>
-        <DialogActions>
+        <DialogContent>{text}</DialogContent>
+        <DialogActions className="mt-20px">
           <Button variant="contained" onClick={handleClose}>
             {button_text ?? "Entendido"}
           </Button>
@@ -46,5 +47,3 @@ function FyxDialog(props) {
     </>
   );
 }
-
-export default FyxDialog;

@@ -5,9 +5,10 @@ module.exports = override(
   addWebpackAlias({
     "@root": path.resolve(__dirname),
     "@app": path.resolve(__dirname, "src/app"),
+    "@views": path.resolve(__dirname, "src/views"),
     "@routes": path.resolve(__dirname, "src/app/routes"),
     "@theme": path.resolve(__dirname, "src/app/theme"),
-    "@interface": path.resolve(__dirname, "src/app/theme/interface"),
+    "@identity": path.resolve(__dirname, "src/app/theme/identity"),
     "@components": path.resolve(__dirname, "src/app/theme/components"),
     "@containers": path.resolve(__dirname, "src/app/theme/components/containers.jsx"),
     "@templates": path.resolve(__dirname, "src/app/theme/components/templates/templates.jsx"),

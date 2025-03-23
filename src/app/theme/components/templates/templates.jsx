@@ -5,16 +5,17 @@ import "@theme/scss/main.scss";
 import JS2CSS from "@jeff-aporta/js2css";
 import fluidCSS from "@jeff-aporta/fluidcss";
 
-import {} from "@interface/loader";
+import {} from "@identity/loader";
 import { bgdefault, portal } from "./back-texture";
+// import Mesh from "./mesh"
 
 import { Toaster } from "react-hot-toast";
 import { CssBaseline } from "@mui/material";
 import { ThemeProvider } from "@mui/material/styles";
 
 import CursorLight from "@components/Fx/cursor-light";
-import Footer from "@components/GUI/menu/footer";
-import MenuTopUnlog from "@components/GUI/menu/head-main";
+import Footer from "@components/templates/menu/footer";
+import MenuTopUnlog from "@components/templates/menu/head-main";
 
 import {
   setThemeName,
@@ -68,7 +69,7 @@ function ThemeSwitcher({ children, bgtype = "1", h_init = "0", h_fin = "0" }) {
   return (
     <Notifier>
       <FirstPart />
-      <Footer />
+      <Footer updateThemeName={updateThemeName} getThemeName={getThemeName} />
       <CursorLight />
     </Notifier>
   );

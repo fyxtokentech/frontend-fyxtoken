@@ -2,9 +2,9 @@ import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 
 import "./dynamic-table.css";
 
-import { isDark } from "@jeff-aporta/theme-manager";
-
 import { DataGrid, useGridApiRef } from "@mui/x-data-grid";
+
+import { getThemeName, isDark } from "@jeff-aporta/theme-manager";
 
 const localeTextES = {
   // Textos generales
@@ -83,9 +83,16 @@ const localeTextES = {
   columnHeaderSortIconLabel: "Ordenar",
 };
 
-function DynTable({ rows, columns, paginationModel }) {
+function DynTable({ rows, columns, paginationModel, ...rest }) {
   const apiRef = useGridApiRef();
   const refDataGrid = useRef();
+
+  columns = columns.filter((c) => c["inTable"] != false);
+
+  rows = rows.map((row, i) => ({
+    id: i,
+    ...row,
+  }));
 
   paginationModel ??= { page: 0, pageSize: 20 };
 
@@ -100,6 +107,10 @@ function DynTable({ rows, columns, paginationModel }) {
         if (e.innerHTML.toLowerCase().trim() == "rows per page:") {
           e.innerHTML = "Filas por página:";
         }
+        const regex_pagination = /\d+–\d+ of \d+/;
+        if (regex_pagination.test(e.innerHTML)) {
+          e.innerHTML = e.innerHTML.replace("of", "de");
+        }
       });
     }
   }, [apiRef, refDataGrid]);
@@ -109,9 +120,32 @@ function DynTable({ rows, columns, paginationModel }) {
   const rsz = () => {
     let width = (0.96 * window.innerWidth - 120) / columns.length;
     columns = columns.map((c) => {
-      c.minWidth = c.headerName.length * (14 * 0.55) + 90;
+      const { headerName, fit_content, renderString, renderInfo } = c;
+      let { iconized, label } = renderInfo || {};
+      const render = Boolean(iconized ?? label);
+      c.minWidth = str2width(headerName) + 50;
       c.width = Math.max(width, c.minWidth);
+      if ((fit_content && renderString) || render) {
+        c.width = Math.max(c.width, ...rows.map((r) => Row2width(r)));
+      }
       return c;
+
+      function Row2width(row) {
+        const value = row[c.field];
+        let texto = value;
+        if (!renderString) {
+          if (iconized) {
+            ({ texto } = iconized({ value, row }, value));
+          }
+        } else {
+          ({ texto } = renderString({ value, row }));
+        }
+        return str2width(texto) + 20 + 50 * render;
+      }
+
+      function str2width(str) {
+        return str.length * (14 * 0.55);
+      }
     });
   };
 
@@ -135,6 +169,9 @@ function DynTable({ rows, columns, paginationModel }) {
       }}
     >
       <DataGrid
+        density="standard"
+        disableRowSelectionOnClick
+        {...rest}
         ref={refDataGrid}
         apiRef={apiRef}
         rows={rows}
@@ -145,15 +182,17 @@ function DynTable({ rows, columns, paginationModel }) {
           },
         }}
         pageSizeOptions={[20, 50, 100]}
-        density="compact"
         sx={{
           "& .MuiDataGrid-row:hover": {
-            backgroundColor: `hsla(
-            var(--verde-cielo-h),
-            var(--verde-cielo-s),
-            var(--verde-cielo-l),
-            0.2
-          )`,
+            backgroundColor:
+              getThemeName() == "main"
+                ? `hsla(
+              var(--morado-enfasis-h),
+              var(--morado-enfasis-s),
+              var(--morado-enfasis-l),
+              0.2
+            )`
+                : null,
           },
           "& .MuiDataGrid-cell": {
             border: "none", // Remueve bordes de cada celda
@@ -174,4 +213,17 @@ function DynTable({ rows, columns, paginationModel }) {
   );
 }
 
-export default DynTable;
+function genAllColumns(content) {
+  return Object.keys(
+    content.reduce((acc, value) => {
+      Object.assign(acc, value);
+      return acc;
+    }, {})
+  ).map((k) => ({
+    field: k,
+    headerName: k,
+    description: "",
+  }));
+}
+
+export { DynTable, genAllColumns };

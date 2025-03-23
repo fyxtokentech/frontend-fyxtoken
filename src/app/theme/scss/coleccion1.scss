@@ -128,8 +128,9 @@
   transform-origin: 100% center;
 }
 
-.ws-nowrap {
+.nowrap {
   white-space: nowrap;
+  flex-wrap: nowrap;
 }
 
 .tt-uppercase {
@@ -146,7 +147,7 @@
 
 .circle {
   aspect-ratio: 1;
-  border-radius: 50%;
+  border-radius: 50% !important;
 }
 
 .fw-bolder {

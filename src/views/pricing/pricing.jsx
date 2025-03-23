@@ -15,7 +15,7 @@ import UnpublishedIcon from "@mui/icons-material/Unpublished";
 
 import "./pricing.css";
 
-import template from "./template.js";
+import template from "./mock.js";
 
 const { plans, features } = template;
 
@@ -102,18 +102,9 @@ function Pricing() {
               {txt}
             </Typography>
           </DivM>
-          <Paper
-            id="container-pricing"
-            style={{
-              border: "2px solid var(--border-table)",
-              overflow: "auto",
-              textAlign: "center",
-              position: "relative",
-              maxHeight: "80vh",
-            }}
-          >
+          <Paper id="container-pricing">
             <table id="pricing" cellSpacing={0} cellPadding={0}>
-              <thead className="fix-top">
+              <thead>
                 <tr className="bordear">
                   <td className="no-pad p-relative">
                     <PaperP className="expand"></PaperP>
@@ -122,8 +113,10 @@ function Pricing() {
                     <Plan plan={p} key={i} />
                   ))}
                 </tr>
-                <tr className="bordear">
-                  <td colSpan={6} className="no-pad">
+              </thead>
+              <tbody>
+                <tr>
+                  <td colSpan={6} className="fix-left no-pad bordear no-right no-bordear" style={{padding:"1px"}}>
                     <PaperP>
                       <Typography
                         color="morado_enfasis"
@@ -133,8 +126,9 @@ function Pricing() {
                       </Typography>
                     </PaperP>
                   </td>
+                  <td style={{visibility:"hidden"}}></td>
                 </tr>
-              </thead>
+              </tbody>
               <tbody>
                 {features.map(({ id: id_benefit, name, description }, i) => (
                   <BenefitList
@@ -158,13 +152,18 @@ function Pricing() {
   function BenefitList({ children, title, cols, ...rest }) {
     return (
       <tr className="bordear" {...rest}>
-        <td className="fix-left no-pad">
+        <td className="fix-left bg-primary no-pad">
           <PaperP>
-            <Typography variant="h6">{title}</Typography>
-            <Typography variant="caption">{children}</Typography>
+            <Typography variant="subtitle1" className="nowrap">
+              {title}
+            </Typography>
+            <Typography variant="caption" color="secondary">
+              {children}
+            </Typography>
           </PaperP>
         </td>
         <Checksbenefit cols={cols} />
+        <td style={{visibility:"hidden"}}></td>
       </tr>
     );
   }

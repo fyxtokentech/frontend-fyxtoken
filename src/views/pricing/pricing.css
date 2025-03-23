@@ -1,11 +1,17 @@
 #container-pricing {
   position: relative;
+  border: 1px solid var(--border-table);
+  overflow: auto;
+  text-align: center;
+  position: relative;
 
   .fix-left {
     position: sticky;
     left: 0;
     z-index: 0;
-    background: var(--border-table);
+    &.bg-primary{
+      background: var(--border-table);
+    }
   }
 
   .fix-top {
@@ -29,10 +35,18 @@
     font-size: 90%;
     padding-bottom: 15px;
   }
+  .bordear{
+    border: 3px solid var(--border-table); 
+    &.no-right{
+      border-right-color: transparent;
+    }
+  }
 
   & tr {
     td {
-      border: 2px solid var(--border-table);
+      &:not(:is(.no-bordear)){
+        border: 1.5px solid var(--border-table);
+      }
       &:not(:is(.no-pad)) {
         padding: 20px;
       }

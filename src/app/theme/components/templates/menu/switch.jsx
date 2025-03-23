@@ -2,7 +2,7 @@ import * as React from 'react';
 import { styled } from '@mui/material/styles';
 import Switch from '@mui/material/Switch';
 
-const ThemeSwitch = styled(Switch)(({ theme, background="#8796A5", bgnight="#003892" }) => ({
+const LuminanceThemeSwitch = styled(Switch)(({ theme, background="#8796A5", bgnight="#003892" }) => ({
   width: 62,
   height: 34,
   padding: 7,
@@ -199,7 +199,7 @@ const AntSwitch = styled(Switch)(({ theme }) => ({
 }));
 
 export {
-    ThemeSwitch,
+    LuminanceThemeSwitch,
     Android12Switch,
     IOSSwitch,
     AntSwitch,

@@ -213,7 +213,7 @@ serve -s build
 ```
 Si funciona entonces se procede a ejecutar
 ```
-
+npm run deploy-gh
 ```
 
 

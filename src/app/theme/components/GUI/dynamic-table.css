@@ -4,4 +4,8 @@
   * {
     border-color: transparent !important;
   }
+
+  .MuiDataGrid-selectedRowCount {
+    display: none;
+  }
 }

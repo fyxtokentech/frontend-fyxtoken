@@ -103,7 +103,10 @@ function LoginForm() {
         <Button
           variant="contained"
           fullWidth
-          href={href("/wallet")}
+          href={href({
+            view: "/wallet",
+            params: { "action-id": "investment" },
+          })}
         >
           Iniciar
         </Button>

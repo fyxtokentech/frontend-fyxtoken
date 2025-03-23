@@ -9,7 +9,7 @@ const {
   morado,
   morado_enfasis,
   morado_brillante,
-} = global;
+} = global.identity.colors;
 
 export default ({ customizeScrollbar, color_register }) => {
   Object.assign(color_register.load_scrollsbar, {

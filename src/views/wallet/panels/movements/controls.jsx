@@ -22,7 +22,7 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 const ZOOM_LIMITS = { MIN: 0.5, MAX: 2 };
 const ZOOM_STEP = 0.2;
 
-let _time_ = "";
+let _datetime_ = "";
 
 export function ZoomControls({ setZoomLevel, setPosition }) {
   const color = isDark() ? "white" : "black";
@@ -74,16 +74,15 @@ export function ZoomControls({ setZoomLevel, setPosition }) {
 }
 
 export function DateRangeControls({ dateRangeInit, dateRangeFin }) {
-  const [time, setTime] = useState(_time_);
-  _time_ = time;
+  const [datetime, setDateTime] = useState("");
   return (
     <div className="d-flex ai-stretch flex-wrap gap-10px">
       <div className="padw-10px" style={custom_styles.controlInput}>
         {generate_selects([
           {
             model: "interval",
-            value: time,
-            setter: setTime,
+            value: datetime,
+            setter: setDateTime,
           },
         ])}
       </div>

@@ -1,10 +1,20 @@
 import "./head-main.css";
 
-import { Button, Link, Paper, Typography, Tooltip } from "@mui/material";
+import {
+  Button,
+  Link,
+  Paper,
+  Typography,
+  Tooltip,
+  MenuItem,
+  FormControl,
+  Select,
+  InputLabel,
+} from "@mui/material";
 
 import { ImageLocal } from "@recurrent";
 import fluidCSS from "@jeff-aporta/fluidcss";
-import { ThemeSwitch } from "@interface/basic/switch.jsx";
+import { LuminanceThemeSwitch } from "@components/templates/menu/switch";
 
 import { isDark, controlComponents, href } from "@jeff-aporta/theme-manager";
 
@@ -27,12 +37,14 @@ function HeadMain({ updateTheme = () => 0 }) {
         .end("menu-top d-space-between-center")}
     >
       <BotonInicio />
-      <Tooltip title={"Cambiar a tema " + (isDark() ? "claro" : "oscuro")}>
-        <ThemeSwitch
-          checked={isDark()}
-          onChange={() => updateTheme(isDark() ? "light" : "dark")}
-        />
-      </Tooltip>
+      <div className="d-center">
+        <Tooltip title={"Cambiar a tema " + (isDark() ? "claro" : "oscuro")}>
+          <LuminanceThemeSwitch
+            checked={isDark()}
+            onChange={() => updateTheme(isDark() ? "light" : "dark")}
+          />
+        </Tooltip>
+      </div>
     </div>
   );
 }
