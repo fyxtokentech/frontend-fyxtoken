@@ -7,7 +7,6 @@ import fluidCSS from "@jeff-aporta/fluidcss";
 
 import {} from "@identity/loader";
 import { bgdefault, portal } from "./back-texture";
-// import Mesh from "./mesh"
 
 import { Toaster } from "react-hot-toast";
 import { CssBaseline } from "@mui/material";
@@ -25,6 +24,8 @@ import {
   setThemeLuminance,
   isDark,
 } from "@jeff-aporta/theme-manager";
+
+import {ShaderScene} from "@components/templates/mesh"
 
 const minH = "min-h-80vh";
 

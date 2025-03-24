@@ -8,7 +8,10 @@ import DriverParams from "./DriverParams";
 function loadRoot(componentsContext) {
   const rutas = componentsContext.keys().reduce((map, filePath) => {
     const componentName = filePath.replace("./", "").replace(/\.jsx$/, "");
-    map[componentName] = componentsContext(filePath).default;
+    console.log(filePath);
+    if (!filePath.startsWith("~")) {
+      map[componentName] = componentsContext(filePath).default;
+    }
     return map;
   }, {});
 
