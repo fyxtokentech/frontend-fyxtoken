@@ -16,7 +16,12 @@ import { ImageLocal } from "@recurrent";
 import fluidCSS from "@jeff-aporta/fluidcss";
 import { LuminanceThemeSwitch } from "@components/templates/menu/switch";
 
-import { isDark, controlComponents, href } from "@jeff-aporta/theme-manager";
+import {
+  isDark,
+  controlComponents,
+  getThemeName,
+  href,
+} from "@jeff-aporta/theme-manager";
 
 const hideIcon = 500;
 const wbrk = 600;
@@ -49,6 +54,7 @@ function HeadMain({ updateTheme = () => 0 }) {
   );
 }
 function BotonInicio() {
+  const themeName = getThemeName();
   return (
     <Link
       color="inherit"
@@ -57,7 +63,7 @@ function BotonInicio() {
       className="d-center bright-hover-1-5 gap-10px c-pointer"
     >
       <ImageLocal
-        src="img/logo-fyxtoken-main-color.svg"
+        src={`img/logo-fyxtoken-${getThemeName()}-color.svg`}
         width="40"
         className={fluidCSS()
           .lerpX([450, 1000], { width: [30, 40] })
@@ -73,26 +79,49 @@ function BotonInicio() {
           .lerpX([400, 1000], { fontSize: [15, 20] })
           .end("d-flex-col")}
       >
-        <span
+        <Typography
           style={{
             fontFamily: "goodtimes-rg",
-            color: isDark() ? "#C6E50E" : "var(--morado)",
           }}
+          color={(()=> {
+            if (isDark()) {
+              if (themeName == "main") {
+                return "#C6E50E";
+              }
+              return "white";
+            }else{
+              if (themeName == "main") {
+                return "var(--morado)";
+              }
+              return "black";
+            }
+          })()}
           className={fluidCSS()
             .lerpX([400, 1000], { fontSize: [15, 20] })
             .end()}
         >
           Fyxtoken
-        </span>
-        <span
+        </Typography>
+        <Typography
           style={{
             fontFamily: "lemonmilk-rg",
-            fontSize: "40%",
-            color: isDark() ? "#21EBEF" : "var(--morado)",
+            fontSize: "45%",
           }}
+          color={(()=> {
+            if (isDark()) {
+              if (themeName == "main") {
+                return "#21EBEF";
+              }
+            }else{
+              if (themeName == "main") {
+                return "var(--morado)";
+              }
+            }
+            return themeName;
+          })()}
         >
           Futuro financiero
-        </span>
+        </Typography>
       </div>
     </Link>
   );

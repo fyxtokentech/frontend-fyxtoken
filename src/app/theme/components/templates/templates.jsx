@@ -103,9 +103,7 @@ function ThemeSwitcher({ children, urlShader, bgtype = "1", h_init = "0", h_fin 
                 break;
             }
             return fluid.end(
-              `expand back-texture dyn-filter z-index-1 ${
-                isDark() ? "" : "invert hue-rotate180deg"
-              }`
+              `expand back-texture dyn-filter z-index-1`
             );
           })()}
         />

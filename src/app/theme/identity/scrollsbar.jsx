@@ -9,6 +9,9 @@ const {
   morado,
   morado_enfasis,
   morado_brillante,
+  verde_cielo_brillante,
+  verde_lima_brillante,
+  springgreen,
 } = global.identity.colors;
 
 export default ({ customizeScrollbar, color_register }) => {
@@ -18,6 +21,12 @@ export default ({ customizeScrollbar, color_register }) => {
     },
     morado(darkmode) {
       monochrome({ color: morado_enfasis, darkmode });
+    },
+    verde_lima(darkmode) {
+      monochrome({ color: verde_lima, darkmode });
+    },
+    springgreen(darkmode) {
+      monochrome({ color: springgreen, darkmode });
     },
   });
 

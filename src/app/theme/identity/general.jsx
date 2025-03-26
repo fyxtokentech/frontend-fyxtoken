@@ -2,13 +2,17 @@ import Color from "color";
 
 const {
   verde_cielo,
+  skygreen,
   verde_lima,
+  lemongreen,
   azul_agua,
   blanco,
   negro,
   morado,
   morado_enfasis,
   morado_brillante,
+  springgreen,
+  verde_lima_brillante,
 } = global.identity.colors;
 
 class General {
@@ -95,6 +99,26 @@ class General {
         color: verde_lima,
         text: color_contrast,
       },
+      lemongreen: {
+        color: lemongreen,
+        text: color_contrast,
+      },
+      verde_cielo: {
+        color: verde_cielo,
+        text: color_contrast,
+      },
+      skygreen: {
+        color: skygreen,
+        text: color_contrast,
+      },
+      springgreen: {
+        color: springgreen,
+        text: color_contrast,
+      },
+      verde_lima_brillante: {
+        color: verde_lima_brillante,
+        text: color_contrast,
+      },
       morado: {
         color: morado,
         text: color_contrast,
@@ -113,6 +137,10 @@ class General {
       },
       morado_brillante: {
         color: morado_brillante,
+        text: color_contrast,
+      },
+      springgreen: {
+        color: springgreen,
         text: color_contrast,
       },
     };

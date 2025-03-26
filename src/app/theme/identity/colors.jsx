@@ -23,6 +23,7 @@ const identity = (() => {
     verde_lima: Color("#c6e50e"),
     azul_agua: Color("#21ebef"),
     morado: Color("#1b053d"),
+    springgreen: Color("rgb(0, 255, 127)"),
     blanco: Color("white"),
     negro: Color("black"),
   };
@@ -30,6 +31,10 @@ const identity = (() => {
   const secundaries = {
     morado_enfasis: Color(`hsl(${primaries.morado.hue()}, 45%, 53%)`),
     morado_brillante: Color(`hsl(${primaries.morado.hue()}, 100%, 80%)`),
+    verde_cielo_brillante: Color(`hsl(${primaries.verde_cielo.hue()}, 100%, 80%)`),
+    verde_lima_brillante: Color(`hsl(${primaries.verde_lima.hue()}, 100%, 80%)`),
+    lemongreen: primaries.verde_lima,
+    skygreen: primaries.verde_cielo,
   };
 
   const all = {
@@ -57,6 +62,11 @@ const {
 
   blanco,
   negro,
+  verde_cielo_brillante,
+  verde_lima_brillante,
+  lemongreen,
+  skygreen,
+  springgreen,
 } = global.identity.colors;
 
 function genHSL(name, color){
@@ -73,11 +83,16 @@ JS2CSS.insertStyle({
   objJs: {
     ":root": {
       ...genHSL("verde-cielo", verde_cielo),
+      ...genHSL("skygreen", verde_cielo),
       ...genHSL("verde-lima", verde_lima),
+      ...genHSL("lemongreen", verde_lima),
       ...genHSL("azul-agua", azul_agua),
       ...genHSL("morado", morado),
       ...genHSL("morado-enfasis", morado_enfasis),
       ...genHSL("morado-brillante", morado_brillante),
+      ...genHSL("verde-cielo-brillante", verde_cielo_brillante),
+      ...genHSL("verde-lima-brillante", verde_lima_brillante),
+      ...genHSL("springgreen", springgreen),
 
       "--bg-table-dark": "rgba(0, 0, 0, 0.2)",
     },

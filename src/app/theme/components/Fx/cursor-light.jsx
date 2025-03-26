@@ -1,10 +1,12 @@
 import EventDriver from "@app/events-driver";
 
 import { Component } from "react";
-import { isDark } from "@jeff-aporta/theme-manager";
+import { isDark, getThemeName } from "@jeff-aporta/theme-manager";
 
 import { zIndex } from "@theme/constants";
 import fluidCSS from "@jeff-aporta/fluidcss";
+
+import { discriminadorColor } from "@components/Fx/tools";
 
 class CursorLight extends Component {
   static ready = false;
@@ -23,6 +25,7 @@ class CursorLight extends Component {
   }
 
   render() {
+    const themeName = getThemeName();
     if (!isDark()) {
       return <></>;
     }
@@ -31,15 +34,17 @@ class CursorLight extends Component {
       <>
         <CursorEffectLight
           colors={["blue", "transparent 70%"]}
-          mixBlendMode="soft-light"
-          opacity="0.3"
+          mixBlendMode={themeName == "main" ? "soft-light" : "screen"}
+          opacity={themeName == "main" ? "0.3" : "0.2"}
           zIndex={zIndex.mouseFxBackall}
+          {...discriminadorColor()}
         />
         <CursorEffectLight
           colors={["magenta", "transparent 50%"]}
           mixBlendMode="screen"
           opacity="0.07"
           zIndex={zIndex.mouseFxOverall}
+          {...discriminadorColor()}
         />
       </>
     );

@@ -1,8 +1,36 @@
 import JS2CSS from "@jeff-aporta/js2css";
+import { getThemeName, isDark } from "@jeff-aporta/theme-manager";
+
+import { discriminadorColor } from "@components/Fx/tools";
+
+const {
+  verde_cielo,
+  verde_lima,
+  azul_agua,
+  blanco,
+  negro,
+  morado,
+  morado_enfasis,
+  morado_brillante,
+  verde_cielo_brillante,
+} = global.identity.colors;
+
+function lightEffect(){
+  if(isDark()){
+    return {};
+  }
+  return {
+    "*": "invert() hue-rotate(180deg)"
+  };
+}
 
 function bgdefault() {
-  const color_anillo = "rgba(255,255,255, 0.03)";
-  const color_circulo = "rgba(186, 85, 211, 0.1)";
+  const themeName = getThemeName();
+  let color_anillo, color_circulo;
+
+  color_anillo = "rgba(255,255,255, 0.03)";
+  color_circulo = "rgba(186, 85, 211, 0.1)";
+
   let radio_anillo = 35;
   let radio_agujero = (() => {
     const grosor = 7;
@@ -14,6 +42,8 @@ function bgdefault() {
     id: "back-texture",
     objJs: {
       ".back-texture": {
+        ...discriminadorColor(lightEffect()),
+        
         background: [
           linear({
             angle: "to bottom",
@@ -25,7 +55,7 @@ function bgdefault() {
             ],
           }),
           radio({
-            colores: [`rgba(255,255,255,0.1)`, "transparent"],
+            colores: [color_anillo, "transparent"],
             radio: "max(70dvw, 600px)",
             x: "30%",
             y: "30px",
@@ -88,6 +118,7 @@ function portal() {
     id: "back-texture",
     objJs: {
       ".back-texture": {
+        ...discriminadorColor(lightEffect()),
         background: [
           ...[
             { a: 30, r: 30, ri: 4 },
@@ -191,7 +222,4 @@ function ring({ color, radio, agujero, x, y }) {
  )`;
 }
 
-export {
-  bgdefault,
-  portal,
-};
+export { bgdefault, portal };
