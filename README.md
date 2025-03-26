@@ -1,7 +1,7 @@
 # FyxToken Frontend
 
 <div align="center">
-  <img src="./public/img/logo-fyxtoken-main-color.svg" alt="FyxToken Logo" width="128" height="120">
+  <img src="https://fyxtokentech.github.io/frontend-fyxtoken/img/logo-fyxtoken-main-color.svg" alt="FyxToken Logo" width="128" height="120">
 </div>
 
 <br>
@@ -9,7 +9,7 @@
 <div align="center">
   
 [![License: Proprietary](https://img.shields.io/badge/License-Proprietary-red.svg)](#)
-[![React](https://img.shields.io/badge/React-18-blue?logo=react)](https://reactjs.org/)
+[![React](https://img.shields.io/badge/React-19-blue?logo=react)](https://reactjs.org/)
 [![Node](https://img.shields.io/badge/Node-%3E%3D14-success?logo=node.js)](https://nodejs.org/)
 
 </div>
@@ -17,21 +17,21 @@
 Proyecto frontend desarrollado en React para gestión y visualización de tokens digitales. Ofrece una interfaz intuitiva y potente para el seguimiento, análisis y gestión de activos digitales en tiempo real.
 
 ## 📋 Tabla de Contenidos
-- [✨ Caracteristicas](#-caracteristicas)
-- [🛠️ Tecnologias](#-tecnologias)
-- [💻 Instalacion](#-instalacion)
+- [✨ Características](#-caracteristicas)
+- [🛠️ Tecnologías](#-tecnologias)
+- [💻 Instalación](#-instalacion)
 - [📁 Estructura del Proyecto](#-estructura-del-proyecto)
 - [📱 Vistas](#-vistas)
-- [🔧 Desarrollo](#-desarrollo)
 - [📄 Licencia](#-licencia)
+- [🛠️ Comandos Útiles](#-comandos-útiles)
 
-## ✨ Caracteristicas
+## ✨ Características
 
 ### Core
 - 📊 Sistema de trading en tiempo real
 - 🎨 Tema claro/oscuro personalizable
 - 📱 Diseño 100% responsivo
-- 🔒 Autenticación segura (Pendiente)
+- 🔒 Autenticación segura
 - 📈 Gráficos interactivos
 
 ### Técnicas
@@ -41,187 +41,100 @@ Proyecto frontend desarrollado en React para gestión y visualización de tokens
 - 🔄 Estado global eficiente
 - 📦 Componentes reutilizables
 
-## 🛠️ Tecnologias
+## 🛠️ Tecnologías
 
 ### Frontend Core
-- React 18
+- React 19
 - Material-UI
 - SASS para estilos avanzados
 
 ### Desarrollo
-- react-app-rewired para configuración
-- Webpack personalizado
-- ESLint para calidad de código
+- Node.js >= 14
+- react-app-rewired para personalización de la configuración de Webpack
 
-### Herramientas
-- Node.js ≥ 14
-- npm para gestión de paquetes
-- Git para control de versiones
+## 💻 Instalación
 
-## 💻 Instalacion
-
-1. **Clonar el repositorio**
-
-2. **Instalar dependencias**
-```bash
-npm install
-```
-
-3. **Iniciar en modo desarrollo**
-```bash
-npm start
-# La aplicación estará disponible en http://localhost:3000
-```
-
-4. **Construir para producción**
-```bash
-npm run build
-```
+1. Clonar el repositorio:
+   ```bash
+   git clone https://github.com/fyxtokentech/fyxtoken-frontend.git
+   ```
+2. Instalar las dependencias:
+   ```bash
+   npm install
+   ```
+3. Iniciar el servidor de desarrollo:
+   ```bash
+   npm start
+   ```
 
 ## 📁 Estructura del Proyecto
 
 ```
-frontend-fyxtoken/
-├── public/
-│   ├── img/               # Imágenes estáticas
-│   └── index.html         # HTML principal
-├── src/
-│   ├── app/              # Lógica principal
-│   ├── views/            # Componentes de vista
-│   │   ├── wallet/      # Vistas del wallet
-│   │   └── index.jsx    # Vista principal
-│   ├── components/      # Componentes reutilizables
-│   └── styles/         # Estilos SASS
-└── config-overrides.js  # Configuración de webpack
+@root
+│
+├── @app
+│   ├── @routes
+│   ├── @theme
+│   │   ├── @identity
+│   │   └── @components
+│   │       ├── @containers
+│   │       ├── @templates
+│   │       └── @recurrent
+│   └── ...
+├── @views
+└── ...
 ```
+
+- `@root`: Directorio raíz del proyecto.
+- `@app`: Contiene la lógica principal de la aplicación y la configuración.
+- `@views`: Componentes de vista para diferentes secciones de la aplicación.
+- `@routes`: Definiciones de rutas para la navegación dentro de la aplicación.
+- `@theme`: Configuración de temas y estilos.
+- `@identity`: Gestión de identidades visuales y paletas de colores.
+- `@components`: Componentes reutilizables para la interfaz de usuario.
+- `@containers`: Componentes de contenedores específicos.
+- `@templates`: Plantillas de diseño para la estructura de la aplicación.
+- `@recurrent`: Componentes recurrentes utilizados en múltiples partes de la aplicación.
 
 ## 📱 Vistas
 
-### Inicio de Sesión
-<div align="center">
-  <img src="./public/img/captures/login-light.png" alt="Login Light Theme" width="45%">
-  <img src="./public/img/captures/login.png" alt="Login Dark Theme" width="45%">
-</div>
-
-Sistema de autenticación con:
-- Interfaz minimalista y moderna
-- Alternancia entre tema claro/oscuro
-- Validación de campos en tiempo real
-- Recuperación de contraseña (Pendiente)
-- Registro de usuarios (Pendiente)
-
-### Wallet
-<div align="center">
-  <img src="./public/img/captures/wallet-light.png" alt="Wallet Light Theme" width="45%">
-  <img src="./public/img/captures/wallet.png" alt="Wallet Dark Theme" width="45%">
-</div>
-
-Centro de control unificado:
-- Vista general del portafolio
-- Resumen de activos
-- Acciones rápidas
-- Tema adaptativo
-
-### Inversiones
-<div align="center">
-  <img src="./public/img/captures/investment-light.png" alt="Investment Light Theme" width="45%">
-  <img src="./public/img/captures/investment.png" alt="Investment Dark Theme" width="45%">
-</div>
-
-Panel de inversiones con:
-- Visualización de oportunidades
-- Estadísticas detalladas
-- Gráficos interactivos
-- Información en tiempo real
-
-### Movimientos
-<div align="center">
-  <img src="./public/img/captures/movements-light.png" alt="Movements Light Theme" width="45%">
-  <img src="./public/img/captures/movements.png" alt="Movements Dark Theme" width="45%">
-</div>
-
-Seguimiento de transacciones:
-- Historial detallado
-- Filtros avanzados
-- Estado de operaciones
-- Exportación de datos
-
-### Retiros
-<div align="center">
-  <img src="./public/img/captures/withdrawal-light.png" alt="Withdrawal Light Theme" width="45%">
-  <img src="./public/img/captures/withdrawal.png" alt="Withdrawal Dark Theme" width="45%">
-</div>
-
-Gestión de retiros:
-- Proceso simplificado
-- Múltiples métodos
-- Confirmación segura
-- Historial de retiros
-
-### Noticias
-<div align="center">
-  <img src="./public/img/captures/news-light.png" alt="News Light Theme" width="45%">
-  <img src="./public/img/captures/news.png" alt="News Dark Theme" width="45%">
-</div>
-
-Centro de información:
-- Noticias relevantes
-- Actualizaciones del mercado
-- Análisis y tendencias
-- Filtros por categoría
-
-## 🔧 Desarrollo
-
-### Configuración de Webpack
-Utilizamos `react-app-rewired` para personalizar la configuración sin ejectar:
-```javascript
-// config-overrides.js
-module.exports = function override(config, env) {
-  // Personalizaciones aquí
-  return config;
-}
-```
-
-### Comandos Útiles
-```bash
-# Desarrollo
-npm start         # Inicia servidor de desarrollo
-npm run build    # Construye para producción
-```
-
-<br><br>
-
----
----
-
-<br><br>
-
-## Github Pages
-https://fyxtokentech.github.io/frontend-fyxtoken/
-
-**Requerimiento**
-```
-npm install -g serve
-```
-### Predeploy
-```
-npm run build
-```
-**verificar antes de hacer deploy-gh**
-```
-serve -s build
-```
-Si funciona entonces se procede a ejecutar
-```
-npm run deploy-gh
-```
-
+- **Dashboard**: Visualización de datos y gráficos. [Ver más](https://fyxtokentech.github.io/frontend-fyxtoken/?view-id=%2F)
+- **Wallet**: Gestión de activos digitales. [Ver más](https://fyxtokentech.github.io/frontend-fyxtoken/?view-id=%2Fwallet&action-id=investment)
+- **Panel Robot**: Automatización de inversiones. [Ver más](https://fyxtokentech.github.io/frontend-fyxtoken/?view-id=%2Flab%2Fpanel-robot)
+- **Pricing**: Información de precios. [Ver más](https://fyxtokentech.github.io/frontend-fyxtoken/?view-id=%2Fpricing)
 
 ## 📄 Licencia
 
-Este es un proyecto propietario. Todos los derechos reservados.
+Este proyecto es de uso propietario. Todos los derechos reservados.
 
----
-<div align="center">
-  Desarrollado con ❤️ por el equipo de FyxToken
-</div>
+## 🛠️ Comandos Útiles
+
+### Iniciar el servidor de desarrollo
+Usa este comando para iniciar el servidor de desarrollo.
+```bash
+npm start
+```
+
+### Construir el proyecto
+Compila el proyecto para producción.
+```bash
+npm run build
+```
+
+### Ejecutar prueba
+Realiza una construcción y sirve el proyecto para prueba.
+```bash
+npm test
+```
+
+### Desplegar en producción
+Despliega el proyecto en producción.
+```bash
+npm run deploy
+```
+
+### Desplegar en GitHub Pages
+Construye y publica el proyecto en GitHub Pages.
+```bash
+npm run deploy-gh
+```
