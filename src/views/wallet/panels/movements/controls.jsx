@@ -92,7 +92,6 @@ export function DateRangeControls({ dateRangeInit, dateRangeFin }) {
       >
         <LocalizationProvider dateAdapter={AdapterDayjs}>
           <DateTimePicker
-            inert
             className="fullWidth"
             label="Fecha inicio"
             defaultValue={dateRangeInit}
@@ -105,7 +104,6 @@ export function DateRangeControls({ dateRangeInit, dateRangeFin }) {
       >
         <LocalizationProvider dateAdapter={AdapterDayjs}>
           <DateTimePicker
-            inert
             className="fullWidth"
             label="Fecha Fin"
             defaultValue={dateRangeFin}

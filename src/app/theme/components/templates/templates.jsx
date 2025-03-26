@@ -25,7 +25,7 @@ import {
   isDark,
 } from "@jeff-aporta/theme-manager";
 
-import {ShaderScene} from "@components/templates/mesh"
+import { ThreeBackground } from "@components/templates/mesh";
 
 const minH = "min-h-80vh";
 
@@ -49,7 +49,7 @@ function Notifier({ children }) {
   }
 }
 
-function ThemeSwitcher({ children, bgtype = "1", h_init = "0", h_fin = "0" }) {
+function ThemeSwitcher({ children, urlShader, bgtype = "1", h_init = "0", h_fin = "0" }) {
   const [theme_name, updateThemeName] = useState(getThemeName());
   const [theme_luminance, updateThemeLuminance] = useState(getThemeLuminance());
 
@@ -70,6 +70,7 @@ function ThemeSwitcher({ children, bgtype = "1", h_init = "0", h_fin = "0" }) {
   return (
     <Notifier>
       <FirstPart />
+      {/* <ThreeBackground urlShader={urlShader} /> */}
       <Footer updateThemeName={updateThemeName} getThemeName={getThemeName} />
       <CursorLight />
     </Notifier>

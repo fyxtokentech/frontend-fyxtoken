@@ -25,7 +25,7 @@ export default Index;
 
 function Index() {
   return (
-    <ThemeSwitcher bgtype="portal" h_init="100px" h_fin="100px">
+    <ThemeSwitcher urlShader="shaders/27.glsl" bgtype="portal" h_init="100px" h_fin="100px">
       <DivM m_max={40} className="d-center min-h-50vh">
         <LoginForm />
       </DivM>

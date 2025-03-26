@@ -38,7 +38,7 @@ class General {
             .map(([key, value]) => `${key}=${value}`)
             .join("&");
 
-          return [root, params].filter(Boolean).join("&");
+          return [root, params].filter(Boolean).join(root.startsWith("?") ? "&" : "?");
         }
 
         function simple(url) {

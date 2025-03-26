@@ -7,29 +7,15 @@ void main() {
 }
 
 // --- FRAGMENT SHADER ---
-//
-// Si necesitas precisión en WebGL ES, podrías usar:
-// #ifdef GL_ES
-// precision mediump float;
-// #endif
-
-// Mapeamos iTime -> t e iResolution.xy -> r
 #define t iTime
 #define r iResolution.xy
 
-// Uniforms principales (agrega más si tu shader los requiere)
 uniform float iTime;
 uniform vec2 iResolution;
-uniform vec4 iMouse; // si lo necesitas
-// uniform sampler2D iChannel0; // etc.
+uniform vec4 iMouse; 
 
-varying vec2 vUv; // Recibido del vertex shader (si lo usaras)
+varying vec2 vUv; 
 
-// ----------------------------------------------------------------------------
-// CÓDIGO DEL SHADER ADAPTADO AL FORMATO mainImage(...) + main()
-// ----------------------------------------------------------------------------
-
-// Funciones auxiliares
 float sdSegment(in vec2 p, in vec2 a, in vec2 b) {
     vec2 pa = p - a, ba = b - a;
     float h = clamp(dot(pa, ba)/dot(ba, ba), 0.0, 1.0);
@@ -191,11 +177,7 @@ vec3 flashLines(in vec2 cell, in vec2 cellInner, in vec2 positions[8], float sca
     }
 }
 
-// -----------------------------------------------------------------------------
-// mainImage: tu lógica principal de dibujo
-// -----------------------------------------------------------------------------
-void mainImage(out vec4 fragColor, in vec2 fragCoord)
-{
+void mainImage(out vec4 fragColor, in vec2 fragCoord){
     vec2 uv = fragCoord / iResolution.xx;
     float iTime2 = iTime * 0.2;
 
@@ -213,11 +195,9 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord)
     float points = 0.0;
     float lines = 0.0;
 
-    // Punto centrado
     vec2 centeredPoint = random2(cellNumber);
     centeredPoint = 0.5 + 0.5*sin(iTime2 + 6.2831*centeredPoint);
 
-    // Ocho posiciones de celdas vecinas
     vec2 pointPositions[8];
     vec2 actualPositions[8];
 
@@ -235,7 +215,6 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord)
         }
     }
 
-    // Calcular líneas y puntos
     for(index=0; index<8; index++){
         vec2 rPoint = pointPositions[index];
         lines += line(cellInnerCoordinates, centeredPoint, rPoint);
@@ -244,7 +223,6 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord)
 
     points += point(centeredPoint, cellInnerCoordinates);
 
-    // Extra lines
     vec2 top    = pointPositions[1];
     vec2 left   = pointPositions[3];
     vec2 right  = pointPositions[4];
@@ -255,23 +233,17 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord)
     lines += line(cellInnerCoordinates, right,  top);
     lines += line(cellInnerCoordinates, right,  bottom);
 
-    // Color base
     vec3 color = vec3(0.0);
 
-    // flash
     vec3 flash = flashLines(cellNumber, centeredPoint, pointPositions, scale, cellInnerCoordinates);
 
-    // color base, mezcla
     vec3 co = vec3(0.83, 0.15, 0.455);
 
-    // color base = line & points
     color += vec3(0.0, 0.45, 0.9)*lines;
     color = mix(vec3(0.0), vec3(0.0, 0.45, 0.9), lines);
 
-    // Mezclar con flash.x, flash.y, flash.z
     color = mix(color, co, flash.x + flash.y*0.35 + flash.z*0.5);
 
-    // Añadir “brillo”
     color = mix(
         color,
         vec3(1.0),
@@ -281,12 +253,9 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord)
       + points
     );
 
-    fragColor = vec4(color, 1.0);
+    fragColor = vec4(color, 0.0); // ← Transparente total
 }
 
-// -----------------------------------------------------------------------------
-// main: llama a mainImage con gl_FragCoord
-// -----------------------------------------------------------------------------
 void main() {
   mainImage(gl_FragColor, gl_FragCoord.xy);
 }

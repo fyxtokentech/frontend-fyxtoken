@@ -107,7 +107,7 @@ function FyxCarrusel(props) {
     <Box {...rest_props} sx={sliderStyles.container}>
       <Slider {...settings} style={{ minHeight: h }}>
         {Array.from({ length: 4 }, (_, i) => (
-          <div key={i} inert="true" className="no-border-focus" style={{ height: h }}>
+          <div key={i} inert className="no-border-focus" style={{ height: h }}>
             <ImageLocal
               src={`img/test/${i + 1}.jpg`}
               className="object-fit-cover"

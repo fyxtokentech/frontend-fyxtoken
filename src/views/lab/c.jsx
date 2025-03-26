@@ -26,7 +26,6 @@ function DateRangeControls({
         <AutoSkeleton h="10vh" w="250px" loading={loading}>
           <LocalizationProvider dateAdapter={AdapterDayjs}>
             <DateTimePicker
-              inert
               className="fullWidth"
               label="Fecha inicio"
               defaultValue={dateRangeInit}
@@ -40,7 +39,6 @@ function DateRangeControls({
         <AutoSkeleton h="10vh" w="250px" loading={loading}>
           <LocalizationProvider dateAdapter={AdapterDayjs}>
             <DateTimePicker
-              inert
               className="fullWidth"
               label="Fecha Fin"
               defaultValue={dateRangeFin}
