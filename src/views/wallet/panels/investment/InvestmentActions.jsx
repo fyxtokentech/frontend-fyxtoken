@@ -160,7 +160,7 @@ function InvestmentAction({
   return (
     <PaperP
       className={fluidCSS()
-        .ltX(1160, {
+        .ltX(1260, {
           width: ["100%", w],
         })
         .end()}

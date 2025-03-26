@@ -1,0 +1,109 @@
+// ---------------------------------------------
+// 1. Display Utilities
+// ---------------------------------------------
+@each $value in (flex, inline-flex, none, block, inline-block) {
+  .d-#{$value} {
+    display: $value;
+  }
+}
+
+@each $value in (row, column) {
+  .flex-#{$value} {
+    flex-direction: $value;
+  }
+}
+
+.d-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.d-end-center {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.d-end {
+  display: flex;
+  justify-content: end;
+  align-items: end;
+}
+.d-end-wrap {
+  @extend .d-end;
+  flex-wrap: wrap;
+}
+
+.d-space-between-center {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.fd-row-reverse {
+  flex-direction: row-reverse;
+}
+
+.flex-wrap,
+.f-wrap {
+  flex-wrap: wrap;
+}
+
+.d-inline-block {
+  display: inline-block;
+}
+
+.d-flex-wrap {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.d-inline-flex {
+  display: inline-flex;
+}
+
+.d-inline-flex-col{
+  display: inline-flex;
+  flex-direction: column;
+}
+
+.d-flex-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.d-flex-col-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+
+@each $abrev,
+  $value
+    in (
+      c: center,
+      center: center,
+      sb: space-between,
+      space-between: space-between,
+      se: space-evenly,
+      space-evenly: space-evenly,
+      end: end,
+      start: start
+    )
+{
+  .jc-#{$abrev} {
+    justify-content: $value;
+  }
+}
+
+@each $abrev,
+  $value
+    in (c: center, center: center, s: start, e: end, end: end, start: start, stretch: stretch)
+{
+  .ai-#{$abrev} {
+    align-items: $value;
+  }
+}

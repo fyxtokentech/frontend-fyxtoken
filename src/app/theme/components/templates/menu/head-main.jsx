@@ -40,6 +40,9 @@ function HeadMain({ updateTheme = () => 0 }) {
       className={fluidCSS()
         .lerpX([400, 1000], { padding: [10, 20] })
         .end("menu-top d-space-between-center")}
+      style={{
+        background: ["rgba(255,255,255,0.25)", "rgba(0,0,0,0.25)"][+isDark()],
+      }}
     >
       <BotonInicio />
       <div className="d-center">
@@ -68,11 +71,6 @@ function BotonInicio() {
         className={fluidCSS()
           .lerpX([450, 1000], { width: [30, 40] })
           .end()}
-        style={{
-          filter: ["brightness(0.3) hue-rotate(60deg) saturate(1.5)", ""][
-            +isDark()
-          ],
-        }}
       />
       <div
         className={fluidCSS()

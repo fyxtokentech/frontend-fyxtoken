@@ -91,7 +91,7 @@ function TitleInfo(props) {
         title_text={
           <>
             <div style={{ opacity: 0.8, fontSize: "10px" }} className="mb-20px">
-              <Chip label="Información" />
+              <Chip label="Información" variant="outlined" />
             </div>
             {title}
           </>

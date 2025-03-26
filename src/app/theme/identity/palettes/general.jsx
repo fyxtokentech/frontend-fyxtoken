@@ -22,7 +22,7 @@ class General {
 
   typography() {
     return {
-      fontSize: 13,
+      fontSize: 14,
       button: {
         textTransform: "none",
       },

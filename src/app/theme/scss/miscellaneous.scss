@@ -1,4 +1,7 @@
-.no-select {
+// ---------------------------------------------
+// Miscellaneous Utilities
+// ---------------------------------------------
+.no-select{
   user-select: none;
   pointer-events: none;
 }
@@ -36,105 +39,16 @@
   }
 }
 
-.d-center {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.d-end-center {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-}
-
-.d-end {
-  display: flex;
-  justify-content: end;
-  align-items: end;
-}
-.d-end-wrap {
-  @extend .d-end;
-  flex-wrap: wrap;
-}
-
-.d-space-between-center {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.fd-row-reverse {
-  flex-direction: row-reverse;
-}
-
-.flex-wrap,
-.f-wrap {
-  flex-wrap: wrap;
-}
-
-.w-fit {
+.fit-content,.w-fit {
   width: fit-content;
 }
 
-.fit-content{
-  width: fit-content;
-  height: fit-content;
-}
-
-.v-hidden {
+.visibility-hidden {
   visibility: hidden;
 }
 
 .d-none {
   display: none;
-}
-
-.d-inline-block {
-  display: inline-block;
-}
-
-.d-flex-wrap {
-  display: flex;
-  flex-wrap: wrap;
-}
-
-.d-inline-flex {
-  display: inline-flex;
-}
-
-.d-inline-flex-col{
-  display: inline-flex;
-  flex-direction: column;
-}
-
-.d-flex-col {
-  display: flex;
-  flex-direction: column;
-}
-
-.d-flex-col-center {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
-}
-
-.flex-wrap {
-  flex-wrap: wrap;
-}
-
-.to-right-center {
-  transform-origin: 100% center;
-}
-
-.nowrap {
-  white-space: nowrap;
-  flex-wrap: nowrap;
-}
-
-.tt-uppercase {
-  text-transform: uppercase;
 }
 
 .h-full {
@@ -285,4 +199,86 @@
   right: 0;
   top: 0;
   bottom: 0;
+}
+
+@each $color
+  in (
+    white,
+    gray,
+    black,
+    skyblue,
+    deepskyblue,
+    dodgerblue,
+    purple
+    pink,
+    deeppink,
+    crimson,
+    darkred,
+    orange,
+  )
+{
+  .bg-#{$color} {
+    background-color: $color;
+  }
+  .c-#{$color} {
+    color: $color;
+  }
+}
+
+.bright-hover-2 {
+  transition: filter 0.2s;
+  &:hover {
+    filter: brightness(2);
+  }
+}
+
+.bright-hover-1-5 {
+  transition: filter 0.2s;
+  &:hover {
+    filter: brightness(1.5);
+  }
+}
+
+.bright-10{
+  filter: brightness(10);
+}
+
+.dyn-filter{
+  --invert: 0;
+  --hue-rotate: 0;
+  filter: invert(var(--invert)) hue-rotate(var(--hue-rotate));
+}
+
+.hue-rotate180deg{
+  --hue-rotate: 180deg;
+}
+
+.invert{
+  --invert: 1;
+}
+
+.rotate-left{
+  animation: rotate-left 12s infinite linear;
+}
+
+@keyframes rotate-left {
+  from{
+    transform: rotate(0);
+  }
+  to{
+    transform: rotate(-360deg);
+  }
+}
+
+.nowrap {
+  white-space: nowrap;
+  flex-wrap: nowrap;
+}
+
+.to-right-center {
+  transform-origin: 100% center;
+}
+
+.tt-uppercase {
+  text-transform: uppercase;
 }

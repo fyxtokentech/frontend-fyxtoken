@@ -26,8 +26,8 @@ class BasePalette extends General {
       darkmode: false,
       palette: this,
       background: {
-        default: this.main_bright_color.toWhite(0.8).hex(),
-        paper: this.main_bright_color.toWhite(0.9).hex(),
+        default: this.main_bright_color.toWhite(0.7).hex(),
+        paper: this.main_bright_color.toWhite(0.8).hex(),
       },
     });
 
@@ -36,7 +36,7 @@ class BasePalette extends General {
       palette: this,
       background: {
         default: this.main_color.toBlack(this.isMain ? 0.8 : 0.9).hex(),
-        paper: this.main_color.toBlack(this.isMain ? 0.8 : 0.9).hex(),
+        paper: this.main_color.toBlack(this.isMain ? 0.75 : 0.83).hex(),
       },
     });
   }

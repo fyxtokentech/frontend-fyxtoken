@@ -9,7 +9,7 @@ import useMediaQuery from "@mui/material/useMediaQuery";
 import { Theme } from "@jeff-aporta/theme-manager";
 
 import { useState } from "react";
-import { Tooltip } from "@mui/material";
+import { Chip, Tooltip, Typography } from "@mui/material";
 
 export default FyxDialog;
 
@@ -36,8 +36,12 @@ function FyxDialog(props) {
         {children}
       </div>
       <Dialog open={open} onClose={handleClose}>
-        <DialogTitle>{title_text}</DialogTitle>
-        <DialogContent>{text}</DialogContent>
+        <DialogTitle>
+          <Chip label={title_text} />
+        </DialogTitle>
+        <DialogContent>
+          <Typography variant="body1">{text}</Typography>
+        </DialogContent>
         <DialogActions className="mt-20px">
           <Button variant="contained" onClick={handleClose}>
             {button_text ?? "Entendido"}

@@ -165,7 +165,7 @@ function DynTable({ rows, columns, paginationModel, ...rest }) {
       className="DynTable-container"
       style={{
         maxHeight: "80vh",
-        background: isDark() ? "rgba(0,0,0,0.1)" : "",
+        background: `rgba(0,0,0,${isDark() ? 0.1 : 0.025})`,
       }}
     >
       <DataGrid
