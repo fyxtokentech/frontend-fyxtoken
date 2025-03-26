@@ -1,4 +1,4 @@
-import BasePalette from "./BasePalette";
+import BasePalette from "@identity/palettes/BasePalette";
 
 const {
   verde_cielo,

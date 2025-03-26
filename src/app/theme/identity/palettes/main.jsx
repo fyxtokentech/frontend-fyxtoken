@@ -1,4 +1,4 @@
-import BasePalette from "./BasePalette";
+import BasePalette from "@identity/palettes/BasePalette";
 
 const {
   verde_cielo,
@@ -18,8 +18,8 @@ class Main extends BasePalette {
       main_color: morado_enfasis,
       name_color: "morado_enfasis",
       scrollname: "morado",
-      constrast_color: verde_cielo,
-      name_contrast: "verde_cielo",
+      constrast_color: verde_lima,
+      name_contrast: "verde_lima",
       main_bright_color: morado_brillante,
       name_bright_color: "morado_brillante",
       ...props,

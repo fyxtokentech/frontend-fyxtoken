@@ -1,9 +1,8 @@
 import Color from "color";
 
-import { createTheme, Checkbox, Input } from "@mui/material";
-import { Palette } from "@mui/icons-material";
+import { Checkbox, Input } from "@mui/material";
 
-import General from "./general";
+import General from "@identity/palettes/general";
 
 const {
   verde_cielo,

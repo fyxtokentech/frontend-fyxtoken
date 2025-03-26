@@ -1,10 +1,10 @@
-import {} from "./colors";
-import Skygreen from "./skygreen";
-import Lemongreen from "./lemongreen";
-import Springgreen from "./springgreen";
+import {} from "@identity/colors";
+import Skygreen from "@identity/palettes/skygreen";
+import Lemongreen from "@identity/palettes/lemongreen";
+import Springgreen from "@identity/palettes/springgreen";
 
-import Main from "./main";
-import scrollbar from "./scrollsbar";
+import Main from "@identity/palettes/main";
+import scrollbar from "@identity/scrollsbar";
 
 import { packLoadPalette, load_scrollbar, init } from "@jeff-aporta/theme-manager";
 

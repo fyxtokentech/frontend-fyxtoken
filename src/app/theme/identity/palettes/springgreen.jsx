@@ -1,11 +1,10 @@
-import BasePalette from "./BasePalette";
-
-import General from "./general";
+import BasePalette from "@identity/palettes/BasePalette";
 
 const {
   springgreen,
   blanco,
   negro,
+  morado_enfasis,
 } = global.identity.colors;
 
 class Springgreen extends BasePalette {
@@ -13,8 +12,8 @@ class Springgreen extends BasePalette {
     super({
       main_color: springgreen,
       name_color: "springgreen",
-      constrast_color: blanco,
-      name_contrast: "blanco",
+      constrast_color: morado_enfasis,
+      name_contrast: "morado_enfasis",
       main_bright_color: springgreen,
       name_bright_color: "springgreen",
       ...props,
