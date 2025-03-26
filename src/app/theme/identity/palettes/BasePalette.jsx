@@ -20,7 +20,6 @@ const {
 class BasePalette extends General {
   constructor(props) {
     super(props);
-    console.log(props);
 
     this.light = this.createThemePalette({
       darkmode: false,
