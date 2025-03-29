@@ -1,9 +1,5 @@
 import {} from "@identity/colors";
-import Skygreen from "@identity/palettes/skygreen";
-import Lemongreen from "@identity/palettes/lemongreen";
-import Springgreen from "@identity/palettes/springgreen";
-
-import Main from "@identity/palettes/main";
+import {Main, Skygreen, Lemongreen, Springgreen} from "@identity/palettes/Fyxpalettes";
 import scrollbar from "@identity/scrollsbar";
 
 import { packLoadPalette, load_scrollbar, init } from "@jeff-aporta/theme-manager";

@@ -2,59 +2,29 @@ import Color from "color";
 
 import { Checkbox, Input } from "@mui/material";
 
-import General from "@identity/palettes/general";
+import {PaletteMonochrome} from "@jeff-aporta/theme-manager";
 
-const {
-  verde_cielo,
-  verde_lima,
-  azul_agua,
-  blanco,
-  negro,
-  morado,
-  morado_enfasis,
-  morado_brillante,
-  verde_cielo_brillante,
-  verde_lima_brillante,
-} = global.identity.colors;
-
-class BasePalette extends General {
+class PaletteBase extends PaletteMonochrome {
   constructor(props) {
     super(props);
-
-    this.light = this.createThemePalette({
-      darkmode: false,
-      palette: this,
-      background: {
-        default: this.main_bright_color.toWhite(0.7).hex(),
-        paper: this.main_bright_color.toWhite(0.8).hex(),
-      },
-    });
-
-    this.dark = this.createThemePalette({
-      darkmode: true,
-      palette: this,
-      background: {
-        default: this.main_color.toBlack(this.isMain ? 0.8 : 0.9).hex(),
-        paper: this.main_color.toBlack(this.isMain ? 0.75 : 0.83).hex(),
-      },
-    });
   }
 
   componentsMUI({ constants_color, darkmode }) {
     const colors = {
       ...constants_color,
       ...this.colors(darkmode),
+      ...(global?.identity?.colors ?? {})
     };
-    const { primary, verde_lima, verde_cielo, cancel } = colors;
+    const { verde_lima, verde_cielo, cancel } = colors;
 
     function colorized(color){
       return {
         background: [
-          color.color.hex(),
-          color.color.darken(0.2).hex(),
+          color.hex(),
+          color.darken(0.2).hex(),
         ][Number(darkmode)],
         "&:hover": {
-          backgroundColor: color.color.hex(),
+          backgroundColor: color.hex(),
         },
       };
     }
@@ -65,7 +35,7 @@ class BasePalette extends General {
     const skygreen = verde_cielo_;
 
     return {
-      ...super.components({ colors, darkmode }),
+      ...super.componentsMUI({ colors, darkmode }),
       Button: {
         verde_lima: verde_lima_,
         verde_cielo: verde_cielo_,
@@ -78,15 +48,6 @@ class BasePalette extends General {
           "&:hover": {
             backgroundColor: cancel.color.hex(),
           },
-        },
-        primary: {
-          color: Color("white").hex(),
-          "&:hover": {
-            backgroundColor: primary.color.hex(),
-          },
-        },
-        root: {
-          margin: "0",
         },
       },
     };
@@ -110,6 +71,7 @@ class BasePalette extends General {
   }
 
   colors(darkmode) {
+    const { blanco, negro } = global.identity.colors;
     const colors_contrast = [blanco, negro];
     const color_contrast = colors_contrast[+darkmode];
     const color_uncontrast = colors_contrast[1 - darkmode];
@@ -140,4 +102,4 @@ class BasePalette extends General {
   }
 }
 
-export default BasePalette;
+export { PaletteBase };
