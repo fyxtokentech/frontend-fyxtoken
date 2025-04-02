@@ -22,6 +22,7 @@ import {
   getThemeName,
   href,
   JS2CSS,
+  getThemeLuminance,
 } from "@jeff-aporta/theme-manager";
 
 const hideIcon = 500;
@@ -92,9 +93,10 @@ function BotonInicio() {
         style={{
           filter: (() => {
             const themename = getThemeName();
+            const themeluminance = getThemeLuminance();
             switch (themename) {
               case "blacknwhite":
-                return "invert()";
+                return themeluminance != "dark" ? "invert()" : "";
             }
           })(),
         }}
