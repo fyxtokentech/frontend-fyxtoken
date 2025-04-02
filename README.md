@@ -4,6 +4,12 @@
   <img src="https://fyxtokentech.github.io/frontend-fyxtoken/img/logo-fyxtoken-main-color.svg" alt="FyxToken Logo" width="128" height="120">
 </div>
 
+<h2>
+  <p align="center">
+    <a href="https://fyxtokentech.github.io/frontend-fyxtoken">https://fyxtokentech.github.io/frontend-fyxtoken</a>
+  </p>
+</h2>
+
 <br>
 
 <div align="center">
@@ -11,7 +17,8 @@
 [![License: Proprietary](https://img.shields.io/badge/License-Proprietary-red.svg)](#)
 [![React](https://img.shields.io/badge/React-19-blue?logo=react)](https://reactjs.org/)
 [![Node](https://img.shields.io/badge/Node-%3E%3D14-success?logo=node.js)](https://nodejs.org/)
-
+[![Webpack](https://img.shields.io/badge/Webpack-5-orange?logo=webpack)](https://webpack.js.org/)
+[![Material-UI](https://img.shields.io/badge/Material--UI-v6.4.8-purple?logo=mui)](https://mui.com/)
 </div>
 
 Proyecto frontend desarrollado en React para gestión y visualización de tokens digitales. Ofrece una interfaz intuitiva y potente para el seguimiento, análisis y gestión de activos digitales en tiempo real.
@@ -20,6 +27,7 @@ Proyecto frontend desarrollado en React para gestión y visualización de tokens
 - [✨ Características](#-caracteristicas)
 - [🛠️ Tecnologías](#-tecnologias)
 - [💻 Instalación](#-instalacion)
+- [⚙️ Configuración](#-configuracion)
 - [📁 Estructura del Proyecto](#-estructura-del-proyecto)
 - [📱 Vistas](#-vistas)
 - [📄 Licencia](#-licencia)
@@ -33,6 +41,7 @@ Proyecto frontend desarrollado en React para gestión y visualización de tokens
 - 📱 Diseño 100% responsivo
 - 🔒 Autenticación segura
 - 📈 Gráficos interactivos
+- 💱 Conversión entre múltiples monedas
 
 ### Técnicas
 - ⚡ Optimización de rendimiento con React
@@ -40,6 +49,7 @@ Proyecto frontend desarrollado en React para gestión y visualización de tokens
 - 💅 Estilos con Material-UI y SASS
 - 🔄 Estado global eficiente
 - 📦 Componentes reutilizables
+- 🔍 Estructura modular para facilitar el mantenimiento
 
 ## 🛠️ Tecnologías
 
@@ -47,10 +57,14 @@ Proyecto frontend desarrollado en React para gestión y visualización de tokens
 - React 19
 - Material-UI
 - SASS para estilos avanzados
+- React Router para navegación
 
 ### Desarrollo
 - Node.js >= 14
 - react-app-rewired para personalización de la configuración de Webpack
+- Webpack 5 con configuración optimizada
+- Babel para compatibilidad con navegadores
+- ESLint y Prettier para mantener la calidad del código
 
 ## 💻 Instalación
 
@@ -66,6 +80,26 @@ Proyecto frontend desarrollado en React para gestión y visualización de tokens
    ```bash
    npm start
    ```
+   El servidor se iniciará en http://localhost:3000
+
+## ⚙️ Configuración
+
+### Personalización de Webpack
+El proyecto utiliza `react-app-rewired` para modificar la configuración de webpack sin necesidad de hacer eject. La configuración se encuentra en:
+
+```
+├── config-overrides.js  # Configuración principal de webpack
+└── .env                # Variables de entorno
+```
+
+### Temas y Estilos
+La configuración de temas está ubicada en:
+
+```
+├── src/app/theme/identity/palettes.jsx  # Definición de paletas de colores
+└── src/app/theme/components/            # Componentes con estilos temáticos
+```
+
 
 ## 📁 Estructura del Proyecto
 
@@ -90,11 +124,11 @@ Proyecto frontend desarrollado en React para gestión y visualización de tokens
 - `@views`: Componentes de vista para diferentes secciones de la aplicación.
 - `@routes`: Definiciones de rutas para la navegación dentro de la aplicación.
 - `@theme`: Configuración de temas y estilos.
-- `@identity`: Gestión de identidades visuales y paletas de colores.
-- `@components`: Componentes reutilizables para la interfaz de usuario.
-- `@containers`: Componentes de contenedores específicos.
-- `@templates`: Plantillas de diseño para la estructura de la aplicación.
-- `@recurrent`: Componentes recurrentes utilizados en múltiples partes de la aplicación.
+  - `@identity`: Gestión de identidades visuales y paletas de colores.
+  - `@components`: Componentes reutilizables para la interfaz de usuario.
+    - `@containers`: Componentes de contenedores específicos.
+    - `@templates`: Plantillas de diseño para la estructura de la aplicación.
+    - `@recurrent`: Componentes recurrentes utilizados en múltiples partes de la aplicación.
 
 ## 📱 Vistas
 
@@ -110,7 +144,7 @@ Este proyecto es de uso propietario. Todos los derechos reservados.
 ## 🛠️ Comandos Útiles
 
 ### Iniciar el servidor de desarrollo
-Usa este comando para iniciar el servidor de desarrollo.
+Usa este comando para iniciar el servidor de desarrollo en http://localhost:3000.
 ```bash
 npm start
 ```
