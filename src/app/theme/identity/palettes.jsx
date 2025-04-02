@@ -1,4 +1,5 @@
-import { PaletteBase } from "@identity/palettes/PaletteBase";
+import { PaletteBaseMonochrome } from "@jeff-aporta/theme-manager";
+import { Checkbox, Input } from "@mui/material";
 
 const {
   verde_cielo,
@@ -8,9 +9,33 @@ const {
   verde_lima_brillante,
   verde_cielo_brillante,
   springgreen,
+  negro,
+  blanco
 } = global.identity.colors;
 
-class Main extends PaletteBase {
+class Fyxbase extends PaletteBaseMonochrome{
+  constructor(props){
+    super(props)
+  }
+  control_components(darkmode) {
+    const _THIS_ = this;
+    const enfasis_input = [this.name_color, this.name_contrast][+darkmode];
+    return {
+      ...super.control_components(darkmode),
+      enfasis_input,
+      themized: {
+        Checkbox(props) {
+          return <Checkbox color={enfasis_input} {...props} />;
+        },
+        Input(props) {
+          return <Input color={enfasis_input} {...props} />;
+        },
+      },
+    };
+  }
+}
+
+class Main extends Fyxbase {
   constructor(props) {
     super({
       isMain: true,
@@ -26,7 +51,7 @@ class Main extends PaletteBase {
   }
 }
 
-class Lemongreen extends PaletteBase {
+class Lemongreen extends Fyxbase {
   constructor(props) {
     super({
       main_color: verde_lima,
@@ -40,7 +65,7 @@ class Lemongreen extends PaletteBase {
   }
 }
 
-class Skygreen extends PaletteBase {
+class Skygreen extends Fyxbase {
   constructor(props) {
     super({
       main_color: verde_cielo,
@@ -54,7 +79,7 @@ class Skygreen extends PaletteBase {
   }
 }
 
-class Springgreen extends PaletteBase {
+class Springgreen extends Fyxbase {
   constructor(props) {
     super({
       main_color: springgreen,
@@ -68,4 +93,20 @@ class Springgreen extends PaletteBase {
   }
 }
 
-export { Main, Lemongreen, Skygreen, Springgreen };
+class BlackNWhite extends Fyxbase {
+  constructor(props) {
+    super({
+      isMain: true,
+      main_color: negro,
+      name_color: "negro",
+      scrollname: "gray",
+      constrast_color: verde_cielo,
+      name_contrast: "verde_cielo",
+      main_bright_color: blanco,
+      name_bright_color: "blanco",
+      ...props,
+    });
+  }
+}
+
+export { Main, Lemongreen, Skygreen, Springgreen, BlackNWhite };

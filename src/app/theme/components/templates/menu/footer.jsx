@@ -39,6 +39,7 @@ function SelectThemeName({ getThemeName, updateThemeName }) {
         <MenuItem value="skygreen">Verde cielo</MenuItem>
         <MenuItem value="lemongreen">Verde lima</MenuItem>
         <MenuItem value="springgreen">Verde primavera</MenuItem>
+        <MenuItem value="blacknwhite">Blanco y negro</MenuItem>
       </Select>
     </FormControl>
   );

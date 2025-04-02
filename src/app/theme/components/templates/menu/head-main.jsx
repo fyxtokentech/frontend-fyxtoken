@@ -21,6 +21,7 @@ import {
   controlComponents,
   getThemeName,
   href,
+  JS2CSS,
 } from "@jeff-aporta/theme-manager";
 
 const hideIcon = 500;
@@ -34,6 +35,23 @@ export default HeadMain;
 
 function HeadMain({ updateTheme = () => 0 }) {
   const { pathname } = window.location;
+
+  JS2CSS.insertStyle({
+    id: "headmain-root",
+    objJs: {
+      ":root": {
+        "--border-section": (() => {
+          const themename = getThemeName();
+          switch (themename) {
+            case "blacknwhite":
+              return "hsl(var(--gray-h), var(--gray-s), 40%, 0.2)";
+            default:
+              return "hsl(var(--verde-cielo-h), var(--verde-cielo-s), 40%, 0.2)";
+          }
+        })(),
+      },
+    },
+  });
 
   return (
     <div
@@ -71,6 +89,15 @@ function BotonInicio() {
         className={fluidCSS()
           .lerpX([450, 1000], { width: [30, 40] })
           .end()}
+        style={{
+          filter: (() => {
+            const themename = getThemeName();
+            switch (themename) {
+              case "blacknwhite":
+                return "invert()";
+            }
+          })(),
+        }}
       />
       <div
         className={fluidCSS()
@@ -81,13 +108,13 @@ function BotonInicio() {
           style={{
             fontFamily: "goodtimes-rg",
           }}
-          color={(()=> {
+          color={(() => {
             if (isDark()) {
               if (themeName == "main") {
                 return "#C6E50E";
               }
               return "white";
-            }else{
+            } else {
               if (themeName == "main") {
                 return "var(--morado)";
               }
@@ -105,12 +132,12 @@ function BotonInicio() {
             fontFamily: "lemonmilk-rg",
             fontSize: "45%",
           }}
-          color={(()=> {
+          color={(() => {
             if (isDark()) {
               if (themeName == "main") {
                 return "#21EBEF";
               }
-            }else{
+            } else {
               if (themeName == "main") {
                 return "var(--morado)";
               }

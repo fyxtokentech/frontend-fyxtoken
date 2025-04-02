@@ -1,17 +1,11 @@
-import Color from "color";
+import { Color } from "@jeff-aporta/theme-manager";
 
 const {
   verde_cielo,
   verde_lima,
-  azul_agua,
-  blanco,
-  negro,
-  morado,
   morado_enfasis,
-  morado_brillante,
-  verde_cielo_brillante,
-  verde_lima_brillante,
   springgreen,
+  gray,
 } = global.identity.colors;
 
 export default ({ customizeScrollbar, color_register }) => {
@@ -28,6 +22,9 @@ export default ({ customizeScrollbar, color_register }) => {
     springgreen(darkmode) {
       monochrome({ color: springgreen, darkmode });
     },
+    gray(darkmode){
+      monochrome({ color: gray, darkmode });
+    }
   });
 
   function monochrome({ color, darkmode }) {

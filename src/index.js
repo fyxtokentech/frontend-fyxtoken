@@ -1,5 +1,5 @@
 import { createRoot } from "react-dom/client";
-import RoutingManagement from "@routes/RoutingManagement";
+import {RoutingManagement} from "@jeff-aporta/router";
 import package_json from "@root/package.json";
 
 const componentsContext = require.context("./views", true, /\.jsx$/);

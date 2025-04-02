@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 
-import DriverParams from "@routes/DriverParams";
+import {DriverParams} from "@jeff-aporta/router";
 import fluidCSS from "@jeff-aporta/fluidcss";
 
 import { ThemeSwitcher } from "@templates";

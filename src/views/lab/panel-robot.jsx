@@ -1,6 +1,6 @@
 import React, { useRef, useState } from "react";
 
-import DriverParams from "@routes/DriverParams";
+import {DriverParams} from "@jeff-aporta/router";
 import fluidCSS from "@jeff-aporta/fluidcss";
 
 import { ThemeSwitcher } from "@templates";

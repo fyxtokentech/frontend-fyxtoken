@@ -19,3 +19,14 @@
 ✅ Informacion de operación en la transaccion, id, moneda, fecha inicio, fecha fin
 
 ✅ Agregar Open y Close en operación
+
+---
+
+hacer dashboard de usuario
+
+hacer vista para desarrollador
+        todas las transacciones
+        todas las inversiones
+        todos los depositos
+        todas las apis de todos los clientes
+        hacer venta y comision

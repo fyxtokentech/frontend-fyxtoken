@@ -22,6 +22,9 @@ function discriminadorColor(extra = "") {
         case "skygreen":
           r = rotación(verde_cielo);
           break;
+          case "blacknwhite":
+            r = "grayscale(1)";
+            break;
         case "lemongreen":
           r = rotación(verde_lima);
           break;
