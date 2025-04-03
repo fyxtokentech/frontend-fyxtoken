@@ -34,8 +34,8 @@ function Wallet() {
   );
 
   useEffect(() => {
-    setActionSelected(driverParams.get("action-id") ?? "investment");
-  }, [location]);
+    setActionSelected(actionSelected ?? driverParams.get("action-id") ?? "investment");
+  }, []);
 
   const refcontainer = useRef();
 
@@ -207,6 +207,7 @@ function Wallet() {
                       behavior: "smooth",
                     });
                   }
+                  console.log(action_id)
                   driverParams.set("action-id", action_id);
                   setActionSelected(action_id);
                 }}

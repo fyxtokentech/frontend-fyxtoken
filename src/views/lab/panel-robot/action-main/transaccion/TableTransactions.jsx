@@ -15,22 +15,21 @@ import {
 } from "@mui/material";
 import InfoIcon from "@mui/icons-material/Info";
 import CloseIcon from "@mui/icons-material/HighlightOff";
-import { AutoSkeleton } from "./c";
-
-import { exclude, rendersTemplate } from "./dyntable-temporal";
+import { AutoSkeleton } from "@views/lab/controls";
 
 import FyxDialog from "@components/GUI/dialog";
-import { DynTable, genAllColumns } from "@components/GUI/dynamic-table";
+import { DynTable, genAllColumns, rendersTemplate, exclude } from "@components/GUI/DynTable/DynTable";
 
-import mock_operation from "./operacion/mock-operation.json";
-import mock_transaction from "./transaccion/mock-transaction.json";
+import mock_operation from "@views/lab/action-main/operacion/mock-operation.json";
+import mock_transaction from "@views/lab/action-main/transaccion/mock-transaction.json";
+
+import columns_transaction from "@views/lab/action-main/transaccion/columns-transaction.jsx";
+import columns_operation from "@views/lab/action-main/operacion/columns-operation.jsx";
 
 export default TableTransactions;
 
 function TableTransactions({
   operationTrigger,
-  columns_operation,
-  columns_transaction,
   setViewTable,
   ...rest
 }) {
@@ -124,6 +123,7 @@ function TableTransactions({
             <FyxDialog
               placement="left"
               button_text="Listo"
+              variant="div"
               text={
                 <TableContainer component={Paper} style={{ width: "100%" }}>
                   <Table>
@@ -134,7 +134,7 @@ function TableTransactions({
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {config.map((column, i) => {
+                      {exclude(config).map((column, i) => {
                         const { field, headerName } = column;
                         return (
                           <TableRow

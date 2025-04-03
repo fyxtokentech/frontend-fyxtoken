@@ -11,6 +11,7 @@ const identity = (() => {
     springgreen: Color("rgb(0, 255, 127)"),
     blanco: Color("white"),
     negro: Color("black"),
+    blacktheme: Color("#151515"),
     gray: Color("gray"),
   };
 

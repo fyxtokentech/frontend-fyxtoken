@@ -21,7 +21,7 @@ function DateRangeControls({
   loading,
 }) {
   return (
-    <div className="d-flex ai-stretch flex-wrap gap-10px">
+    <div className="d-flex ai-stretch flex-wrap gap-20px">
       <div className={fluidCSS().ltX(700, { width: "100%" }).end()}>
         <AutoSkeleton h="10vh" w="250px" loading={loading}>
           <LocalizationProvider dateAdapter={AdapterDayjs}>

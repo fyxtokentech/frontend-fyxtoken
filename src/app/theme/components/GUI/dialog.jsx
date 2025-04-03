@@ -24,7 +24,7 @@ function FyxDialog(props) {
     setOpen(false);
   };
 
-  const { children, text, title_text, button_text, placement } = props;
+  const { children, text, title_text, button_text, placement, variant } = props;
 
   return (
     <>
@@ -40,7 +40,11 @@ function FyxDialog(props) {
           <Chip label={title_text} />
         </DialogTitle>
         <DialogContent>
-          <Typography variant="body1">{text}</Typography>
+          {variant === "div" ? (
+            <div>{text}</div>
+          ) : (
+            <Typography variant="body1">{text}</Typography>
+          )}
         </DialogContent>
         <DialogActions className="mt-20px">
           <Button variant="contained" onClick={handleClose}>

@@ -10,7 +10,8 @@ const {
   verde_cielo_brillante,
   springgreen,
   negro,
-  blanco
+  blanco,
+  blacktheme
 } = global.identity.colors;
 
 class Fyxbase extends PaletteBaseMonochrome{
@@ -96,9 +97,8 @@ class Springgreen extends Fyxbase {
 class BlackNWhite extends Fyxbase {
   constructor(props) {
     super({
-      isMain: true,
-      main_color: negro,
-      name_color: "negro",
+      main_color: blacktheme,
+      name_color: "blacktheme",
       scrollname: "gray",
       constrast_color: verde_cielo,
       name_contrast: "verde_cielo",

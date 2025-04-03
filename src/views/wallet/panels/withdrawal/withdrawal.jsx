@@ -6,7 +6,7 @@ import {
   TitleInfo,
   generate_selects,
 } from "@recurrent";
-import {DynTable} from "@components/GUI/dynamic-table";
+import {DynTable} from "@components/GUI/DynTable/DynTable";
 
 import { Button, Tooltip, Typography } from "@mui/material";
 

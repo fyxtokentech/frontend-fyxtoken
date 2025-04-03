@@ -3,20 +3,20 @@ import TransactionsIcon from "@mui/icons-material/PriceChange";
 
 import { DateTimePicker, LocalizationProvider } from "@mui/x-date-pickers";
 
-import { exclude, rendersTemplate } from "./dyntable-temporal";
-import { DynTable } from "@components/GUI/dynamic-table";
+import { DynTable, rendersTemplate } from "@components/GUI/DynTable/DynTable";
 
-import mock_operation from "./operacion/mock-operation.json";
-import mock_transaction from "./transaccion/mock-transaction.json";
+import mock_operation from "@views/lab/action-main/operacion/mock-operation.json";
+import mock_transaction from "@views/lab/action-main/transaccion/mock-transaction.json";
 
-import { AutoSkeleton, DateRangeControls } from "./c";
+import columns_operation from "@views/lab/action-main/operacion/columns-operation.jsx";
+
+import { AutoSkeleton, DateRangeControls } from "@views/lab/controls";
 import { useEffect, useState } from "react";
 import dayjs from "dayjs";
 
 export default TableOperations;
 
 function TableOperations({
-  columns_operation,
   setOperationTrigger,
   setViewTable,
   ...rest
@@ -64,9 +64,9 @@ function TableOperations({
   );
 
   function Opciones() {
-    columns_config.push({
+    columns_config.unshift({
       field: Math.random().toString(36).replace("0.", "opns-"),
-      headerName: "Opciones",
+      headerName: "Detalle",
       sortable: false,
       renderCell: (params) => {
         const { row } = params;
@@ -74,7 +74,7 @@ function TableOperations({
           <Tooltip title="Transacciones" placement="left">
             <Paper
               className="circle d-center"
-              style={{ width: "30px", height: "30px", margin: "auto" }}
+              style={{ width: "30px", height: "30px", margin: "auto", marginTop: "10px" }}
             >
               <IconButton
                 size="small"

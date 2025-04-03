@@ -1,7 +1,8 @@
 import React from "react";
-import { Typography } from "@mui/material";
+import { Paper, Typography } from "@mui/material";
 import { Info } from "@recurrent";
 import InvestmentTable from "./InvestmentTable";
+import { getThemeName } from "@jeff-aporta/theme-manager";
 
 function ActiveInvestments() {
   return (
@@ -22,7 +23,7 @@ function ActiveInvestments() {
       </Typography>
       <br />
       <div style={{ width: "100%", minHeight: "100px" }}>
-        <InvestmentTable />
+          <InvestmentTable />
       </div>
     </>
   );

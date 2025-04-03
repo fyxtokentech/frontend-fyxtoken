@@ -1,4 +1,4 @@
-import modelsFormat from "@views/lab/modelsFormat";
+import modelsFormat from "@components/GUI/DynTable/modelsFormat";
 
 import SellIcon from "@mui/icons-material/FileUploadOutlined";
 import BuyIcon from "@mui/icons-material/FileDownloadOutlined";

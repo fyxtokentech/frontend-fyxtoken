@@ -10,7 +10,7 @@ import {
   typographyTheme,
 } from "@jeff-aporta/theme-manager";
 
-import FyxDialog from "@components/GUI/dialog"; 
+import FyxDialog from "@components/GUI/dialog";
 
 import {
   Alert,
@@ -18,6 +18,7 @@ import {
   Chip,
   Collapse,
   FormControl,
+  IconButton,
   Input,
   InputLabel,
   MenuItem,
@@ -27,6 +28,34 @@ import {
 } from "@mui/material";
 
 const PUBLIC_URL = process.env.PUBLIC_URL;
+
+function TooltipIconButton({ title, disabled, onClick, icon, ...rest_props }) {
+  return (
+    <div {...rest_props} className={rest_props.className ?? ""}>
+      <Tooltip
+        title={typeof title === "string" ? title : title()}
+        placement="left"
+      >
+        <div className="d-inline-block">
+          <IconButton
+            disabled={
+              typeof disabled == "string"
+                ? disabled
+                : typeof disabled == "boolean"
+                ? disabled
+                : typeof disabled == "function"
+                ? disabled()
+                : false
+            }
+            onClick={onClick}
+          >
+            {icon}
+          </IconButton>
+        </div>
+      </Tooltip>
+    </div>
+  );
+}
 
 function ImageLocal(props) {
   const { src, ...rest } = props;
@@ -211,6 +240,7 @@ function AnSelect(props) {
     name,
     opns,
     required = true,
+    fem = false,
     ...rest
   } = newProps();
 
@@ -232,7 +262,7 @@ function AnSelect(props) {
     },
   });
 
-  const inputlbl = "Selecciona el " + label.toLowerCase();
+  const inputlbl = `Selecciona ${fem ? "la" : "el"} ` + label.toLowerCase();
 
   return (
     <Captionize
@@ -249,7 +279,7 @@ function AnSelect(props) {
           fullWidth
           style={{
             ...style,
-            minWidth: typographyTheme().widthAproxString(inputlbl) + 20,
+            minWidth: typographyTheme().widthAproxString(inputlbl) + 30,
           }}
           name={name}
           labelId={lblID}
@@ -313,4 +343,12 @@ function AnSelect(props) {
   }
 }
 
-export { ImageLocal, generate_inputs, generate_selects, Info, BoxForm, TitleInfo };
+export {
+  ImageLocal,
+  generate_inputs,
+  generate_selects,
+  Info,
+  BoxForm,
+  TitleInfo,
+  TooltipIconButton,
+};
