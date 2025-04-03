@@ -15,16 +15,16 @@ import {
 } from "@mui/material";
 import InfoIcon from "@mui/icons-material/Info";
 import CloseIcon from "@mui/icons-material/HighlightOff";
-import { AutoSkeleton } from "@views/lab/controls";
+import { AutoSkeleton } from "@views/lab/panel-robot/controls";
 
 import FyxDialog from "@components/GUI/dialog";
 import { DynTable, genAllColumns, rendersTemplate, exclude } from "@components/GUI/DynTable/DynTable";
 
-import mock_operation from "@views/lab/action-main/operacion/mock-operation.json";
-import mock_transaction from "@views/lab/action-main/transaccion/mock-transaction.json";
+import mock_transaction from "./mock-transaction.json";
+import columns_transaction from "./columns-transaction.jsx";
 
-import columns_transaction from "@views/lab/action-main/transaccion/columns-transaction.jsx";
-import columns_operation from "@views/lab/action-main/operacion/columns-operation.jsx";
+import mock_operation from "@views/lab/panel-robot/action-main/operacion/mock-operation.json";
+import columns_operation from "@views/lab/panel-robot/action-main/operacion/columns-operation.jsx";
 
 export default TableTransactions;
 

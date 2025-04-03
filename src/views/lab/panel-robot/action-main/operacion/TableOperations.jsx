@@ -5,12 +5,12 @@ import { DateTimePicker, LocalizationProvider } from "@mui/x-date-pickers";
 
 import { DynTable, rendersTemplate } from "@components/GUI/DynTable/DynTable";
 
-import mock_operation from "@views/lab/action-main/operacion/mock-operation.json";
-import mock_transaction from "@views/lab/action-main/transaccion/mock-transaction.json";
+import mock_operation from "./mock-operation.json";
+import columns_operation from "./columns-operation.jsx";
 
-import columns_operation from "@views/lab/action-main/operacion/columns-operation.jsx";
+import mock_transaction from "@views/lab/panel-robot/action-main/transaccion/mock-transaction.json";
 
-import { AutoSkeleton, DateRangeControls } from "@views/lab/controls";
+import { AutoSkeleton, DateRangeControls } from "@views/lab/panel-robot/controls";
 import { useEffect, useState } from "react";
 import dayjs from "dayjs";
 
