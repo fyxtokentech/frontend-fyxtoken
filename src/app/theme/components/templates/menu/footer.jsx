@@ -9,7 +9,14 @@ function Footer({ updateThemeName, getThemeName }) {
     <PaperP elevation={0} className="content-container min-h-200px footer">
       <div className="d-flex-col gap-20px">
         <SelectThemeName {...{ getThemeName, updateThemeName }} />
-        <Link color="inherit" underline="hover" href={href("/lab/panel-robot")}>
+        <Link
+          color="inherit"
+          underline="hover"
+          href={href({
+            view: "/lab/panel-robot",
+            params: { "action-id": "main" },
+          })}
+        >
           Panel robot
         </Link>
         <Link color="inherit" underline="hover" href={href("/pricing")}>

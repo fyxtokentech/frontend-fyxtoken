@@ -67,9 +67,13 @@ export default function PanelRobot() {
   const [update_available, setUpdateAvailable] = useState(true);
   const [view, setView] = useState(driverParams.get("action-id") ?? "main");
 
-  if (driverParams.get("action-id") != view) {
-    driverParams.set("action-id", view);
-  }
+  useEffect(() => {
+    const aid = driverParams.get("action-id");
+    if (aid != view) {
+      driverParams.set("action-id", view, {reload: !aid});
+    }
+  }, [view]);
+
 
   _currency_ = currency;
 
