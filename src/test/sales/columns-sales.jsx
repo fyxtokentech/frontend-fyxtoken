@@ -1,111 +1,106 @@
 import React from "react";
-
 import modelsFormat from "@components/GUI/DynTable/modelsFormat";
 
 // Importar iconos necesarios
-import StatusOkIcon from "@mui/icons-material/CheckCircleOutline"; // Para Filled
-import StatusErrorIcon from "@mui/icons-material/CancelOutlined";      // Para Canceled (usando Cancel)
-import SellIcon from "@mui/icons-material/TrendingDown";        // Para SELL type
+import StatusOkIcon from "@mui/icons-material/CheckCircleOutline"; // Para Completed
+import StatusErrorIcon from "@mui/icons-material/UnpublishedOutlined"; // Para Failed (Error)
+import SellIcon from "@mui/icons-material/ArrowUpward"; // Icono representativo para Venta (SELL)
 
-const columns_sales_orders = [ 
+const columns_sales = [
   // --- Columnas con Iconos / Formato Especial Primero ---
   {
-    field: "status",
-    headerName: "Estado Venta", 
-    description: "Estado actual de la orden de venta.", 
+    field: "status", // 1. Estado (Crítico saber si se completó, falló o está pendiente)
+    headerName: "Estado",
+    description: "Estado de la orden de venta.",
     renderInfo: {
       label: {
-        Filled: { text: "Completada", icon: <StatusOkIcon />, color: "ok" },
-        Canceled: { text: "Cancelada", icon: <StatusErrorIcon />, color: "error" },
+        Filled: { text: "Bien", icon: <StatusOkIcon />, color: "ok" },
+        Canceled: { text: "Error", icon: <StatusErrorIcon />, color: "error" },
       },
     },
   },
   {
-    field: "type",
-    headerName: "Tipo", 
-    description: "Tipo de operación (siempre Venta en esta tabla).", 
-    renderInfo: {
-      label: {
-        SELL: { text: "Venta", icon: <SellIcon />, color: "error" },
-      },
-    },
+    field: "profit", // 2. Beneficio/Pérdida (Importante para el usuario)
+    headerName: "Beneficio",
+    description: "Ganancia o pérdida obtenida en la venta.",
+    ...modelsFormat.profit, // Formato especial para beneficio/pérdida
   },
   {
-    field: "profit",
-    headerName: "Beneficio Venta", 
-    description: "Beneficio o pérdida realizado en la venta.", 
-    ...modelsFormat.profit,
+    inTable: false, // Oculto ya que siempre es Venta en esta tabla
+    field: "type", // 3. Tipo de Operación (Aunque siempre es Venta aquí, podría tener icono)
+    headerName: "Tipo",
+    description: "Tipo de operación realizada.",
+    renderInfo: {
+      label: {
+        SELL: { text: "Venta", icon: <SellIcon />, color: "ok" }, // Color 'error' puede representar 'venta' o 'rojo'
+      },
+    },
   },
 
-  // --- Otras Columnas Visibles ---
+  // --- Otras Columnas Visibles (Ordenadas por Relevancia) ---
   {
-    field: "pair",
-    headerName: "Par", 
-    description: "Par de divisas vendido (ej. BTC/USDT).", 
+    field: "pair", // 4. Qué se vendió (Fundamental)
+    headerName: "Par",
+    description: "Par de divisas vendido (ej. BTC/USDT).",
   },
   {
-    field: "amount_base",
-    headerName: "Cantidad Vendida", 
-    description: "Cantidad de la moneda base vendida.", 
-    ...modelsFormat.numberGeneral,
+    field: "amount_base", // 5. Cuánto se vendió del activo base
+    headerName: "Cantidad Vendida",
+    description: "Cantidad del activo base que se vendió.",
+    ...modelsFormat.numberGeneral, // Formato número general
   },
   {
-    field: "price", 
-    headerName: "Precio Venta", 
-    description: "Precio al que se ejecutó o intentó ejecutar la venta.", 
-    ...modelsFormat.currentBitcoin,
+    field: "amount_quote", // 6. Cuánto se recibió de la moneda cotización
+    headerName: "Monto Recibido",
+    description:
+      "Cantidad de la moneda de cotización (USDT) recibida por la venta.",
+    ...modelsFormat.currentBitcoin, // Formato moneda
   },
   {
-    field: "amount_quote",
-    headerName: "Total Recibido", 
-    description: "Cantidad total de la moneda cotizada recibida por la venta.", 
-    ...modelsFormat.currentBitcoin,
+    field: "execution_price", // 7. A qué precio se ejecutó
+    headerName: "Precio Venta",
+    description: "Precio unitario al que se ejecutó la orden de venta.",
+    ...modelsFormat.currentBitcoin, // Formato moneda
   },
   {
-    field: "user_id",
+    field: "execution_date", // 8. Cuándo se ejecutó
+    headerName: "Fecha Ejecución",
+    description: "Fecha y hora en que se completó la orden de venta.",
+    ...modelsFormat.datetime, // Formato fecha y hora
+  },
+  {
+    field: "user_id", // 9. ID Usuario (Menos relevante en la vista personal)
     headerName: "ID Usuario",
-    description: "Identificador del usuario que realizó la venta.", 
-  },
-  {
-    field: "purchase_date",
-    headerName: "Fecha Compra", 
-    description: "Fecha de compra original del activo vendido.", 
-    ...modelsFormat.datetime,
-  },
-  {
-    field: "execution_date",
-    headerName: "Fecha Cierre", 
-    description: "Fecha y hora en que se completó o canceló la venta.", 
-    ...modelsFormat.datetime,
+    description: "Identificador del usuario que realizó la venta.",
   },
 
   // --- Columnas Ocultas / Internas ---
   {
     field: "id",
-    headerName: "ID Orden Venta", 
-    description: "Identificador único de la orden de venta.", 
-    inTable: false,
+    headerName: "ID Venta",
+    description: "Identificador único de la orden de venta.",
+    inTable: false, // No mostrar ID interno
   },
   {
-    field: "order_date",
-    headerName: "Fecha Orden Venta", 
-    description: "Fecha y hora en que se creó la orden de venta.", 
+    field: "create_date", // Renombrado de 'date'
+    headerName: "Fecha SQL",
+    description: "Fecha SQL.",
+    exclude: true, // No relevante para el usuario
+    inTable: false, // Asegurarse que no se muestre
     ...modelsFormat.datetime,
-    inTable: false,
-    exclude: true,
   },
   {
     field: "name_coin",
-    headerName: "Moneda Cotización", 
-    description: "Moneda en la que se expresa el precio y el beneficio.", 
-    inTable: false,
+    headerName: "Moneda Cotización",
+    description: "Moneda de cotización utilizada.",
+    inTable: false, // Implícito por ser USDT siempre
   },
   {
     field: "id_coin",
-    headerName: "ID Moneda Cot.", 
-    description: "Identificador de la moneda de cotización.", 
-    inTable: false,
+    headerName: "ID Moneda Cot.",
+    description: "Identificador de la moneda de cotización.",
+    inTable: false, // ID interno no relevante
   },
 ];
 
-export default columns_sales_orders; 
+export default columns_sales;

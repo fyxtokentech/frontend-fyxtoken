@@ -25,7 +25,7 @@ const columns_deposits = [
   {
     field: "amount", // 2. Cuánto se depositó
     headerName: "Monto",
-    description: "Cantidad de moneda depositada (expresada en USDT).",
+    description: "Cantidad de moneda depositada.",
     ...modelsFormat.currentBitcoin, // Formato de moneda (usando el existente como referencia)
   },
   {
@@ -46,22 +46,22 @@ const columns_deposits = [
   {
     field: "name_coin",
     headerName: "Moneda Depósito",
-    description: "Moneda depositada (siempre USDT en este contexto).",
+    description: "Moneda depositada.",
     inTable: false,
   },
   {
     field: "id_coin",
     headerName: "ID Moneda",
-    description: "Identificador interno de la moneda depositada (12345 para USDT).",
+    description: "Identificador interno de la moneda depositada.",
     inTable: false,
   },
   {
     field: "create_date", // Renombrado de 'date' si existía
     headerName: "Fecha Creación",
     description: "Fecha y hora en que se registró el depósito (generado automáticamente).",
-    ...modelsFormat.datetime, // Formato de fecha y hora
     inTable: false, // Oculta porque 'exclude: true'
     exclude: true, // No relevante para el usuario final
+    ...modelsFormat.datetime, // Formato de fecha y hora
   },
 ];
 

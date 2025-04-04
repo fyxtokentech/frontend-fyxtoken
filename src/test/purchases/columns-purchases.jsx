@@ -27,7 +27,7 @@ const columns_purchases = [
     description: "Tipo de operación (siempre Compra en esta tabla).",
     renderInfo: {
       label: {
-        BUY: { text: "Compra", icon: <BuyIcon />, color: "success" }, // Usa DownloadIcon
+        BUY: { text: "Compra", icon: <BuyIcon />, color: "ok" }, // Usa DownloadIcon
       },
     },
     inTable: false, // innecesario mostrarse ya que siempre será compra
@@ -37,7 +37,7 @@ const columns_purchases = [
   {
     field: "pair",
     headerName: "Par",
-    description: "Par de divisas comprado (ej. BTC/USDT).",
+    description: "Par de divisas comprado.",
   },
   {
     field: "amount_base",
@@ -78,11 +78,11 @@ const columns_purchases = [
   },
   {
     field: "create_date", // Renombrado de 'date' si existiera
-    headerName: "Fecha Creación",
-    description: "Fecha y hora en que se registró la orden (informativo).",
-    ...modelsFormat.datetime,
+    headerName: "Fecha SQL",
+    description: "Fecha SQL.",
     exclude: true, // Excluido según especificación
     inTable: false, // Asegurarse que no se muestre
+    ...modelsFormat.datetime,
   },
   {
     field: "name_coin",

@@ -15,7 +15,7 @@ const columns_investments = [
   {
     field: "base_asset_symbol", // 1. Qué activo es
     headerName: "Activo",
-    description: "Símbolo del activo base de la posición (ej. BTC).",
+    description: "Símbolo del activo base de la posición.",
   },
   {
     field: "amount_base", // 2. Cuánto tengo
@@ -26,7 +26,7 @@ const columns_investments = [
   {
     field: "position_value", // 3. Cuánto vale ahora
     headerName: "Valor Posición",
-    description: "Valor total actual de la posición (Cantidad * Precio Actual).",
+    description: "Valor total actual de la posición.",
     ...modelsFormat.currentBitcoin, // Formato moneda
   },
   {
@@ -44,24 +44,24 @@ const columns_investments = [
   {
     field: "pair", // 7. Par de trading asociado
     headerName: "Par",
-    description: "Par de trading asociado a la posición (ej. BTC/USDT).",
-  },
-  {
-    field: "create_date", // 8. Fecha relevante
-    headerName: "Fecha",
-    description: "Fecha relevante de la posición (ej. apertura o última modificación).",
-    ...modelsFormat.datetime,
-    inTable: false,
-    exclude: true, // Decide si quieres excluirla o no
+    description: "Par de trading asociado a la posición.",
   },
    {
-    field: "user_id", // 9. Dueño (menos relevante en vista personal)
+    field: "user_id", // 8. Dueño (menos relevante en vista personal)
     headerName: "ID Usuario",
     description: "Identificador del usuario propietario de la posición.",
   },
 
 
   // --- Columnas Ocultas / Internas ---
+  {
+    field: "create_date",
+    headerName: "Fecha",
+    description: "Fecha SQL.",
+    inTable: false,
+    exclude: true, // Decide si quieres excluirla o no
+    ...modelsFormat.datetime,
+  },
   {
     field: "id",
     headerName: "ID Posición",
