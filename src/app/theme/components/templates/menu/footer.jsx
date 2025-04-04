@@ -22,6 +22,9 @@ function Footer({ updateThemeName, getThemeName }) {
         <Link color="inherit" underline="hover" href={href("/pricing")}>
           Pricing
         </Link>
+        <Link color="inherit" underline="hover" href={href("/dev")}>
+          Desarrolladores
+        </Link>
       </div>
       <div className="d-end-wrap gap-10px">
         <span>El futuro es digital y tokenizado.</span>
