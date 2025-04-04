@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 
 import { DriverParams } from "@jeff-aporta/router";
 import fluidCSS from "@jeff-aporta/fluidcss";
@@ -31,12 +31,9 @@ import TransactionsIcon from "@mui/icons-material/PriceChange";
 import FyxDialog from "@components/GUI/dialog";
 
 import { generate_inputs, Info } from "@recurrent";
-import { useEffect } from "react";
-import TableTransactions from "@views/lab/panel-robot/action-main/transaccion/TableTransactions";
-import TableOperations from "@views/lab/panel-robot/action-main/operacion/TableOperations";
-import ActionMain from "./action-main/ActionMain";
 
-import Settings from "./Settings/Settings";
+import ActionMain from "./ActionMain";
+import Settings from "./Settings";
 
 let _currency_ = "";
 

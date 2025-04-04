@@ -7,7 +7,11 @@ import { Chip, Paper, Tooltip } from "@mui/material";
 // mylibs
 import "./DynTable.css";
 
-import { getThemeLuminance, getThemeName, isDark } from "@jeff-aporta/theme-manager";
+import {
+  getThemeLuminance,
+  getThemeName,
+  isDark,
+} from "@jeff-aporta/theme-manager";
 
 import localeTextES from "./localeTextES";
 import { genAllColumns, exclude } from "./Util";
@@ -20,6 +24,8 @@ function DynTable({ rows, columns, paginationModel, ...rest }) {
   const refDataGrid = useRef();
 
   columns = exclude(columns).filter((c) => c["inTable"] != false);
+
+  rendersTemplate(columns);
 
   rows = rows.map((row, i) => ({
     id: i,
@@ -66,7 +72,7 @@ function DynTable({ rows, columns, paginationModel, ...rest }) {
         } else {
           ({ texto } = renderString({ value, row }));
         }
-        return str2width(texto) + 20 + 50 * render;
+        return str2width(texto) + 20 + 60 * render;
       }
 
       function str2width(str) {
@@ -148,7 +154,5 @@ function DynTable({ rows, columns, paginationModel, ...rest }) {
     </Paper>
   );
 }
-
-
 
 export { DynTable, genAllColumns, rendersTemplate, exclude };

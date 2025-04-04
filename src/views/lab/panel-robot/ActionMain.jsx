@@ -8,8 +8,8 @@ import fluidCSS from "@jeff-aporta/fluidcss";
 import { TooltipIconButton, generate_selects } from "@recurrent";
 import { PaperP } from "@containers";
 
-import TableOperations from "./operacion/TableOperations";
-import TableTransactions from "./transaccion/TableTransactions";
+import TableOperations from "@test/operacion/TableOperations";
+import TableTransactions from "@test/transaccion/TableTransactions";
 
 const time_wait_update_available_again = 5;
 

@@ -6,6 +6,7 @@ module.exports = override(
     "@root": path.resolve(__dirname),
     "@app": path.resolve(__dirname, "src/app"),
     "@views": path.resolve(__dirname, "src/views"),
+    "@test": path.resolve(__dirname, "src/test"),
     "@theme": path.resolve(__dirname, "src/app/theme"),
     "@identity": path.resolve(__dirname, "src/app/theme/identity"),
     "@components": path.resolve(__dirname, "src/app/theme/components"),

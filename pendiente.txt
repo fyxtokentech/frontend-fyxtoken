@@ -30,3 +30,10 @@ hacer vista para desarrollador
         todos los depositos
         todas las apis de todos los clientes
         hacer venta y comision
+
+
+[postgresql]
+host=82.29.198.89
+database=fyxtokendbdev
+user=postgres
+password=yPF_#c3J5mBP)MY@

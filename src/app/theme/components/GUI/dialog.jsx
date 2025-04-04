@@ -35,23 +35,25 @@ function FyxDialog(props) {
       >
         {children}
       </div>
-      <Dialog open={open} onClose={handleClose}>
-        <DialogTitle>
-          <Chip label={title_text} />
-        </DialogTitle>
-        <DialogContent>
-          {variant === "div" ? (
-            <div>{text}</div>
-          ) : (
-            <Typography variant="body1">{text}</Typography>
-          )}
-        </DialogContent>
-        <DialogActions className="mt-20px">
-          <Button variant="contained" onClick={handleClose}>
-            {button_text ?? "Entendido"}
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <div inert>
+        <Dialog open={open} onClose={handleClose}>
+          <DialogTitle>
+            <Chip label={title_text} />
+          </DialogTitle>
+          <DialogContent>
+            {variant === "div" ? (
+              <div>{text}</div>
+            ) : (
+              <Typography variant="body1">{text}</Typography>
+            )}
+          </DialogContent>
+          <DialogActions className="mt-20px">
+            <Button variant="contained" onClick={handleClose}>
+              {button_text ?? "Entendido"}
+            </Button>
+          </DialogActions>
+        </Dialog>
+      </div>
     </>
   );
 }

@@ -18,19 +18,27 @@ import CloseIcon from "@mui/icons-material/HighlightOff";
 import { AutoSkeleton } from "@views/lab/panel-robot/controls";
 
 import FyxDialog from "@components/GUI/dialog";
-import { DynTable, genAllColumns, rendersTemplate, exclude } from "@components/GUI/DynTable/DynTable";
+import {
+  DynTable,
+  genAllColumns,
+  rendersTemplate,
+  exclude,
+} from "@components/GUI/DynTable/DynTable";
 
 import mock_transaction from "./mock-transaction.json";
 import columns_transaction from "./columns-transaction.jsx";
 
-import mock_operation from "@views/lab/panel-robot/action-main/operacion/mock-operation.json";
-import columns_operation from "@views/lab/panel-robot/action-main/operacion/columns-operation.jsx";
+import mock_operation from "@test/operacion/mock-operation.json";
+import columns_operation from "@test/operacion/columns-operation.jsx";
 
 export default TableTransactions;
 
 function TableTransactions({
-  operationTrigger,
-  setViewTable,
+  useOperation = true, // if true, is use for user
+  operationTrigger, // only use for user
+  setViewTable, // only use for user
+  data,
+  columns_config,
   ...rest
 }) {
   const [loading, setLoading] = useState(true);
@@ -41,78 +49,100 @@ function TableTransactions({
     }, 3000);
   }, []);
 
-  if (!operationTrigger) {
-    operationTrigger = mock_operation.content[0];
-  }
-  let { content } = mock_transaction;
-  let { config } = columns_transaction;
-  let columns_config_table = [...config];
-  rendersTemplate(columns_config_table);
+  let { content } = data ?? mock_transaction;
 
-  Informacion();
+  columns_config ??= [...columns_transaction.config];
 
   const { name_coin } = content.find((m) => m["name_coin"]);
 
-  let moneda;
-
-  if (name_coin) {
-    moneda = (
-      <Typography variant="caption" color="secondary" className="mb-10px">
-        Moneda: {name_coin}
-      </Typography>
-    );
-  }
-
   return (
     <div className="p-relative">
-      <div
-        className="p-absolute"
-        style={{ right: loading * 10 + "px", top: loading * 10 + "px" }}
-      >
-        {!loading ? (
-          <Tooltip title="Volver a operaciones" placement="left">
-            <IconButton size="small" onClick={() => setViewTable("operations")}>
-              <CloseIcon color="secondary" />
-            </IconButton>
-          </Tooltip>
-        ) : (
-          <Skeleton style={{ width: "30px", height: "50px" }} />
-        )}
-      </div>
-
-      <AutoSkeleton loading={loading} w="50%" h="10vh">
-        <Typography variant="caption" variant="h4" className="mt-20px">
-          Transacciones
-        </Typography>
-        <br />
-      </AutoSkeleton>
-      <AutoSkeleton loading={loading} w="60%">
-        <Typography variant="caption" color="secondary" className="mb-10px">
-          Operación: {operationTrigger["id_operation"]}
-        </Typography>
-      </AutoSkeleton>
-      <AutoSkeleton loading={loading} w="60%">
-        {moneda}
-      </AutoSkeleton>
-      <AutoSkeleton loading={loading} w="60%">
-        <Typography variant="caption" color="secondary" className="mb-10px">
-          Fecha inicio: {operationTrigger["start_date_operation"]}
-        </Typography>
-        <br />
-        <CaptionOperation>
-          Fecha fin: {operationTrigger["end_date_operation"]}
-        </CaptionOperation>
-        <br />
-        <br />
-      </AutoSkeleton>
+      <PrefixUseOperation />
       <AutoSkeleton loading={loading} h="50vh">
-        <DynTable {...rest} columns={columns_config_table} rows={content} />
+        <DynTable {...rest} columns={columns_config} rows={content} />
       </AutoSkeleton>
     </div>
   );
 
+  function PrefixUseOperation() {
+    if (!useOperation) {
+      return null;
+    }
+    Informacion();
+    return (
+      <>
+        <div
+          className="p-absolute"
+          style={{ right: loading * 10 + "px", top: loading * 10 + "px" }}
+        >
+          {(() => {
+            if (loading) {
+              return <Skeleton style={{ width: "30px", height: "50px" }} />;
+            }
+            return (
+              <Tooltip title="Volver a operaciones" placement="left">
+                <IconButton
+                  size="small"
+                  onClick={() => setViewTable("operations")}
+                >
+                  <CloseIcon color="secondary" />
+                </IconButton>
+              </Tooltip>
+            );
+          })()}
+        </div>
+        <Info />
+      </>
+    );
+
+    function Info() {
+      if (!operationTrigger) {
+        operationTrigger = mock_operation.content[0];
+      }
+
+      let moneda;
+
+      if (name_coin) {
+        moneda = (
+          <Typography variant="caption" color="secondary" className="mb-10px">
+            Moneda: {name_coin}
+          </Typography>
+        );
+      }
+      return (
+        <>
+          <AutoSkeleton loading={loading} w="50%" h="10vh">
+            <Typography variant="caption" variant="h4" className="mt-20px">
+              Transacciones
+            </Typography>
+            <br />
+          </AutoSkeleton>
+          <AutoSkeleton loading={loading} w="60%">
+            <Typography variant="caption" color="secondary" className="mb-10px">
+              Operación: {operationTrigger["id_operation"]}
+            </Typography>
+          </AutoSkeleton>
+          <AutoSkeleton loading={loading} w="60%">
+            {moneda}
+          </AutoSkeleton>
+          <AutoSkeleton loading={loading} w="60%">
+            <Typography variant="caption" color="secondary" className="mb-10px">
+              Fecha inicio: {operationTrigger["start_date_operation"]}
+            </Typography>
+            <br />
+            <CaptionOperation>
+              Fecha fin: {operationTrigger["end_date_operation"]}
+            </CaptionOperation>
+            <br />
+            <br />
+          </AutoSkeleton>
+        </>
+      );
+    }
+  }
+
   function Informacion() {
-    columns_config_table.push({
+    columns_config.push({
       field: Math.random().toString(36).replace("0.", "opns-"),
       headerName: "Información",
       sortable: false,
@@ -134,7 +164,7 @@ function TableTransactions({
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {exclude(config).map((column, i) => {
+                      {exclude(columns_config).map((column, i) => {
                         const { field, headerName } = column;
                         return (
                           <TableRow

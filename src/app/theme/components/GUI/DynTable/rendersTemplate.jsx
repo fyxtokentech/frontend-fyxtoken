@@ -1,7 +1,7 @@
 import { Chip, Tooltip } from "@mui/material";
 
-function rendersTemplate(columns_config_table) {
- columns_config_table.map((column) => {
+function rendersTemplate(columns_config) {
+ columns_config.map((column) => {
    const { renderInfo } = column;
    if (renderInfo) {
      let {
@@ -16,6 +16,7 @@ function rendersTemplate(columns_config_table) {
      } = renderInfo;
 
      if (label) {
+      
        return Object.assign(column, LabelFormat());
      }
      if (number_format) {
