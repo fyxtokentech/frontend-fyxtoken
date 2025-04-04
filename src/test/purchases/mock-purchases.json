@@ -1,0 +1,44 @@
+[
+  {
+    "id": "BUY001",
+    "user_id": "user789",
+    "pair": "BTC/USDT",
+    "type": "BUY",
+    "amount_base": 0.05,
+    "price": 65000.50,
+    "amount_quote": 3250.03,
+    "status": "Completed",
+    "name_coin": "USDT",
+    "id_coin": "12345",
+    "create_date": "2024-03-25T16:00:00Z",
+    "execution_date": "2024-03-25T16:00:05Z"
+  },
+  {
+    "id": "BUY002",
+    "user_id": "user123",
+    "pair": "ETH/USDT",
+    "type": "BUY",
+    "amount_base": 1.5,
+    "price": 3400.00,
+    "amount_quote": 5100.00,
+    "status": "Pending",
+    "name_coin": "USDT",
+    "id_coin": "12345",
+    "create_date": "2024-03-28T10:15:00Z",
+    "execution_date": null
+  },
+  {
+    "id": "BUY003",
+    "user_id": "user456",
+    "pair": "SOL/USDT",
+    "type": "BUY",
+    "amount_base": 20.0,
+    "price": 180.25,
+    "amount_quote": 3605.00,
+    "status": "Failed",
+    "name_coin": "USDT",
+    "id_coin": "12345",
+    "create_date": "2024-04-01T00:00:00Z",
+    "execution_date": "2024-04-01T00:00:15Z"
+  }
+]

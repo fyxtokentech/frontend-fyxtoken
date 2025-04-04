@@ -40,41 +40,31 @@ function TableOperations({
   let { content } = data ?? mock_operation;
   columns_config ??= [...columns_operation.config];
 
+  if (useForUser) {
+    Opciones();
+  }
+
   return (
     <>
-      <PrefixUseUser />
+      <Typography variant="h5" className="mh-20px">
+        Operaciones
+      </Typography>
+      <div className={loading ? "" : "mh-30px"}>
+        <DateRangeControls
+          {...{
+            loading,
+            dateRangeInit,
+            dateRangeFin,
+            setDateRangeInit,
+            setDateRangeFin,
+          }}
+        />
+      </div>
       <AutoSkeleton h="40vh" loading={loading}>
         <DynTable {...rest} columns={columns_config} rows={content} />
       </AutoSkeleton>
     </>
   );
-
-  function PrefixUseUser() {
-    if (!useForUser) {
-      return;
-    }
-    Opciones();
-    return (
-      <>
-        <AutoSkeleton loading={loading} h="10vh" w="60%">
-          <Typography variant="h4" className="mh-20px">
-            Operaciones
-          </Typography>
-        </AutoSkeleton>
-        <div className={loading ? "" : "mh-30px"}>
-          <DateRangeControls
-            {...{
-              loading,
-              dateRangeInit,
-              dateRangeFin,
-              setDateRangeInit,
-              setDateRangeFin,
-            }}
-          />
-        </div>
-      </>
-    );
-  }
 
   function Opciones() {
     columns_config.unshift({

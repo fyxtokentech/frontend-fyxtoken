@@ -1,12 +1,13 @@
 import React from 'react';
-import { Typography, Box } from '@mui/material';
+import { Box } from '@mui/material';
+// Importar la tabla de APIs de usuario de prueba
+import TableUserApis from "@test/UserApis/TableUserApis"; // Corregido nombre de carpeta
 
 export default function UserApisTable() {
-  // TODO: Fetch and display user APIs data
   return (
     <Box>
-      <Typography variant="h6">User APIs Data</Typography>
-      <Typography>Table for all user APIs will be displayed here.</Typography>
+      {/* Renderizar la tabla de APIs de usuario */}
+      <TableUserApis />
     </Box>
   );
 }

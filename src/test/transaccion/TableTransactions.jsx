@@ -30,6 +30,8 @@ import columns_transaction from "./columns-transaction.jsx";
 
 import mock_operation from "@test/operacion/mock-operation.json";
 import columns_operation from "@test/operacion/columns-operation.jsx";
+import dayjs from "dayjs";
+import { DateRangeControls } from "@views/lab/panel-robot/controls";
 
 export default TableTransactions;
 
@@ -42,6 +44,11 @@ function TableTransactions({
   ...rest
 }) {
   const [loading, setLoading] = useState(true);
+
+  const [dateRangeInit, setDateRangeInit] = useState(
+    dayjs().subtract(14, "day")
+  );
+  const [dateRangeFin, setDateRangeFin] = useState(dayjs());
 
   useEffect(() => {
     setTimeout(() => {
@@ -57,7 +64,21 @@ function TableTransactions({
 
   return (
     <div className="p-relative">
+      <Typography variant="caption" variant="h5" className="mt-20px">
+        Transacciones
+      </Typography>
       <PrefixUseOperation />
+      <br />
+      <DateRangeControls
+        {...{
+          loading,
+          dateRangeInit,
+          setDateRangeInit,
+          dateRangeFin,
+          setDateRangeFin,
+        }}
+      />
+      <br />
       <AutoSkeleton loading={loading} h="50vh">
         <DynTable {...rest} columns={columns_config} rows={content} />
       </AutoSkeleton>
@@ -111,12 +132,6 @@ function TableTransactions({
       }
       return (
         <>
-          <AutoSkeleton loading={loading} w="50%" h="10vh">
-            <Typography variant="caption" variant="h4" className="mt-20px">
-              Transacciones
-            </Typography>
-            <br />
-          </AutoSkeleton>
           <AutoSkeleton loading={loading} w="60%">
             <Typography variant="caption" color="secondary" className="mb-10px">
               Operación: {operationTrigger["id_operation"]}

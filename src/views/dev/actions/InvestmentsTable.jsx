@@ -1,12 +1,13 @@
 import React from 'react';
-import { Typography, Box } from '@mui/material';
+import { Box } from '@mui/material';
+// Importar la tabla de inversiones de prueba
+import TableInvestments from "@test/investments/TableInvestments";
 
 export default function InvestmentsTable() {
-  // TODO: Fetch and display investments data
   return (
     <Box>
-      <Typography variant="h6">Investments Data</Typography>
-      <Typography>Table for all user investments will be displayed here.</Typography>
+      {/* Renderizar la tabla de inversiones */}
+      <TableInvestments />
     </Box>
   );
 }

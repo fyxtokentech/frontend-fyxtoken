@@ -1,12 +1,12 @@
 import React from 'react';
-import { Typography, Box } from '@mui/material';
+import { Box } from '@mui/material';
+// Importar la tabla de ventas de prueba
+import TableSales from "@test/sales/TableSales";
 
 export default function SalesTable() {
-  // TODO: Fetch and display sales data with commissions
   return (
     <Box>
-      <Typography variant="h6">Sales Data (with Commission)</Typography>
-      <Typography>Table for all sales including commission column will be displayed here.</Typography>
+      <TableSales />
     </Box>
   );
 }

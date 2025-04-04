@@ -1,12 +1,13 @@
 import React from 'react';
-import { Typography, Box } from '@mui/material';
+import { Box } from '@mui/material';
+// Importar la tabla de compras de prueba
+import TablePurchases from "@test/purchases/TablePurchases";
 
 export default function PurchasesTable() {
-  // TODO: Fetch and display purchases data
   return (
     <Box>
-      <Typography variant="h6">Purchases Data</Typography>
-      <Typography>Table for all purchases will be displayed here.</Typography>
+      {/* Renderizar la tabla de compras */}
+      <TablePurchases />
     </Box>
   );
 }
