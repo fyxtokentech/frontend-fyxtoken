@@ -30,7 +30,7 @@ const columns_purchases = [
         BUY: { text: "Compra", icon: <BuyIcon />, color: "success" }, // Usa DownloadIcon
       },
     },
-    // Nota: Podría ocultarse si se desea, ya que siempre será Compra
+    inTable: false, // innecesario mostrarse ya que siempre será compra
   },
 
   // --- Otras Columnas Visibles ---
