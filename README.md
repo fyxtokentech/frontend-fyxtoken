@@ -95,8 +95,7 @@ Proyecto frontend desarrollado en React para gestión y visualización de tokens
 El proyecto utiliza `react-app-rewired` para modificar la configuración de webpack sin necesidad de hacer eject. La configuración se encuentra en:
 
 ```
-├── config-overrides.js  # Configuración principal de webpack
-└── .env                # Variables de entorno
+└── config-overrides.js  # Configuración principal de webpack
 ```
 
 ### Temas y Estilos
@@ -104,6 +103,8 @@ La configuración de temas está ubicada en:
 
 ```
 ├── src/app/theme/identity/palettes.jsx  # Definición de paletas de colores
+├── src/app/theme/identity/colors.jsx    # Definición de colores
+├── src/app/theme/identity/scrollbar.jsx  # Definición de scrollbars
 └── src/app/theme/components/            # Componentes con estilos temáticos
 ```
 
@@ -169,13 +170,13 @@ npm run build
 ```
 
 ### Ejecutar prueba
-Realiza una construcción y sirve el proyecto para prueba.
+Realiza una construcción e inicia servidor para el proyecto pre-despliegue.
 ```bash
-npm test
+npm run test
 ```
 
 ### Desplegar en producción
-Despliega el proyecto en producción.
+Despliega el proyecto para actualizar producción.
 ```bash
 npm run deploy
 ```
