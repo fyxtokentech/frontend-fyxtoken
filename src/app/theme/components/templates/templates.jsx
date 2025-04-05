@@ -64,8 +64,8 @@ function ThemeSwitcher({ children, urlShader, bgtype = "1", h_init = "0", h_fin 
   }
 
   useLayoutEffect(() => {
-    themeSwitch_listener.forEach((fn) => fn(theme_name));
-  }, [theme_name]);
+    themeSwitch_listener.forEach((fn) => fn(theme_name, theme_luminance));
+  }, [theme_name, theme_luminance]);
 
   return (
     <Notifier>

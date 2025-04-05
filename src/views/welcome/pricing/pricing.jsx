@@ -1,14 +1,13 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 
-import { colorsTheme, isDark } from "@jeff-aporta/theme-manager";
+import { colorsTheme, getThemeLuminance, getThemeName, isDark } from "@jeff-aporta/theme-manager";
 import fluidCSS from "@jeff-aporta/fluidcss";
 import JS2CSS from "@jeff-aporta/js2css";
 
-import { generate_inputs, generate_selects, Info } from "@recurrent";
 import { ThemeSwitcher, themeSwitch_listener } from "@templates";
 import { DivM, PaperP } from "@containers";
 
-import { Button, Chip, Paper, Typography } from "@mui/material";
+import { Button, Chip, Paper, Typography, Box, Container, Grid } from "@mui/material";
 import TaskAltIcon from "@mui/icons-material/TaskAlt";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import UnpublishedIcon from "@mui/icons-material/Unpublished";
@@ -27,22 +26,21 @@ JS2CSS.insertStyle({
   },
 });
 
-//-------------------------------------
-
 export default Pricing;
 
-//------------ definitions ------------
-
 function Pricing() {
-  const [theme, setTheme] = useState(isDark());
-  const txt = "Compara planes y características";
-  document.querySelector("title").innerHTML = txt;
+  const [theme, setTheme] = useState(getThemeName()+getThemeLuminance());
+  const [selectedTab, setSelectedTab] = useState("individuals");
+  const pageTitle = "Planes y precios";
+  document.querySelector("title").innerHTML = pageTitle;
 
   useEffect(() => {
-    themeSwitch_listener.push(setTheme);
+    themeSwitch_listener.push((theme_name, theme_luminance)=>{
+      setTheme(theme_name+theme_luminance)
+    });
   }, []);
 
-  const subtitle_classes = isDark() ? "morado-enfasis-brillante" : "azul-agua";
+  const subtitle_classes = isDark() ? "morado-enfasis-brillante" : "verde-cielo";
 
   JS2CSS.insertStyle({
     id: "pricing",
@@ -64,218 +62,248 @@ function Pricing() {
   return (
     <ThemeSwitcher h_fin="300px">
       <div className="overflow-hidden">
-        <DivM>
-          <div className="d-flex-col-center">
-            <Typography variant="h2" className="mb-15px">
-              Planes y precios
+        <Container maxWidth="lg">
+          {/* Encabezado */}
+          <Box className="plans-section" textAlign="center" mt={4}>
+            <Typography variant="h2" component="div" className="plans-section-title" gutterBottom>
+              {pageTitle}
             </Typography>
-            <Typography variant="h5">
-              <b>Elige el plan perfecto para ganar</b>
+            <Typography variant="h5" component="div" className="plans-section-subtitle">
+              Elige el plan perfecto para tu estrategia
             </Typography>
-          </div>
-          <br />
-          <div
-            className={fluidCSS()
-              .gtX(1100, {
-                justifyContent: ["space-evenly", "space-around"],
-                padding: ["50px", "20px"],
-              })
-              .end("d-flex flex-wrap gap-20px")}
-          >
+            
+            {/* Selector de tipo de plan */}
+            <Box display="flex" justifyContent="center" mt={2} mb={4}>
+              <Button 
+                variant={selectedTab === "individuals" ? "contained" : "outlined"} 
+                color="primary" 
+                onClick={() => setSelectedTab("individuals")}
+                sx={{ mr: 1 }}
+              >
+                Para individuos
+              </Button>
+              <Button 
+                variant={selectedTab === "organizations" ? "contained" : "outlined"} 
+                color={isDark() ? "white" : "black"} 
+                onClick={() => setSelectedTab("organizations")}
+              >
+                Para grupos
+              </Button>
+            </Box>
+          </Box>
+
+          {/* Tarjetas de planes destacados */}
+          <Box className="pricing-cards-container">
             {plans
               .filter(({ important }) => important)
-              .map((p, i) => {
-                return <PrevCardPlan plan={p} key={i} />;
-              })}
-          </div>
-          <DivM
-            style={{
-              textAlign: "center",
-            }}
-          >
+              .map((plan, index) => (
+                <PricingCard key={index} plan={plan} />
+              ))}
+          </Box>
+
+          {/* Tabla comparativa */}
+          <Box mt={6} mb={4} textAlign="center">
             <Typography
               variant="h4"
+              component="h3"
               className={`goodtimes-rg ${
                 isDark() ? "verde-lima" : "verde-cielo"
               }`}
             >
-              {txt}
+              Compara planes y características
             </Typography>
-          </DivM>
-          <Paper id="container-pricing">
-            <table id="pricing" cellSpacing={0} cellPadding={0}>
-              <thead>
-                <tr className="bordear">
-                  <td className="no-pad p-relative">
-                    <PaperP className="expand"></PaperP>
-                  </td>
-                  {plans.map((p, i) => (
-                    <Plan plan={p} key={i} />
+          </Box>
+
+          {/* Tabla de comparación de planes */}
+          <Paper id="container-pricing" className="mb-4">
+            <Box className="table-responsive">
+              <table className="features-table" id="pricing">
+                <thead>
+                  <tr>
+                    <th>Nombre</th>
+                    <th>Duración</th>
+                    <th>Operaciones</th>
+                    <th>Ganancia</th>
+                    <th>Comisión</th>
+                    <th>Costo</th>
+                    <th>Máx. Inversión</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {plans.map((plan, index) => (
+                    <tr key={index}>
+                      <td>
+                        <Typography variant="body1" component="div" fontWeight="bold">
+                          {plan.name}
+                          {plan.popular && (
+                            <Chip 
+                              label="Popular" 
+                              size="small" 
+                              color="primary" 
+                              sx={{ ml: 1, scale: 0.9, color: "white" }} 
+                            />
+                          )}
+                        </Typography>
+                      </td>
+                      <td>{plan.period}</td>
+                      <td>
+                        {plan.operations.quantity === -1 
+                          ? "Ilimitado" 
+                          : `${plan.operations.quantity} op. ${plan.operations.interval}`}
+                      </td>
+                      <td>{plan.ganancia || "-"}</td>
+                      <td>{plan.comision || "-"}</td>
+                      <td>
+                        <Typography variant="body1" component="div" fontWeight="bold">
+                          {plan.costo || (plan.price && plan.price.quantity === 0 ? "Gratis" : "-")}
+                        </Typography>
+                      </td>
+                      <td>{plan.maxInversion || "-"}</td>
+                    </tr>
                   ))}
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td colSpan={6} className="fix-left no-pad bordear no-right no-bordear" style={{padding:"1px"}}>
-                    <PaperP>
+                </tbody>
+              </table>
+            </Box>
+          </Paper>
+
+          {/* Tabla de características */}
+          <Paper id="container-pricing">
+            <Box className="table-responsive">
+              <table className="features-table" id="pricing">
+                <thead>
+                  <tr>
+                    <th>Características</th>
+                    {plans.map((plan, index) => (
+                      <th key={index}>
+                        <Typography variant="body1" component="div" fontWeight="bold">
+                          {plan.name}
+                        </Typography>
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td colSpan={plans.length + 1} className="section-header">
                       <Typography
-                        color="morado_enfasis"
                         className={`goodtimes-rg ${subtitle_classes}`}
+                        component="div"
+                        fontWeight="bold"
                       >
                         Capacidad de uso
                       </Typography>
-                    </PaperP>
-                  </td>
-                  <td style={{visibility:"hidden"}}></td>
-                </tr>
-              </tbody>
-              <tbody>
-                {features.map(({ id: id_benefit, name, description }, i) => (
-                  <BenefitList
-                    key={i}
-                    title={name}
-                    cols={plans.map(({ benefits: plan_benefits }) =>
-                      plan_benefits.includes(id_benefit)
-                    )}
-                  >
-                    <Typography variant="caption">{description}</Typography>
-                  </BenefitList>
-                ))}
-              </tbody>
-            </table>
+                    </td>
+                  </tr>
+                  {features.map((feature, index) => (
+                    <tr key={index}>
+                      <td>
+                        <Typography variant="body1" component="div">{feature.name}</Typography>
+                        <Typography variant="caption" component="div" color="textSecondary">
+                          {feature.description}
+                        </Typography>
+                      </td>
+                      {plans.map((plan, planIndex) => (
+                        <td key={planIndex} align="center">
+                          {plan.benefits && plan.benefits.includes(feature.id) ? (
+                            <CheckCircleIcon className="feature-available" />
+                          ) : (
+                            <UnpublishedIcon className="feature-unavailable" />
+                          )}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </Box>
           </Paper>
-        </DivM>
+
+          {/* Sección de referidos */}
+          <Box textAlign="center" my={6} p={3} bgcolor={isDark() ? "rgba(0,0,0,0.3)" : "rgba(0,0,0,0.05)"} borderRadius={2}>
+            <Typography variant="h5" component="div" gutterBottom>
+              Refiere a un amigo o un plan de pago para ganar 500 créditos gratis
+            </Typography>
+            <Button variant="contained" color="primary" sx={{ mt: 2 }}>
+              Referir ahora
+            </Button>
+          </Box>
+        </Container>
       </div>
     </ThemeSwitcher>
   );
-
-  function BenefitList({ children, title, cols, ...rest }) {
-    return (
-      <tr className="bordear" {...rest}>
-        <td className="fix-left bg-primary no-pad">
-          <PaperP>
-            <Typography variant="subtitle1" className="nowrap">
-              {title}
-            </Typography>
-            <Typography variant="caption" color="secondary">
-              {children}
-            </Typography>
-          </PaperP>
-        </td>
-        <Checksbenefit cols={cols} />
-        <td style={{visibility:"hidden"}}></td>
-      </tr>
-    );
-  }
-
-  function Checksbenefit({ cols }) {
-    return cols.map((s, i) => {
-      return (
-        <td key={i}>
-          <div className="d-center">
-            {s ? (
-              <CheckCircleIcon color="verde_lima" />
-            ) : (
-              <UnpublishedIcon color="cancel" />
-            )}
-          </div>
-        </td>
-      );
-    });
-  }
-
-  function PrevCardPlan({ plan: { name, popular, important } }) {
-    return (
-      <CardPlan
-        title={
-          <>
-            {name}{" "}
-            {popular && (
-              <Chip label="Popular" size="small" style={{ scale: 0.9 }} />
-            )}
-          </>
-        }
-        className={
-          popular &&
-          fluidCSS()
-            .ltX(1150, {
-              scale: [1, 1.2],
-            })
-            .end()
-        }
-        style={{
-          maxWidth: "250px",
-          ...(popular
-            ? {
-                border: "4px solid var(--border-table)",
-              }
-            : {}),
-        }}
-      >
-        {important.legend}
-      </CardPlan>
-    );
-  }
-
-  function Plan({
-    plan: {
-      name,
-      price: { prefix, quantity, sufix },
-      description,
-    },
-  }) {
-    return (
-      <td className="no-pad">
-        <PaperP className="d-flex-col-center">
-          <span className="nombre-plan">{name}</span>
-          <span className="precio-plan">
-            {[prefix, quantity, sufix].join(" ")}
-          </span>
-          <Button variant="contained" size="small">
-            Seleccionar
-          </Button>
-        </PaperP>
-      </td>
-    );
-  }
 }
 
-function CardPlan({ title, children, index, style = {}, ...rest }) {
+function PricingCard({ plan }) {
+  const { name, price, period, popular, important, operations, ganancia, comision, costo, maxInversion } = plan || {};
+  
   return (
-    <PaperP
-      key={index}
-      {...rest}
+    <PaperP 
+      className={`pricing-card ${popular ? 'popular' : ''}`}
       style={{
-        border: "2px solid " + colorsTheme().secondary.color.hex(),
-        ...style,
+        border: popular ? `3px solid ${colorsTheme().secondary.color.hex()}` : `1px solid ${colorsTheme().secondary.color.hex()}`,
       }}
-      className="d-flex-col jc-space-between"
     >
-      <div>
-        <Typography variant="h4">{title}</Typography>
-        <br />
-        <Typography variant="caption" className="mh-20px">
-          {children}
+      <div className="pricing-card-header">
+        <Typography variant="h4" gutterBottom>
+          {name || ""}
         </Typography>
+        <div className="pricing-card-price">
+          {price && (price.quantity === 0 ? "Gratis" : `${price.prefix || ""}${price.quantity || 0}${price.sufix || ""}`)}
+          <Typography variant="body2" className="pricing-card-period">
+            {period || ""}
+          </Typography>
+        </div>
       </div>
-      <hr className="mh-10px" />
-      <Button fullWidth variant="contained" size="small">
-        Seleccionar plan
-      </Button>
+      
+      <div className="pricing-card-body">
+        {important && important.legend && (
+          <Typography variant="body1" component="div" paragraph>
+            {important.legend}
+          </Typography>
+        )}
+        
+        {operations && (
+          <div className="pricing-card-feature">
+            <TaskAltIcon className="feature-icon" />
+            <Typography variant="body2" component="div">
+              <strong>Operaciones:</strong> {operations.quantity === -1 ? "Ilimitadas" : `${operations.quantity || 0} ${operations.interval || ""}`}
+            </Typography>
+          </div>
+        )}
+        
+        {ganancia && (
+          <div className="pricing-card-feature">
+            <TaskAltIcon className="feature-icon" />
+            <Typography variant="body2" component="div">
+              <strong>Ganancia:</strong> {ganancia}
+            </Typography>
+          </div>
+        )}
+        
+        {comision && (
+          <div className="pricing-card-feature">
+            <TaskAltIcon className="feature-icon" />
+            <Typography variant="body2" component="div">
+              <strong>Comisión:</strong> {comision}
+            </Typography>
+          </div>
+        )}
+        
+        {maxInversion && (
+          <div className="pricing-card-feature">
+            <TaskAltIcon className="feature-icon" />
+            <Typography variant="body2" component="div">
+              <strong>Máx. Inversión:</strong> {maxInversion}
+            </Typography>
+          </div>
+        )}
+      </div>
+      
+      <div className="pricing-card-footer">
+        <Button variant="contained" color="primary" fullWidth>
+          Seleccionar plan
+        </Button>
+      </div>
     </PaperP>
-  );
-}
-
-function BenefitCardPlan({ title, desc }) {
-  return (
-    <div className="d-flex gap-10px">
-      <TaskAltIcon />
-      <div className="d-flex-col gap-10px">
-        <small>{title}</small>
-        <Typography variant="caption" color="secondary">
-          {desc}
-        </Typography>
-      </div>
-    </div>
   );
 }
