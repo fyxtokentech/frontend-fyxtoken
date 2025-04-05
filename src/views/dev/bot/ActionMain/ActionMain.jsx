@@ -11,6 +11,8 @@ import { PaperP } from "@containers";
 import TableOperations from "@test/operacion/TableOperations";
 import TableTransactions from "@test/transaccion/TableTransactions";
 
+import GraphDriver from "@components/GUI/graph/graph-driver";
+
 const time_wait_update_available_again = 5;
 
 function PanelBalance({
@@ -34,40 +36,10 @@ function PanelBalance({
     );
   }
 
-  const updateButton_TOP = (
-    <>
-      <div
-        className={fluidCSS()
-          .ltX(600, { display: [, "none"] })
-          .end("fullWidth d-end-center gap-10px")}
-      >
-        <UpdateButton {...{ update_available, setUpdateAvailable }} />
-        {settingIcon()}
-      </div>
-      <hr className="m0" />
-    </>
-  );
-
-  const updateButton_TOP_RIGHT = (
-    <div
-      className={fluidCSS()
-        .ltX(600, { display: "none" })
-        .end("d-center gap-10px")}
-    >
-      <UpdateButton {...{ update_available, setUpdateAvailable }} />
-      {settingIcon()}
-    </div>
-  );
-
   return (
     <PaperP elevation={0}>
-      <div className="d-flex jc-space-between flex-wrap gap-20px">
-        {updateButton_TOP}
-        <div
-          className={fluidCSS()
-            .ltX(600, { width: "100%", justifyContent: "space-between" })
-            .end("d-flex ai-stretch flex-wrap gap-10px")}
-        >
+      <div className="d-flex ai-center jc-space-between flex-wrap gap-10px">
+        <div className="d-flex ai-center gap-10px">
           <PaperP className="d-center" p_min="5" p_max="10">
             {generate_selects([
               {
@@ -82,22 +54,24 @@ function PanelBalance({
             ])}
           </PaperP>
 
-          <div className="d-flex-col-center flex-wrap gap-10px">
-            <PaperP className="min-w-200px" elevation={3}>Balance USDT</PaperP>
-            <PaperP className="min-w-200px" elevation={3}>Balance Coin</PaperP>
+          <div className="d-flex ai-center gap-10px">
+            <PaperP className="min-w-150px" elevation={3}>
+              Balance USDT
+            </PaperP>
+            <PaperP className="min-w-150px" elevation={3}>
+              Balance Coin
+            </PaperP>
           </div>
         </div>
-        <div
-          className={fluidCSS()
-            .ltX(600, { width: "100%" })
-            .end("d-flex-col ai-end gap-10px")}
-        >
-          {updateButton_TOP_RIGHT}
-          <div className="d-inline-flex-col gap-10px fit-content">
-            <Button variant="contained" color="ok">
+
+        <div className="d-flex ai-center gap-10px">
+          <UpdateButton {...{ update_available, setUpdateAvailable }} />
+          {settingIcon()}
+          <div className="d-flex gap-10px">
+            <Button variant="contained" color="ok" size="small">
               Comprar
             </Button>
-            <Button variant="contained" color="cancel">
+            <Button variant="contained" color="cancel" size="small">
               Vender
             </Button>
           </div>
@@ -149,7 +123,6 @@ export default function ActionMain({
           setView,
         }}
       />
-      <br />
       {(() => {
         switch (viewTable) {
           case "operations":
@@ -168,6 +141,12 @@ export default function ActionMain({
                   setViewTable,
                   operationTrigger,
                 }}
+                pretable={
+                  <>
+                    <GraphDriver typeDataInput="none" />
+                    <br />
+                  </>
+                }
               />
             );
         }

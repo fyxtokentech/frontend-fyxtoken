@@ -32,7 +32,7 @@ import FyxDialog from "@components/GUI/dialog";
 
 import { generate_inputs, Info, Title } from "@recurrent";
 
-import ActionMain from "./ActionMain";
+import ActionMain from "./ActionMain/ActionMain";
 import Settings from "./Settings";
 
 let _currency_ = "";

@@ -57,6 +57,11 @@ function DateRangeControls({
     }
   }, [type, setDateRangeFin, setDateRangeInit]);
   
+  // Si el tipo es "none", no mostrar ningún control
+  if (type === "none") {
+    return null;
+  }
+  
   if (type === "radios") {
     const palette_config = paletteConfig();
     return (

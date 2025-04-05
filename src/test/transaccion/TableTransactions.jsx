@@ -15,7 +15,7 @@ import {
 } from "@mui/material";
 import InfoIcon from "@mui/icons-material/Info";
 import CloseIcon from "@mui/icons-material/HighlightOff";
-import { AutoSkeleton } from "@views/dev/bot/controls";
+import { AutoSkeleton } from "@components/controls";
 
 import FyxDialog from "@components/GUI/dialog";
 import {
@@ -31,7 +31,7 @@ import columns_transaction from "./columns-transaction.jsx";
 import mock_operation from "@test/operacion/mock-operation.json";
 import columns_operation from "@test/operacion/columns-operation.jsx";
 import dayjs from "dayjs";
-import { DateRangeControls } from "@views/dev/bot/controls";
+import { DateRangeControls } from "@components/controls";
 
 export default TableTransactions;
 
@@ -39,6 +39,8 @@ function TableTransactions({
   useOperation = true, // if true, is use for user
   operationTrigger, // only use for user
   setViewTable, // only use for user
+  showDateRangeControls = false,
+  pretable,
   data,
   columns_config,
   ...rest
@@ -67,19 +69,25 @@ function TableTransactions({
       <Typography variant="caption" variant="h5" className="mt-20px">
         Transacciones
       </Typography>
+      <br />
       <PrefixUseOperation />
       <br />
-      <DateRangeControls
-        {...{
-          loading,
-          dateRangeInit,
-          setDateRangeInit,
-          dateRangeFin,
-          setDateRangeFin,
-        }}
-      />
-      <br />
+      {showDateRangeControls && (
+        <>
+          <DateRangeControls
+            {...{
+              loading,
+              dateRangeInit,
+              setDateRangeInit,
+              dateRangeFin,
+              setDateRangeFin,
+            }}
+          />
+          <br />
+        </>
+      )}
       <AutoSkeleton loading={loading} h="50vh">
+        {pretable}
         <DynTable {...rest} columns={columns_config} rows={content} />
       </AutoSkeleton>
     </div>

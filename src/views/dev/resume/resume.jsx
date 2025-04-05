@@ -81,7 +81,7 @@ export default function DevView() {
       case "operations":
         return <OperationsTable />;
       case "transactions":
-        return <TransactionsTable />;
+        return <TransactionsTable showDateRangeControls />;
       case "investments":
         return <InvestmentsTable />;
       case "deposits":

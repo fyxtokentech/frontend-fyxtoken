@@ -1,15 +1,26 @@
 import React from "react";
 import { LineChart, areaElementClasses } from "@mui/x-charts/LineChart";
-import { isDark } from "@jeff-aporta/theme-manager";
-import { ColorSwitch } from "./graph_colorswitch";
+import { getTheme, isDark } from "@jeff-aporta/theme-manager";
 
 const CHART_HEIGHT = 300;
 
+function ColorSwitch({ threshold, color1, color2, id }) {
+  return (
+    <defs>
+      <linearGradient id={id} x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stopColor={color1} />
+        <stop offset="100%" stopColor={color2} />
+      </linearGradient>
+    </defs>
+  );
+}
+
 function Graph({ i, ...props }) {
+  const theme = getTheme();
   const idR = Math.random().toString(36).replace("0.", "id-");
   const { xdata, series, zoomlevel } = props;
   const overlayer = i === series.length - 1;
-  const enfasis = isDark() ? "var(--morado-enfasis)" : "var(--verde-cielo)";
+  const enfasis = theme.palette.background.paper;
 
   const chartStyles = {
     "& .MuiChartsLegend-root text": {
@@ -18,17 +29,17 @@ function Graph({ i, ...props }) {
       } !important`,
     },
     "& .MuiChartsAxis-line": {
-      stroke: `${overlayer ? enfasis : "transparent"} !important`,
+      stroke: `${overlayer ? theme.palette.secondary.main : "transparent"} !important`,
     },
     "& .MuiChartsAxis-root": {
-      fill: overlayer ? enfasis : "transparent",
+      fill: overlayer ? theme.palette.secondary.main : "transparent",
       stroke: "transparent !important",
     },
     "& .MuiChartsAxis-tick": {
       stroke: "transparent !important",
     },
     "& .MuiChartsAxis-tickLabel": {
-      fill: overlayer ? enfasis : "transparent",
+      fill: overlayer ? theme.palette.secondary.main : "transparent",
       stroke: "transparent",
       fontSize: 12,
     },
@@ -77,7 +88,7 @@ function Graph({ i, ...props }) {
           series.find((d) => d.area)?.fillcolor ??
           series.find((d) => d.area)?.color
         }
-        color2={isDark() ? "var(--morado)" : "lightcyan"}
+        color2={enfasis}
         id={`swich-color-${idR}`}
       />
     </LineChart>

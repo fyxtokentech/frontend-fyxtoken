@@ -13,7 +13,7 @@ import mock_transaction from "@test/transaccion/mock-transaction.json";
 import {
   AutoSkeleton,
   DateRangeControls,
-} from "@views/dev/bot/controls";
+} from "@components/controls";
 import { useEffect, useState } from "react";
 import dayjs from "dayjs";
 
