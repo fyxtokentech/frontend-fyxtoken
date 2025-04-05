@@ -39,7 +39,7 @@ function PanelBalance({
   return (
     <PaperP elevation={0}>
       <div className="d-flex ai-center jc-space-between flex-wrap gap-10px">
-        <div className="d-flex ai-center gap-10px">
+        <div className={`d-flex ai-center flex-wrap gap-10px ${fluidCSS().ltX(768, { width: "100%" }).end()}`}>
           <PaperP className="d-center" p_min="5" p_max="10">
             {generate_selects([
               {
@@ -54,17 +54,23 @@ function PanelBalance({
             ])}
           </PaperP>
 
-          <div className="d-flex ai-center gap-10px">
-            <PaperP className="min-w-150px" elevation={3}>
+          <div className={`d-flex ai-center flex-wrap gap-10px ${fluidCSS().ltX(480, { width: "100%" }).end()}`}>
+            <PaperP 
+              className={`d-center ${fluidCSS().ltX(480, { width: "calc(50% - 5px)" }).end()}`} 
+              elevation={3}
+            >
               Balance USDT
             </PaperP>
-            <PaperP className="min-w-150px" elevation={3}>
+            <PaperP 
+              className={`d-center ${fluidCSS().ltX(480, { width: "calc(50% - 5px)" }).end()}`} 
+              elevation={3}
+            >
               Balance Coin
             </PaperP>
           </div>
         </div>
 
-        <div className="d-flex ai-center gap-10px">
+        <div className={`d-flex ai-center flex-wrap gap-10px ${fluidCSS().ltX(768, { width: "100%", justifyContent: "flex-end", marginTop: "10px" }).end()}`}>
           <UpdateButton {...{ update_available, setUpdateAvailable }} />
           {settingIcon()}
           <div className="d-flex gap-10px">
