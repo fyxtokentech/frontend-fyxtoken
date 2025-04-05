@@ -7,7 +7,7 @@ import { Box } from "@mui/material";
 import {
   AutoSkeleton,
   DateRangeControls,
-} from "@views/lab/panel-robot/controls"; // Asumiendo que quieres controles
+} from "@views/dev/bot/controls"; // Asumiendo que quieres controles
 import dayjs from "dayjs";
 
 export default function TableDeposits({

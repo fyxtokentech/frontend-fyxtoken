@@ -1,3 +1,3 @@
-import Login from "./login";
+import Welcome from "./welcome/welcome";
 
-export default Login;
+export default Welcome;

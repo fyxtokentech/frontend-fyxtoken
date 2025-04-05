@@ -104,7 +104,7 @@ function LoginForm() {
           variant="contained"
           fullWidth
           href={href({
-            view: "/wallet",
+            view: "/users/wallet",
             params: { "action-id": "investment" },
           })}
         >

@@ -7,7 +7,7 @@ import { Box, Typography } from "@mui/material";
 import {
   AutoSkeleton,
   DateRangeControls,
-} from "@views/lab/panel-robot/controls";
+} from "@views/dev/bot/controls";
 import dayjs from "dayjs";
 
 export default function TableSales({

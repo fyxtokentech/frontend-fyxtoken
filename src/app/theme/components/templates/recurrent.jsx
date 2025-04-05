@@ -26,6 +26,7 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
+import fluidCSS from "@jeff-aporta/fluidcss";
 
 const PUBLIC_URL = process.env.PUBLIC_URL;
 
@@ -343,6 +344,29 @@ function AnSelect(props) {
   }
 }
 
+
+function Title({ txt }) {
+  if (!txt) return null;
+  // Asegurarse que el selector del título exista antes de modificarlo
+  const titleElement = document.querySelector("title");
+  if (titleElement) {
+      titleElement.innerHTML = txt;
+  }
+  return (
+    <>
+      <Typography
+        variant="h2" // Usar h2 como en panel-robot
+        className={fluidCSS().ltX(600, { fontWeight: "500" }).end()}
+      >
+        {txt}
+      </Typography>
+      <hr className="threeQuartersWidth d-inline-block" />
+      <br />
+      <br />
+    </>
+  );
+}
+
 export {
   ImageLocal,
   generate_inputs,
@@ -351,4 +375,5 @@ export {
   BoxForm,
   TitleInfo,
   TooltipIconButton,
+  Title,
 };

@@ -20,6 +20,8 @@ import {paletteConfig} from "@jeff-aporta/theme-manager";
 
 import {themeSwitch_listener} from "@templates";
 
+import { Title } from "@recurrent";
+
 const tabMapping = {
   operations: 0,
   transactions: 1,
@@ -37,29 +39,6 @@ const {
 const reverseTabMapping = Object.fromEntries(
   Object.entries(tabMapping).map(([key, value]) => [value, key])
 );
-
-// Componente Title similar al de panel-robot.jsx
-function Title({ txt }) {
-  if (!txt) return null;
-  // Asegurarse que el selector del título exista antes de modificarlo
-  const titleElement = document.querySelector("title");
-  if (titleElement) {
-      titleElement.innerHTML = txt;
-  }
-  return (
-    <>
-      <Typography
-        variant="h2" // Usar h2 como en panel-robot
-        className={fluidCSS().ltX(600, { fontWeight: "500" }).end()}
-      >
-        {txt}
-      </Typography>
-      <hr className="threeQuartersWidth d-inline-block" />
-      <br />
-      <br />
-    </>
-  );
-}
 
 export default function DevView() {
   const [theme, setTheme] = useState(0);
@@ -126,7 +105,7 @@ export default function DevView() {
     <ThemeSwitcher h_init="20px" h_fin="300px">
       <DivM>
         {/* Usar el componente Title */}
-        <Title txt="Panel de Desarrollador" />
+        <Title txt="Panel Resumen" />
 
         {/* Mantener Paper para la estructura interna de las pestañas */}
         <Paper sx={{ width: '100%', p: 3 /* mt: 2 eliminado ya que DivM puede manejar margen */ }}> 

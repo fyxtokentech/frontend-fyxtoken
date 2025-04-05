@@ -30,30 +30,12 @@ import TransactionsIcon from "@mui/icons-material/PriceChange";
 
 import FyxDialog from "@components/GUI/dialog";
 
-import { generate_inputs, Info } from "@recurrent";
+import { generate_inputs, Info, Title } from "@recurrent";
 
 import ActionMain from "./ActionMain";
 import Settings from "./Settings";
 
 let _currency_ = "";
-
-function Title({ txt }) {
-  if (!txt) return null;
-  document.querySelector("title").innerHTML = txt;
-  return (
-    <>
-      <Typography
-        variant="h2"
-        className={fluidCSS().ltX(600, { fontWeight: "500" }).end()}
-      >
-        {txt}
-      </Typography>
-      <hr className="threeQuartersWidth d-inline-block" />
-      <br />
-      <br />
-    </>
-  );
-}
 
 export default function PanelRobot() {
   const driverParams = DriverParams();

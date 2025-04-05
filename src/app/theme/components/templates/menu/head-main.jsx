@@ -15,6 +15,7 @@ import {
 import { ImageLocal } from "@recurrent";
 import fluidCSS from "@jeff-aporta/fluidcss";
 import { LuminanceThemeSwitch } from "@components/templates/menu/switch";
+import LoginIcon from "@mui/icons-material/Login";
 
 import {
   isDark,
@@ -24,6 +25,7 @@ import {
   JS2CSS,
   getThemeLuminance,
 } from "@jeff-aporta/theme-manager";
+import { queryPath } from "@jeff-aporta/router";
 
 const hideIcon = 500;
 const wbrk = 600;
@@ -35,7 +37,7 @@ export default HeadMain;
 //------------ definitions ------------
 
 function HeadMain({ updateTheme = () => 0 }) {
-  const { pathname } = window.location;
+  const isLoginPage = queryPath().includes('/users/login');
 
   JS2CSS.insertStyle({
     id: "headmain-root",
@@ -64,7 +66,23 @@ function HeadMain({ updateTheme = () => 0 }) {
       }}
     >
       <BotonInicio />
-      <div className="d-center">
+      <div className="d-center gap-10px">
+        {!isLoginPage && (
+          <Button
+            variant="contained"
+            color="primary"
+            size="small"
+            startIcon={<LoginIcon />}
+            href={href("/users/login")}
+            sx={{
+              borderRadius: "20px",
+              textTransform: "none",
+              fontWeight: "bold",
+            }}
+          >
+            Inicia sesión
+          </Button>
+        )}
         <Tooltip title={"Cambiar a tema " + (isDark() ? "claro" : "oscuro")}>
           <LuminanceThemeSwitch
             checked={isDark()}

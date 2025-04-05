@@ -15,7 +15,7 @@ import {
 } from "@mui/material";
 import InfoIcon from "@mui/icons-material/Info";
 import CloseIcon from "@mui/icons-material/HighlightOff";
-import { AutoSkeleton } from "@views/lab/panel-robot/controls";
+import { AutoSkeleton } from "@views/dev/bot/controls";
 
 import FyxDialog from "@components/GUI/dialog";
 import {
@@ -31,7 +31,7 @@ import columns_transaction from "./columns-transaction.jsx";
 import mock_operation from "@test/operacion/mock-operation.json";
 import columns_operation from "@test/operacion/columns-operation.jsx";
 import dayjs from "dayjs";
-import { DateRangeControls } from "@views/lab/panel-robot/controls";
+import { DateRangeControls } from "@views/dev/bot/controls";
 
 export default TableTransactions;
 
