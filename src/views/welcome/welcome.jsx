@@ -29,6 +29,7 @@ import SpeedIcon from "@mui/icons-material/Speed";
 import MonetizationOnIcon from "@mui/icons-material/MonetizationOn";
 import ShowChartIcon from "@mui/icons-material/ShowChart";
 import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
+import CurrencyBitcoinIcon from '@mui/icons-material/CurrencyBitcoin';
 
 export default WelcomePage;
 
@@ -159,6 +160,7 @@ function HeroSection() {
                 </Typography>
                 <Typography variant="caption">Beneficio total</Typography>
                 <Box
+                  className="d-center"
                   sx={{
                     width: "100px",
                     height: "30px",
@@ -166,7 +168,10 @@ function HeroSection() {
                     borderRadius: "10px",
                     mt: 1,
                   }}
-                />
+                >
+                  <CurrencyBitcoinIcon />
+                  BTC
+                </Box>
               </Box>
 
               {/* Teléfono central */}
