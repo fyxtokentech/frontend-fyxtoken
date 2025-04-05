@@ -73,7 +73,7 @@ function FooterNavSection() {
               >
                 Precios
               </Link>
-              <Link color="inherit" underline="hover" href={href("/login")}>
+              <Link color="inherit" underline="hover" href={href("/users/login")}>
                 Acceder
               </Link>
               <Link color="inherit" underline="hover" href={href("/dev/resume")}>
