@@ -105,7 +105,8 @@ function DynTable({ rows, columns, paginationModel, ...rest }) {
       <div
         className="DynTable-container"
         style={{
-          maxHeight: "80vh",
+          height: "auto",
+          width: "100%",
           background: `rgba(0,0,0,${isDark() ? 0.1 : 0.025})`,
         }}
       >
@@ -123,6 +124,8 @@ function DynTable({ rows, columns, paginationModel, ...rest }) {
             },
           }}
           pageSizeOptions={[20, 50, 100]}
+          autoHeight
+          disableExtendRowFullWidth={false}
           sx={{
             "& .MuiDataGrid-row:hover": {
               backgroundColor:
@@ -137,16 +140,41 @@ function DynTable({ rows, columns, paginationModel, ...rest }) {
             },
             "& .MuiDataGrid-cell": {
               border: "none", // Remueve bordes de cada celda
+              whiteSpace: "normal",
+              wordWrap: "break-word",
             },
             "& .MuiDataGrid-columnHeaders": {
               borderBottom: "none", // Remueve borde inferior de los encabezados
             },
             "& .MuiDataGrid-row": {
               borderBottom: "none", // Remueve borde inferior de las filas
+              // overflow: "hidden !important",
             },
             "& .MuiDataGrid-root": {
               border: "none", // Remueve bordes de la tabla completa
+              width: "100%",
+              // overflow: "hidden !important",
             },
+            "& .MuiDataGrid-virtualScroller": {
+              // overflow: "auto !important",
+            },
+            "& .MuiDataGrid-scrollbar--horizontal": {
+              // overflow: "hidden !important",
+              position: "sticky !important",
+              bottom: "0 !important",
+            },
+            "& .MuiDataGrid-main": {
+              position: "relative !important",
+              overflow: "auto !important",
+              display: "block !important",
+              // width: "80vw !important",
+               maxHeight: "80vh",
+            },
+            "& .MuiDataGrid-virtualScrollerContent": {
+              width: "fit-content !important",
+              overflow: "auto !important",
+            },
+            "--DataGrid-rowWidth": "fit-content !important",
           }}
           localeText={localeTextES}
         />

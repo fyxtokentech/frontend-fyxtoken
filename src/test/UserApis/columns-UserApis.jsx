@@ -38,7 +38,13 @@ const columns_user_apis = [
     ...modelsFormat.datetime,
   },
   {
-    field: "user_id", // 5. A quién pertenece (menos relevante si el usuario ve sus propias claves)
+    field: "activation_date", // 5. Fecha de activación de la clave API
+    headerName: "Fecha Activación",
+    description: "Fecha y hora en que la clave API fue activada.",
+    ...modelsFormat.datetime,
+  },
+  {
+    field: "user_id", // 6. A quién pertenece (menos relevante si el usuario ve sus propias claves)
     headerName: "ID Usuario",
     description: "Identificador del usuario propietario de la clave API.",
   },

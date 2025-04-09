@@ -3,10 +3,11 @@ import { DynTable } from "@components/GUI/DynTable/DynTable";
 
 import columns_investments from "./columns-investments.jsx";
 import mock_investments from "./mock-investments.json";
-import { Box, Typography } from "@mui/material";
+import { Box, Typography, Grid } from "@mui/material";
 import {
   AutoSkeleton,
   DateRangeControls,
+  UserFilterControl,
 } from "@components/controls";
 import dayjs from "dayjs";
 
@@ -20,6 +21,31 @@ export default function TableInvestments({
     dayjs().subtract(30, "day")
   ); // Rango diferente
   const [dateRangeFin, setDateRangeFin] = useState(dayjs());
+  const [userFilter, setUserFilter] = useState("");
+  const [filteredData, setFilteredData] = useState(data);
+
+  // Filtrar datos basados en el rango de fechas y el filtro de usuario
+  useEffect(() => {
+    const filterData = () => {
+      // Filtrar por rango de fechas
+      let filtered = data.filter(item => {
+        const itemDate = dayjs(item.date);
+        return itemDate.isAfter(dateRangeInit) && itemDate.isBefore(dateRangeFin.add(1, 'day'));
+      });
+      
+      // Filtrar por nombre de usuario si hay un filtro activo
+      if (userFilter) {
+        filtered = filtered.filter(item => {
+          // Verificar si el nombre de usuario contiene el texto de búsqueda (case insensitive)
+          return item.user_name && item.user_name.toLowerCase().includes(userFilter.toLowerCase());
+        });
+      }
+      
+      return filtered;
+    };
+    
+    setFilteredData(filterData());
+  }, [data, dateRangeInit, dateRangeFin, userFilter]);
 
   useEffect(() => {
     setLoading(true);
@@ -27,7 +53,7 @@ export default function TableInvestments({
       setLoading(false);
     }, 1200);
     return () => clearTimeout(timer);
-  }, [dateRangeInit, dateRangeFin, data]);
+  }, [dateRangeInit, dateRangeFin, userFilter, data]);
 
   return (
     <Box>
@@ -35,18 +61,31 @@ export default function TableInvestments({
         Inversiones
       </Typography>
       <br />
-      <DateRangeControls
-        {...{
-          loading,
-          dateRangeInit,
-          setDateRangeInit,
-          dateRangeFin,
-          setDateRangeFin,
-        }}
-      />
+      <Grid container spacing={3} alignItems="center" justifyContent="space-between">
+        <Grid item xs={12} md={7}>
+          <DateRangeControls
+            {...{
+              loading,
+              dateRangeInit,
+              setDateRangeInit,
+              dateRangeFin,
+              setDateRangeFin,
+            }}
+          />
+        </Grid>
+        <Grid item xs={12} md={5} sx={{ display: 'flex', justifyContent: { xs: 'flex-start', md: 'flex-end' } }}>
+          <UserFilterControl
+            value={userFilter}
+            onChange={setUserFilter}
+            loading={loading}
+            label="Filtrar por usuario"
+            placeholder="Nombre de usuario"
+          />
+        </Grid>
+      </Grid>
       <br />
       <AutoSkeleton loading={loading} h="300px">
-        <DynTable rows={data} columns={columns_config} {...rest} />
+        <DynTable rows={filteredData} columns={columns_config} {...rest} />
       </AutoSkeleton>
     </Box>
   );

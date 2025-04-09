@@ -1,12 +1,14 @@
 import fluidCSS from "@jeff-aporta/fluidcss";
-import { FormControl, FormControlLabel, Radio, RadioGroup, Skeleton, useTheme } from "@mui/material";
+import { FormControl, Skeleton, useTheme, Select, MenuItem, InputLabel, TextField, Box, IconButton } from "@mui/material";
 import { DateTimePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs from "dayjs";
 import {paletteConfig} from "@jeff-aporta/theme-manager";
 import React from 'react';
+import SearchIcon from '@mui/icons-material/Search';
+import ClearIcon from '@mui/icons-material/Clear';
 
-export { AutoSkeleton, DateRangeControls };
+export { AutoSkeleton, DateRangeControls, UserFilterControl };
 
 function AutoSkeleton({ loading, w = "100%", h = "5vh", ...rest }) {
   return loading ? (
@@ -16,8 +18,80 @@ function AutoSkeleton({ loading, w = "100%", h = "5vh", ...rest }) {
   );
 }
 
+function UserFilterControl({
+  value = "",
+  onChange,
+  loading = false,
+  placeholder = "Buscar por nombre de usuario",
+  label = "Usuario",
+  width = 250,
+}) {
+  const [searchTerm, setSearchTerm] = React.useState(value);
+  const theme = useTheme();
+  const palette_config = paletteConfig();
+  
+  const handleChange = (event) => {
+    const newValue = event.target.value;
+    setSearchTerm(newValue);
+  };
+  
+  const handleSearch = () => {
+    if (onChange) {
+      onChange(searchTerm);
+    }
+  };
+  
+  const handleClear = () => {
+    setSearchTerm("");
+    if (onChange) {
+      onChange("");
+    }
+  };
+  
+  const handleKeyPress = (event) => {
+    if (event.key === 'Enter') {
+      handleSearch();
+    }
+  };
+  
+  return (
+    <AutoSkeleton h="10vh" w={`${width}px`} loading={loading}>
+      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+        <TextField
+          label={label}
+          variant="outlined"
+          size="small"
+          value={searchTerm}
+          onChange={handleChange}
+          onKeyPress={handleKeyPress}
+          placeholder={placeholder}
+          sx={{
+            width: width,
+          }}
+        />
+        <IconButton 
+          onClick={handleSearch} 
+          color="primary" 
+          sx={{ ml: 1 }}
+        >
+          <SearchIcon />
+        </IconButton>
+        {searchTerm && (
+          <IconButton 
+            onClick={handleClear} 
+            size="small" 
+            sx={{ ml: 0.5 }}
+          >
+            <ClearIcon fontSize="small" />
+          </IconButton>
+        )}
+      </Box>
+    </AutoSkeleton>
+  );
+}
+
 function DateRangeControls({
-  type = "radios",
+  type = "select",
   dateRangeInit,
   dateRangeFin,
   setDateRangeInit,
@@ -25,9 +99,11 @@ function DateRangeControls({
   loading,
 }) {
   const theme = useTheme();
+  const [periodValue, setPeriodValue] = React.useState("day");
   
-  const handleRadioChange = (event) => {
+  const handlePeriodChange = (event) => {
     const value = event.target.value;
+    setPeriodValue(value);
     const now = dayjs();
     
     switch (value) {
@@ -43,6 +119,10 @@ function DateRangeControls({
         setDateRangeFin(now);
         setDateRangeInit(now.subtract(1, 'month'));
         break;
+      case "year":
+        setDateRangeFin(now);
+        setDateRangeInit(now.subtract(1, 'year'));
+        break;
       default:
         break;
     }
@@ -50,7 +130,7 @@ function DateRangeControls({
   
   // Establecer el valor por defecto de "1 día" al montar el componente
   React.useEffect(() => {
-    if (type === "radios") {
+    if (type !== "none") {
       const now = dayjs();
       setDateRangeFin(now);
       setDateRangeInit(now.subtract(1, 'day'));
@@ -62,80 +142,61 @@ function DateRangeControls({
     return null;
   }
   
-  if (type === "radios") {
-    const palette_config = paletteConfig();
+  // Si el tipo es "custom", mostrar los selectores de fecha personalizados
+  if (type === "custom") {
     return (
       <div className="d-flex ai-stretch flex-wrap gap-20px">
-        <AutoSkeleton h="10vh" w="100%" loading={loading}>
-          <FormControl component="fieldset">
-            <RadioGroup
-              row
-              aria-label="date-range"
-              name="date-range"
-              defaultValue="day"
-              onChange={handleRadioChange}
-              sx={{
-                '& .MuiFormControlLabel-root': {
-                  marginRight: theme.spacing(3),
-                },
-                '& .MuiRadio-root': {
-                  color: palette_config.constrast_color.hex(),
-                  '&.Mui-checked': {
-                    color: palette_config.constrast_color.hex(),
-                  }
-                },
-              }}
-            >
-              <FormControlLabel 
-                value="day" 
-                control={<Radio />} 
-                label="1 día" 
+        <div className={fluidCSS().ltX(700, { width: "100%" }).end()}>
+          <AutoSkeleton h="10vh" w="250px" loading={loading}>
+            <LocalizationProvider dateAdapter={AdapterDayjs}>
+              <DateTimePicker
+                className="fullWidth"
+                label="Fecha inicio"
+                defaultValue={dateRangeInit}
+                onChange={(date) => setDateRangeInit(date)}
+                slotProps={{ textField: { size: "small" } }}
               />
-              <FormControlLabel 
-                value="week" 
-                control={<Radio />} 
-                label="1 semana" 
+            </LocalizationProvider>
+          </AutoSkeleton>
+        </div>
+        <div className={fluidCSS().ltX(700, { width: "100%" }).end()}>
+          <AutoSkeleton h="10vh" w="250px" loading={loading}>
+            <LocalizationProvider dateAdapter={AdapterDayjs}>
+              <DateTimePicker
+                className="fullWidth"
+                label="Fecha Fin"
+                defaultValue={dateRangeFin}
+                onChange={(date) => setDateRangeFin(date)}
+                slotProps={{ textField: { size: "small" } }}
               />
-              <FormControlLabel 
-                value="month" 
-                control={<Radio />} 
-                label="1 mes" 
-              />
-            </RadioGroup>
-          </FormControl>
-        </AutoSkeleton>
+            </LocalizationProvider>
+          </AutoSkeleton>
+        </div>
       </div>
     );
   }
   
+  // Implementación con Select (opción por defecto)
+  const palette_config = paletteConfig();
   return (
     <div className="d-flex ai-stretch flex-wrap gap-20px">
-      <div className={fluidCSS().ltX(700, { width: "100%" }).end()}>
-        <AutoSkeleton h="10vh" w="250px" loading={loading}>
-          <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <DateTimePicker
-              className="fullWidth"
-              label="Fecha inicio"
-              defaultValue={dateRangeInit}
-              onChange={(date) => setDateRangeInit(date)}
-              slotProps={{ textField: { size: "small" } }}
-            />
-          </LocalizationProvider>
-        </AutoSkeleton>
-      </div>
-      <div className={fluidCSS().ltX(700, { width: "100%" }).end()}>
-        <AutoSkeleton h="10vh" w="250px" loading={loading}>
-          <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <DateTimePicker
-              className="fullWidth"
-              label="Fecha Fin"
-              defaultValue={dateRangeFin}
-              onChange={(date) => setDateRangeFin(date)}
-              slotProps={{ textField: { size: "small" } }}
-            />
-          </LocalizationProvider>
-        </AutoSkeleton>
-      </div>
+      <AutoSkeleton h="10vh" w="200px" loading={loading}>
+        <FormControl variant="outlined" size="small" sx={{ minWidth: 200 }}>
+          <InputLabel id="period-select-label">Período</InputLabel>
+          <Select
+            labelId="period-select-label"
+            id="period-select"
+            value={periodValue}
+            onChange={handlePeriodChange}
+            label="Período"
+          >
+            <MenuItem value="day">1 día</MenuItem>
+            <MenuItem value="week">1 semana</MenuItem>
+            <MenuItem value="month">1 mes</MenuItem>
+            <MenuItem value="year">1 año</MenuItem>
+          </Select>
+        </FormControl>
+      </AutoSkeleton>
     </div>
   );
 }

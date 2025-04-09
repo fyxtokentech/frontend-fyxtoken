@@ -137,6 +137,7 @@ export default function ActionMain({
                 {...{
                   setOperationTrigger,
                   setViewTable,
+                  user_id: "b08edabb-1363-459d-9cc6-e2c326467071"
                 }}
               />
             );
