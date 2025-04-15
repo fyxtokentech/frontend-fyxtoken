@@ -24,6 +24,7 @@ function TableOperations({
   data,
   columns_config,
   user_id,
+  coinid, // Valor por defecto 1 si no se proporciona
   ...rest
 }) {
   const [loading, setLoading] = useState(true);
@@ -34,33 +35,29 @@ function TableOperations({
 
   // Función para obtener los datos de la API
   const fetchOperationsData = async () => {
-    if (!user_id) return;
-
-    if (!dateRangeInit || !dateRangeFin) {
-      return;
+    if (!user_id) {
+      return console.log("No hay usuario seleccionado");
     }
 
-    setError(null);
+    if (!dateRangeInit || !dateRangeFin) {
+      return console.log("No hay fechas seleccionadas");
+    }
 
     try {
       // Formatear fechas para la API
       const startDate = dateRangeInit.format("YYYY-MM-DD");
       const endDate = dateRangeFin.format("YYYY-MM-DD");
 
-      // Determinar la base URL según el entorno
-      const isProduction =
-        window.location.hostname !== "localhost" &&
-        window.location.hostname !== "127.0.0.1";
-      // En producción, intentamos usar un CORS proxy si es necesario
+      // Determinar la base URL según la configuración global
       const apiBaseUrl = "http://82.29.198.89:8000";
-      const corsProxyUrl = "https://corsproxy.io/?";
+      const localApiUrl = "http://localhost:8000";
 
-      const baseUrl = isProduction
-        ? apiBaseUrl // Primero intentamos directamente
-        : ""; // URL vacía para desarrollo (usará el proxy configurado)
+      // Usar la configuración global para determinar el entorno
+      const baseUrl =
+        global.configApp.context === "dev" ? localApiUrl : apiBaseUrl;
 
-      // Construir URL con parámetros
-      const apiUrl = `${baseUrl}/operations/${user_id}?start_date=${startDate}&end_date=${endDate}&page=1&limit=1000`;
+      // Construir URL con parámetros incluyendo coinid en el nuevo formato
+      const apiUrl = `${baseUrl}/operations/table/${user_id}?coinid=${coinid}&start_date=${startDate}&end_date=${endDate}&page=0&limit=999999`;
 
       // Configuración para manejar CORS
       const config = {
@@ -68,45 +65,71 @@ function TableOperations({
           Accept: "application/json",
           "Content-Type": "application/json",
         },
-        // Agregar configuración CORS para peticiones cross-origin en producción
-        ...(isProduction && { withCredentials: false }),
+        // Agregar configuración CORS solo para producción
+        ...(global.configApp.context !== "dev" && { withCredentials: false }),
       };
 
       // Realizar la petición con manejo de errores CORS
       let response;
       try {
         response = await axios.get(apiUrl, config);
-      } catch (corsError) {
-        // Si hay un error CORS en producción, intentar con el proxy CORS
-        if (
-          isProduction &&
-          corsError.message &&
-          (corsError.message.includes("CORS") ||
-            corsError.message.includes("Network Error"))
-        ) {
-          console.log("Intentando con CORS proxy debido a:", corsError.message);
-          const proxyUrl = `${corsProxyUrl}${encodeURIComponent(
-            apiBaseUrl
-          )}/operations/${user_id}?start_date=${startDate}&end_date=${endDate}&page=1&limit=1000`;
-          response = await axios.get(proxyUrl, {
-            headers: {
-              Accept: "application/json",
-              "Content-Type": "application/json",
-            },
+        
+        // Procesar la respuesta en formato array de arrays
+        if (response.data && Array.isArray(response.data) && response.data.length > 1) {
+          // El primer elemento contiene los nombres de las columnas
+          const headers = response.data[0];
+          
+          // Convertir los datos de array de arrays a array de objetos
+          const processedData = response.data.slice(1).map(row => {
+            const obj = {};
+            headers.forEach((header, index) => {
+              obj[header] = row[index];
+            });
+            return obj;
           });
+          
+          // Actualizar estado con los datos procesados
+          setApiData(processedData);
         } else {
-          // Si no es un error CORS o no estamos en producción, relanzar el error
-          throw corsError;
+          // Si la respuesta no tiene el formato esperado
+          console.error("Formato de respuesta inesperado:", response.data);
+          setError("Error en el formato de los datos recibidos.");
+          // Usar datos mock en caso de error
+          setApiData(mock_operation.content);
         }
+      } catch (error) {
+        // Manejo de errores según el entorno
+        if (global.configApp.context === "dev") {
+          console.error("Error en entorno de desarrollo:", error.message);
+          // En desarrollo, usar datos mock
+          console.log("Usando datos mock debido al error");
+          
+          // Procesar los datos mock que ahora también están en formato array de arrays
+          if (mock_operation.content && Array.isArray(mock_operation.content) && mock_operation.content.length > 1) {
+            const headers = mock_operation.content[0];
+            const processedMockData = mock_operation.content.slice(1).map(row => {
+              const obj = {};
+              headers.forEach((header, index) => {
+                obj[header] = row[index];
+              });
+              return obj;
+            });
+            setApiData(processedMockData);
+          } else {
+            setApiData([]);
+          }
+        } else {
+          // En producción, mostrar error
+          console.error("Error en entorno de producción:", error.message);
+          setError("Error al cargar las operaciones.");
+          setApiData([]);
+        }
+      } finally {
+        setLoading(false);
       }
-
-      // Actualizar estado con los datos recibidos
-      setApiData(response.data);
     } catch (err) {
       console.error("Error al obtener datos de operaciones:", err);
-      setError(
-        "Error al cargar las operaciones."
-      );
+      setError("Error al cargar las operaciones.");
       // Usar datos mock en caso de error
       setApiData(mock_operation.content);
     } finally {
@@ -116,16 +139,7 @@ function TableOperations({
 
   // Efecto para cargar datos cuando cambia el rango de fechas o el user_id
   useEffect(() => {
-    if (user_id) {
       fetchOperationsData();
-    } else {
-      // Si no hay user_id, usar datos mock después de un tiempo para simular carga
-      const timer = setTimeout(() => {
-        setApiData(mock_operation.content);
-        setLoading(false);
-      }, 1500);
-      return () => clearTimeout(timer);
-    }
   }, [user_id, dateRangeInit, dateRangeFin]);
 
   // Determinar qué datos mostrar: API o mock
@@ -155,6 +169,7 @@ function TableOperations({
             setDateRangeInit,
             setDateRangeFin,
           }}
+          period="month"
         />
       </div>
       {error && (

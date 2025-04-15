@@ -1,12 +1,25 @@
 import fluidCSS from "@jeff-aporta/fluidcss";
-import { FormControl, Skeleton, useTheme, Select, MenuItem, InputLabel, TextField, Box, IconButton } from "@mui/material";
+import {
+  FormControl,
+  Skeleton,
+  useTheme,
+  Select,
+  MenuItem,
+  InputLabel,
+  TextField,
+  Box,
+  IconButton,
+} from "@mui/material";
 import { DateTimePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs from "dayjs";
-import {paletteConfig} from "@jeff-aporta/theme-manager";
-import React from 'react';
-import SearchIcon from '@mui/icons-material/Search';
-import ClearIcon from '@mui/icons-material/Clear';
+import es from "dayjs/locale/es";
+import { format } from "date-fns";
+import { es as esLocale } from "date-fns/locale";
+import { paletteConfig } from "@jeff-aporta/theme-manager";
+import React from "react";
+import SearchIcon from "@mui/icons-material/Search";
+import ClearIcon from "@mui/icons-material/Clear";
 
 export { AutoSkeleton, DateRangeControls, UserFilterControl };
 
@@ -29,34 +42,34 @@ function UserFilterControl({
   const [searchTerm, setSearchTerm] = React.useState(value);
   const theme = useTheme();
   const palette_config = paletteConfig();
-  
+
   const handleChange = (event) => {
     const newValue = event.target.value;
     setSearchTerm(newValue);
   };
-  
+
   const handleSearch = () => {
     if (onChange) {
       onChange(searchTerm);
     }
   };
-  
+
   const handleClear = () => {
     setSearchTerm("");
     if (onChange) {
       onChange("");
     }
   };
-  
+
   const handleKeyPress = (event) => {
-    if (event.key === 'Enter') {
+    if (event.key === "Enter") {
       handleSearch();
     }
   };
-  
+
   return (
     <AutoSkeleton h="10vh" w={`${width}px`} loading={loading}>
-      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+      <Box sx={{ display: "flex", alignItems: "center" }}>
         <TextField
           label={label}
           variant="outlined"
@@ -69,19 +82,11 @@ function UserFilterControl({
             width: width,
           }}
         />
-        <IconButton 
-          onClick={handleSearch} 
-          color="primary" 
-          sx={{ ml: 1 }}
-        >
+        <IconButton onClick={handleSearch} color="primary" sx={{ ml: 1 }}>
           <SearchIcon />
         </IconButton>
         {searchTerm && (
-          <IconButton 
-            onClick={handleClear} 
-            size="small" 
-            sx={{ ml: 0.5 }}
-          >
+          <IconButton onClick={handleClear} size="small" sx={{ ml: 0.5 }}>
             <ClearIcon fontSize="small" />
           </IconButton>
         )}
@@ -97,51 +102,121 @@ function DateRangeControls({
   setDateRangeInit,
   setDateRangeFin,
   loading,
+  period = "day", // day, week, month
 }) {
   const theme = useTheme();
-  const [periodValue, setPeriodValue] = React.useState("day");
-  
+  const [periodValue, setPeriodValue] = React.useState(period);
+  const [selectedDate, setSelectedDate] = React.useState(dayjs());
+  const [selectedMonth, setSelectedMonth] = React.useState(dayjs().month());
+  const [selectedWeek, setSelectedWeek] = React.useState(
+    getInitWeek(selectedMonth)
+  );
+
+  function getInitWeek(selectedMonth){
+    return selectedMonth == dayjs().month() ? Math.ceil(dayjs().date() / 7) : 1
+  }
+
+
+  // Configurar dayjs para español
+  dayjs.locale(es);
+
   const handlePeriodChange = (event) => {
-    const value = event.target.value;
+    const value = event?.target?.value || periodValue;
     setPeriodValue(value);
+    setSelectedDate(dayjs());
+    setSelectedMonth(dayjs().month());
+    setSelectedWeek(getInitWeek(selectedMonth));
+
     const now = dayjs();
-    
+    setDateRangeFin(now);
+
     switch (value) {
       case "day":
-        setDateRangeFin(now);
-        setDateRangeInit(now.subtract(1, 'day'));
+        setDateRangeInit(now.startOf("day"));
         break;
       case "week":
-        setDateRangeFin(now);
-        setDateRangeInit(now.subtract(1, 'week'));
+        setDateRangeInit(now.startOf("week"));
         break;
       case "month":
-        setDateRangeFin(now);
-        setDateRangeInit(now.subtract(1, 'month'));
-        break;
-      case "year":
-        setDateRangeFin(now);
-        setDateRangeInit(now.subtract(1, 'year'));
+        setDateRangeInit(now.startOf("month"));
         break;
       default:
         break;
     }
   };
-  
+
+  const handleDateChange = (date) => {
+    setSelectedDate(date);
+    setDateRangeInit(date.startOf("day"));
+    setDateRangeFin(date.endOf("day"));
+  };
+
+  const getWeekRange = (month, week) => {
+    const daysInMonth = dayjs().month(month).daysInMonth();
+
+    switch (week) {
+      case 1:
+        return { start: 1, end: 7 };
+      case 2:
+        return { start: 8, end: 14 };
+      case 3:
+        return { start: 15, end: 21 };
+      case 4:
+        return { start: 22, end: daysInMonth };
+      default:
+        return { start: 1, end: 7 };
+    }
+  };
+
+  const handleWeekChange = (week) => {
+    setSelectedWeek(week);
+    const { start, end } = getWeekRange(selectedMonth, week);
+    const date = dayjs().month(selectedMonth).date(start);
+
+    // Verificar si el rango está en el futuro
+    const today = dayjs();
+    if (date.isAfter(today)) {
+      // Si el inicio está en el futuro, usar la fecha actual
+      setDateRangeInit(today);
+      setDateRangeFin(today);
+    } else {
+      // Si está en el pasado o presente, usar el rango normal
+      setDateRangeInit(date);
+      setDateRangeFin(date.date(end));
+    }
+
+    // Actualizar el estado inicial al intervalo actual
+    const currentWeek = Math.ceil(today.date() / 7);
+    setSelectedWeek(currentWeek);
+  };
+
+  const handleMonthChange = (month) => {
+    setSelectedMonth(month);
+    setSelectedWeek(getInitWeek(month));
+    const date = dayjs().month(month);
+    setDateRangeInit(date.startOf("month"));
+    setDateRangeFin(date.endOf("month"));
+  };
+
   // Establecer el valor por defecto de "1 día" al montar el componente
   React.useEffect(() => {
     if (type !== "none") {
       const now = dayjs();
       setDateRangeFin(now);
-      setDateRangeInit(now.subtract(1, 'day'));
+      setDateRangeInit(now.startOf("day"));
     }
   }, [type, setDateRangeFin, setDateRangeInit]);
-  
+
+  // Ejecutar handlePeriodChange al montar el componente
+  React.useEffect(() => {
+    handlePeriodChange();
+  }, []);
+
   // Si el tipo es "none", no mostrar ningún control
   if (type === "none") {
     return null;
   }
-  
+
   // Si el tipo es "custom", mostrar los selectores de fecha personalizados
   if (type === "custom") {
     return (
@@ -175,7 +250,7 @@ function DateRangeControls({
       </div>
     );
   }
-  
+
   // Implementación con Select (opción por defecto)
   const palette_config = paletteConfig();
   return (
@@ -189,14 +264,129 @@ function DateRangeControls({
             value={periodValue}
             onChange={handlePeriodChange}
             label="Período"
+            MenuProps={{
+              disableScrollLock: true, // Evita que se bloquee el scroll
+            }}
           >
             <MenuItem value="day">1 día</MenuItem>
             <MenuItem value="week">1 semana</MenuItem>
             <MenuItem value="month">1 mes</MenuItem>
-            <MenuItem value="year">1 año</MenuItem>
           </Select>
         </FormControl>
       </AutoSkeleton>
+
+      {periodValue === "day" && (
+        <div className={fluidCSS().ltX(700, { width: "100%" }).end()}>
+          <AutoSkeleton h="10vh" w="250px" loading={loading}>
+            <LocalizationProvider dateAdapter={AdapterDayjs}>
+              <DateTimePicker
+                className="fullWidth"
+                label="Seleccionar día"
+                value={selectedDate}
+                onChange={handleDateChange}
+                views={["year", "month", "day"]}
+                slotProps={{ textField: { size: "small" } }}
+                maxDate={periodValue === "day" ? dayjs() : undefined}
+              />
+            </LocalizationProvider>
+          </AutoSkeleton>
+        </div>
+      )}
+
+      {periodValue === "week" && (
+        <div className={fluidCSS().ltX(700, { width: "100%" }).end()}>
+          <AutoSkeleton h="10vh" w="250px" loading={loading}>
+            <FormControl variant="outlined" size="small" sx={{ minWidth: 200 }}>
+              <InputLabel id="month-select-label">Mes</InputLabel>
+              <Select
+                labelId="month-select-label"
+                id="month-select"
+                value={selectedMonth}
+                onChange={(e) => handleMonthChange(Number(e.target.value))}
+                label="Mes"
+                MenuProps={{
+                  disableScrollLock: true, // Evita que se bloquee el scroll
+                }}
+              >
+                {Array.from({ length: 12 }, (_, i) => {
+                  const date = dayjs().subtract(i, "month");
+                  return (
+                    <MenuItem key={date.format("YYYY-MM")} value={date.month()}>
+                      {format(new Date(date), "MMMM yyyy", {
+                        locale: esLocale,
+                      })}
+                    </MenuItem>
+                  );
+                })}
+              </Select>
+            </FormControl>
+          </AutoSkeleton>
+          <AutoSkeleton h="10vh" w="250px" loading={loading}>
+            <FormControl variant="outlined" size="small" sx={{ minWidth: 200 }}>
+              <InputLabel id="week-select-label">Semana</InputLabel>
+              <Select
+                labelId="week-select-label"
+                id="week-select"
+                value={selectedWeek}
+                onChange={(e) => handleWeekChange(Number(e.target.value))}
+                label="Semana"
+                MenuProps={{
+                  disableScrollLock: true, // Evita que se bloquee el scroll
+                }}
+              >
+                {Array.from({ length: 4 }, (_, i) => {
+                  const { start, end } = getWeekRange(selectedMonth, i + 1);
+                  const date = dayjs().month(selectedMonth).date(start);
+
+                  // Solo mostrar intervalos que no estén en el futuro
+                  if (date.isAfter(dayjs())) {
+                    return null;
+                  }
+
+                  return (
+                    <MenuItem key={i + 1} value={i + 1}>
+                      {start === end
+                        ? `del ${start}`
+                        : `del ${start} al ${end}`}
+                    </MenuItem>
+                  );
+                }).filter(Boolean)}
+              </Select>
+            </FormControl>
+          </AutoSkeleton>
+        </div>
+      )}
+
+      {periodValue === "month" && (
+        <div className={fluidCSS().ltX(700, { width: "100%" }).end()}>
+          <AutoSkeleton h="10vh" w="250px" loading={loading}>
+            <FormControl variant="outlined" size="small" sx={{ minWidth: 200 }}>
+              <InputLabel id="month-select-label">Mes</InputLabel>
+              <Select
+                labelId="month-select-label"
+                id="month-select"
+                value={selectedMonth}
+                onChange={(e) => handleMonthChange(Number(e.target.value))}
+                label="Mes"
+                MenuProps={{
+                  disableScrollLock: true, // Evita que se bloquee el scroll
+                }}
+              >
+                {Array.from({ length: 12 }, (_, i) => {
+                  const date = dayjs().subtract(i, "month");
+                  return (
+                    <MenuItem key={date.format("YYYY-MM")} value={date.month()}>
+                      {format(new Date(date), "MMMM yyyy", {
+                        locale: esLocale,
+                      })}
+                    </MenuItem>
+                  );
+                })}
+              </Select>
+            </FormControl>
+          </AutoSkeleton>
+        </div>
+      )}
     </div>
   );
 }

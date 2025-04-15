@@ -138,7 +138,7 @@ const template = {
         prefix: "$",
         sufix: "USD",
       },
-      period: "Anual",
+      period: "Mensual",
       operations: {
         quantity: -1,
         interval: "Ilimitado",

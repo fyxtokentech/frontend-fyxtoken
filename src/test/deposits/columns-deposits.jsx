@@ -29,6 +29,12 @@ const columns_deposits = [
     ...modelsFormat.currentBitcoin, // Formato de moneda (usando el existente como referencia)
   },
   {
+    field: "deposit_date", // Nueva columna de fecha de depósito
+    headerName: "Fecha de Depósito",
+    description: "Fecha y hora en que se procesó efectivamente el depósito.",
+    ...modelsFormat.datetime,
+  },
+  {
     field: "user_id", // 3. Quién lo hizo (relevante si es vista admin)
     headerName: "ID Usuario",
     description: "Identificador del usuario que realizó el depósito.",

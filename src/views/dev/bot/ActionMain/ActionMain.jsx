@@ -1,91 +1,18 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 
-import { Typography, Grid, Button, Tooltip } from "@mui/material";
-import SettingsIcon from "@mui/icons-material/Settings";
-import UpdateIcon from "@mui/icons-material/Cached";
-
-import fluidCSS from "@jeff-aporta/fluidcss";
-import { TooltipIconButton, generate_selects } from "@recurrent";
 import { PaperP } from "@containers";
+import { TooltipIconButton } from "@recurrent";
+import UpdateIcon from "@mui/icons-material/Cached";
 
 import TableOperations from "@test/operacion/TableOperations";
 import TableTransactions from "@test/transaccion/TableTransactions";
 
 import GraphDriver from "@components/GUI/graph/graph-driver";
 
+import PanelBalance from "./PanelBalance";
+import CoinSelection from "./CoinSelection";
+
 const time_wait_update_available_again = 5;
-
-function PanelBalance({
-  currency,
-  setCurrency,
-  update_available,
-  setUpdateAvailable,
-  setView,
-}) {
-  function settingIcon() {
-    return (
-      <TooltipIconButton
-        title="Ajustar API"
-        onClick={() => setView("settings")}
-        icon={
-          <>
-            <SettingsIcon /> <span style={{ fontSize: "14px" }}>API</span>
-          </>
-        }
-      />
-    );
-  }
-
-  return (
-    <PaperP elevation={0}>
-      <div className="d-flex ai-center jc-space-between flex-wrap gap-10px">
-        <div className={`d-flex ai-center flex-wrap gap-10px ${fluidCSS().ltX(768, { width: "100%" }).end()}`}>
-          <PaperP className="d-center" p_min="5" p_max="10">
-            {generate_selects([
-              {
-                value: currency,
-                setter: setCurrency,
-                name: "currency",
-                label: "Moneda",
-                opns: ["PEPE", "BTC", "BNB", "ETH"],
-                required: true,
-                fem: true,
-              },
-            ])}
-          </PaperP>
-
-          <div className={`d-flex ai-center flex-wrap gap-10px ${fluidCSS().ltX(480, { width: "100%" }).end()}`}>
-            <PaperP 
-              className={`d-center ${fluidCSS().ltX(480, { width: "calc(50% - 5px)" }).end()}`} 
-              elevation={3}
-            >
-              Balance USDT
-            </PaperP>
-            <PaperP 
-              className={`d-center ${fluidCSS().ltX(480, { width: "calc(50% - 5px)" }).end()}`} 
-              elevation={3}
-            >
-              Balance Coin
-            </PaperP>
-          </div>
-        </div>
-
-        <div className={`d-flex ai-center flex-wrap gap-10px ${fluidCSS().ltX(768, { width: "100%", justifyContent: "flex-end", marginTop: "10px" }).end()}`}>
-          <UpdateButton {...{ update_available, setUpdateAvailable }} />
-          {settingIcon()}
-          <div className="d-flex gap-10px">
-            <Button variant="contained" color="ok" size="small">
-              Comprar
-            </Button>
-            <Button variant="contained" color="cancel" size="small">
-              Vender
-            </Button>
-          </div>
-        </div>
-      </div>
-    </PaperP>
-  );
-}
 
 function UpdateButton({ update_available, setUpdateAvailable, ...rest_props }) {
   return (
@@ -117,9 +44,11 @@ export default function ActionMain({
   setViewTable,
   viewTable,
 }) {
+  // Estado para la selección de monedas
+  const [coins, setCoins] = useState([]);
+
   return (
-    <PaperP>
-      <br />
+    <PaperP className="d-flex flex-column gap-20px">
       <PanelBalance
         {...{
           currency,
@@ -129,6 +58,9 @@ export default function ActionMain({
           setView,
         }}
       />
+
+      <CoinSelection coins={coins} setCoins={setCoins} />
+
       {(() => {
         switch (viewTable) {
           case "operations":

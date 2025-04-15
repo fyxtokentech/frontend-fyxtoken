@@ -13,6 +13,8 @@ const identity = (() => {
     negro: Color("black"),
     blacktheme: Color("#151515"),
     gray: Color("gray"),
+    white: Color("white"),
+    black: Color("black"),
   };
 
   const secundaries = {

@@ -7,7 +7,7 @@ export default function TransactionsTable() {
   // TODO: Fetch and display transactions data
   return (
     <Box>
-      <TableTransactions useOperation={false}/>
+      <TableTransactions useOperation={false} user_id={global.configApp.userID}/>
     </Box>
   );
 }

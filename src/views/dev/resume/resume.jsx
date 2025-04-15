@@ -15,6 +15,7 @@ import DepositsTable from "./actions/DepositsTable";
 import UserApisTable from "./actions/UserApisTable";
 import SalesTable from "./actions/SalesTable";
 import PurchasesTable from "./actions/PurchasesTable";
+import WithdrawalsTable from "./actions/WithdrawalsTable"; // Nuevo componente para retiros
 
 import {paletteConfig} from "@jeff-aporta/theme-manager";
 
@@ -23,13 +24,13 @@ import {themeSwitch_listener} from "@templates";
 import { Title } from "@recurrent";
 
 const tabMapping = {
-  operations: 0,
-  transactions: 1,
-  investments: 2,
-  deposits: 3,
-  apis: 4,
-  sales: 5,
-  purchases: 6,
+  deposits: 0,
+  investments: 1,
+  operations: 2,
+  withdrawals: 3, // Nueva pestaña de retiros
+  purchases: 4,   // Compra antes que venta
+  sales: 5,       // Venta después de compra
+  apis: 6,        // APIs al final
 };
 
 const {
@@ -43,8 +44,8 @@ const reverseTabMapping = Object.fromEntries(
 export default function DevView() {
   const [theme, setTheme] = useState(0);
   const driverParams = DriverParams();
-  const initialTabKey = driverParams.get("action-id") || "operations";
-  // Ensure initialTabKey is valid, otherwise default to operations (index 0)
+  const initialTabKey = driverParams.get("action-id") || "deposits";
+  // Ensure initialTabKey is valid, otherwise default to deposits (index 0)
   const initialTabIndex = tabMapping.hasOwnProperty(initialTabKey) ? tabMapping[initialTabKey] : 0;
   const [activeTab, setActiveTab] = useState(initialTabIndex);
 
@@ -63,14 +64,14 @@ export default function DevView() {
 
   // Effect to sync tab state if URL changes externally (e.g., back/forward buttons)
   useEffect(() => {
-    const currentActionId = driverParams.get("action-id") || 'operations';
+    const currentActionId = driverParams.get("action-id") || 'deposits';
     const desiredTabIndex = tabMapping.hasOwnProperty(currentActionId) ? tabMapping[currentActionId] : 0;
     if (activeTab !== desiredTabIndex) {
         setActiveTab(desiredTabIndex);
     }
     // Optional: Set initial action-id if missing (might be redundant if handled elsewhere)
     // if (!driverParams.get("action-id")) {
-    //   driverParams.set("action-id", "operations");
+    //   driverParams.set("action-id", "deposits");
     // }
   }, [driverParams.get("action-id")]); // Re-run if action-id changes
 
@@ -78,23 +79,23 @@ export default function DevView() {
   const renderTabContent = () => {
     const currentTabKey = reverseTabMapping[activeTab];
     switch (currentTabKey) {
-      case "operations":
-        return <OperationsTable />;
-      case "transactions":
-        return <TransactionsTable showDateRangeControls />;
-      case "investments":
-        return <InvestmentsTable />;
       case "deposits":
         return <DepositsTable />;
-      case "apis":
-        return <UserApisTable />;
-      case "sales":
-        return <SalesTable />;
+      case "investments":
+        return <InvestmentsTable />;
+      case "operations":
+        return <OperationsTable />;
+      case "withdrawals":
+        return <WithdrawalsTable />;
       case "purchases":
         return <PurchasesTable />;
+      case "sales":
+        return <SalesTable />;
+      case "apis":
+        return <UserApisTable />;
       default:
-         // Fallback to operations if the key is somehow invalid
-        return <OperationsTable />;
+         // Fallback to deposits if the key is somehow invalid
+        return <DepositsTable />;
     }
   };
 
@@ -125,13 +126,13 @@ export default function DevView() {
                     },
                 }}
             >
-              <Tab label="Operaciones" id="tab-operations" aria-controls="tabpanel-operations" />
-              <Tab label="Transacciones" id="tab-transactions" aria-controls="tabpanel-transactions" />
-              <Tab label="Inversiones" id="tab-investments" aria-controls="tabpanel-investments" />
               <Tab label="Depósitos" id="tab-deposits" aria-controls="tabpanel-deposits" />
-              <Tab label="APIs de Usuario" id="tab-apis" aria-controls="tabpanel-apis" />
-              <Tab label="Ventas" id="tab-sales" aria-controls="tabpanel-sales" />
+              <Tab label="Inversiones" id="tab-investments" aria-controls="tabpanel-investments" />
+              <Tab label="Operaciones" id="tab-operations" aria-controls="tabpanel-operations" />
+              <Tab label="Retiros" id="tab-withdrawals" aria-controls="tabpanel-withdrawals" />
               <Tab label="Compras" id="tab-purchases" aria-controls="tabpanel-purchases" />
+              <Tab label="Ventas" id="tab-sales" aria-controls="tabpanel-sales" />
+              <Tab label="APIs de Usuario" id="tab-apis" aria-controls="tabpanel-apis" />
             </Tabs>
           </Box>
           {/* Render content based on active tab */}
