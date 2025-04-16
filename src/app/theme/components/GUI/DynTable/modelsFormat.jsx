@@ -2,27 +2,33 @@ import BenefitUplineIcon from "@mui/icons-material/TrendingUpOutlined";
 import BenefitDownlineIcon from "@mui/icons-material/TrendingDownOutlined";
 import BenefitConstantlineIcon from "@mui/icons-material/TrendingFlatOutlined";
 
-const currentBitcoin = {
-  fit_content: true,
-  renderInfo: {
-    local: "es-ES",
-    sufix: "name_coin",
-    type: "number",
-    "number-format"(params) {
-      let { value } = params;
-      value = Math.abs(value);
-      if (value < 0.01) {
-        return {
-          maximumFractionDigits: 8,
-        };
-      } else {
-        return {
-          maximumFractionDigits: 2,
-        };
-      }
+const currentBitcoin = currentSufix("name_coin");
+
+const currentUSDT = currentSufix("USDT");
+
+function currentSufix(sufix){
+  return {
+    fit_content: true,
+    renderInfo: {
+      local: "es-ES",
+      sufix,
+      type: "number",
+      "number-format"(params) {
+        let { value } = params;
+        value = Math.abs(value);
+        if (value < 0.01) {
+          return {
+            maximumFractionDigits: 8,
+          };
+        } else {
+          return {
+            maximumFractionDigits: 2,
+          };
+        }
+      },
     },
-  },
-};
+  };
+}
 
 export default {
   profit: {
@@ -87,4 +93,5 @@ export default {
     },
   },
   currentBitcoin,
+  currentUSDT,
 };

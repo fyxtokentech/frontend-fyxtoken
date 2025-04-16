@@ -12,6 +12,8 @@ import GraphDriver from "@components/GUI/graph/graph-driver";
 import PanelBalance from "./PanelBalance";
 import CoinSelection from "./CoinSelection";
 
+import { DriverParams } from "@jeff-aporta/router";
+
 const time_wait_update_available_again = 5;
 
 function UpdateButton({ update_available, setUpdateAvailable, ...rest_props }) {
@@ -42,8 +44,9 @@ export default function ActionMain({
   setOperationTrigger,
   operationTrigger,
   setViewTable,
-  viewTable,
 }) {
+  const driverParams = DriverParams();
+
   // Estado para la selección de monedas
   const [coins, setCoins] = useState([]);
 
@@ -62,6 +65,7 @@ export default function ActionMain({
       <CoinSelection coins={coins} setCoins={setCoins} />
 
       {(() => {
+        const viewTable = driverParams.get("view-table");
         switch (viewTable) {
           case "operations":
             return (
@@ -69,7 +73,8 @@ export default function ActionMain({
                 {...{
                   setOperationTrigger,
                   setViewTable,
-                  user_id: "b08edabb-1363-459d-9cc6-e2c326467071"
+                  user_id: global.configApp.userID,
+                  coinid: 24478,
                 }}
               />
             );
@@ -78,6 +83,7 @@ export default function ActionMain({
               <TableTransactions
                 {...{
                   setViewTable,
+                  user_id: global.configApp.userID,
                   operationTrigger,
                 }}
                 pretable={

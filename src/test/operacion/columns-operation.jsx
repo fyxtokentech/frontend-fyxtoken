@@ -89,13 +89,13 @@ const retorno = {
       field: "total_bought",
       headerName: "Comprado",
       description: "Cantidad comprada de la moneda.",
-      ...modelsFormat.currentBitcoin,
+      ...modelsFormat.currentUSDT,
     },
     {
       field: "total_sold",
       headerName: "Vendido",
       description: "Cantidad vendida de la moneda.",
-      ...modelsFormat.currentBitcoin,
+      ...modelsFormat.currentUSDT,
     },
     {
       inTable: false,

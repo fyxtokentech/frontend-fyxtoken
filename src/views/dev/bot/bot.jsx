@@ -5,10 +5,7 @@ import fluidCSS from "@jeff-aporta/fluidcss";
 
 import { ThemeSwitcher } from "@templates";
 import { DivM, PaperP } from "@containers";
-import {
-  DynTable,
-  genAllColumns,
-} from "@components/GUI/DynTable/DynTable";
+import { DynTable, genAllColumns } from "@components/GUI/DynTable/DynTable";
 
 import {
   Button,
@@ -40,7 +37,9 @@ let _currency_ = "";
 export default function PanelRobot() {
   const driverParams = DriverParams();
 
-  const [viewTable, setViewTable] = useState("operations");
+  const [viewTable, setViewTable] = useState(
+    driverParams.get("view-table") ?? "operations"
+  );
   const [operationTrigger, setOperationTrigger] = useState(null);
   const [currency, setCurrency] = useState(_currency_);
   const [update_available, setUpdateAvailable] = useState(true);
@@ -48,11 +47,14 @@ export default function PanelRobot() {
 
   useEffect(() => {
     const aid = driverParams.get("action-id");
+    const vt = driverParams.get("view-table");
     if (aid != view) {
-      driverParams.set("action-id", view, {reload: !aid});
+      driverParams.set("action-id", view);
     }
-  }, [view]);
-
+    if (vt != viewTable) {
+      driverParams.set("view-table", viewTable);
+    }
+  }, [view, viewTable]);
 
   _currency_ = currency;
 
