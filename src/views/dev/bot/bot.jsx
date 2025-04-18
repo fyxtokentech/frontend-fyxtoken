@@ -7,6 +7,8 @@ import { ThemeSwitcher } from "@templates";
 import { DivM, PaperP } from "@containers";
 import { DynTable, genAllColumns } from "@components/GUI/DynTable/DynTable";
 
+import { getResponse } from "@api/requestTable";
+
 import {
   Button,
   Chip,
@@ -32,18 +34,32 @@ import { generate_inputs, Info, Title } from "@recurrent";
 import ActionMain from "./ActionMain/ActionMain";
 import Settings from "./Settings";
 
-let _currency_ = "";
-
 export default function PanelRobot() {
   const driverParams = DriverParams();
 
   const [viewTable, setViewTable] = useState(
     driverParams.get("view-table") ?? "operations"
   );
-  const [operationTrigger, setOperationTrigger] = useState(null);
-  const [currency, setCurrency] = useState(_currency_);
-  const [update_available, setUpdateAvailable] = useState(true);
   const [view, setView] = useState(driverParams.get("action-id") ?? "main");
+
+  const [operationTrigger, setOperationTrigger] = useState(null);
+  const currency = useRef("");
+
+  const [update_available, setUpdateAvailable] = useState(true);
+
+  // Hook para forzar renderizado
+  const [, forceUpdate] = useState({}); // Fuerza el renderizado
+
+  const coinsToOperate = useRef([]); // Lista de monedas disponibles para operar
+  const coinsOperatingList = useRef([]); // Lista de monedas en operación
+  const coinsToDelete = useRef([]); // Lista de monedas en proceso de eliminación
+
+  // Efecto de carga de monedas disponibles
+  const [loadingCoinToOperate, setLoadingCoinToOperate] = useState(true);
+  // Error al cargar monedas disponibles
+  const [errorCoinOperate, setErrorCoinOperate] = useState(null);
+
+  const user_id = global.configApp.userID;
 
   useEffect(() => {
     const aid = driverParams.get("action-id");
@@ -56,7 +72,26 @@ export default function PanelRobot() {
     }
   }, [view, viewTable]);
 
-  _currency_ = currency;
+  useEffect(() => {
+    console.log(coinsToOperate)
+    if (coinsToOperate.current.length === 0) {
+      setLoadingCoinToOperate(true);
+      getResponse({
+        setError: setErrorCoinOperate,
+        checkErrors: () => null,
+        setLoading: setLoadingCoinToOperate,
+        setApiData: (data) => {
+          coinsToOperate.current = data.map(
+            (coin) => coin.symbol || coin.name || coin.id || "-"
+          );
+        },
+        buildEndpoint: ({ baseUrl }) => `${baseUrl}/coins/active/${user_id}`,
+        mock_default: {
+          content: [["symbol"], ["BTC"], ["ETH"], ["BNB"], ["XRP"], ["XAI"]],
+        },
+      });
+    }
+  }, []);
 
   return (
     <ThemeSwitcher h_init="20px" h_fin="300px">
@@ -70,7 +105,6 @@ export default function PanelRobot() {
                 <ActionMain
                   {...{
                     currency,
-                    setCurrency,
                     update_available,
                     setUpdateAvailable,
                     setViewTable,
@@ -78,6 +112,15 @@ export default function PanelRobot() {
                     viewTable,
                     setOperationTrigger,
                     operationTrigger,
+                    forceUpdate,
+                    coinsOperatingList,
+                    coinsToDelete,
+                    coinsToOperate,
+                    loadingCoinToOperate,
+                    setLoadingCoinToOperate,
+                    errorCoinOperate,
+                    setErrorCoinOperate,
+                    user_id,
                   }}
                 />
               );

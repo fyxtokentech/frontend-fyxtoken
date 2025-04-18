@@ -13,12 +13,14 @@ import { getResponse } from "@api/requestTable";
 import mock_transaction from "@test/transaccion/mock-transaction.json";
 
 import { AutoSkeleton, DateRangeControls } from "@components/controls";
-import { useEffect, useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import dayjs from "dayjs";
 import axios from "axios";
 import { DriverParams } from "@jeff-aporta/router";
 
 export default TableOperations;
+
+let apiData = [];
 
 function TableOperations({
   useForUser = true, // if true, is used for user
@@ -34,43 +36,89 @@ function TableOperations({
   const dateRangeInitParam = driverParams.get("start_date");
   const dateRangeFinParam = driverParams.get("end_date");
 
-  const [loading, setLoading] = useState(true);
-  const [dateRangeInit, setDateRangeInit] = useState(
+  const dateRangeInit = useRef(
     dateRangeInitParam ? dayjs(dateRangeInitParam) : null
   );
-  const [dateRangeFin, setDateRangeFin] = useState(
+  const dateRangeFin = useRef(
     dateRangeFinParam ? dayjs(dateRangeFinParam) : null
   );
-  const [apiData, setApiData] = useState([]);
   const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(apiData.length === 0);
+
+  // Dummy state para forzar re-render
+  const [, forceUpdateTableOperations] = useState({});
+
+  // Funciones para actualizar los refs de fechas y forzar render
+  const setDateRangeInit = (val) => {
+    dateRangeInit.current = val;
+  };
+  const setDateRangeFin = (val) => {
+    dateRangeFin.current = val;
+  };
+
+  const lastDataApiQuery = useRef({
+    dateRangeInit: null,
+    dateRangeFin: null,
+    user_id: null,
+    coinid: null,
+  });
 
   // Efecto para cargar datos cuando cambia el rango de fechas o el user_id
   useEffect(() => {
-    getResponse({
-      setLoading,
-      setApiData,
-      setError,
-      mock_default: mock_operation,
-      checkErrors: () => {
-        if (!user_id) {
-          return "No hay usuario seleccionado";
-        }
-        if (!dateRangeInit || !dateRangeFin) {
-          return "No se ha seleccionado un rango de fechas";
-        }
-      },
-      buildEndpoint: ({ baseUrl }) => {
-        return `
-          ${baseUrl}/operations/${user_id}?
-            coinid=${coinid}&
-            start_date=${dateRangeInit.format("YYYY-MM-DD")}&
-            end_date=${dateRangeFin.format("YYYY-MM-DD")}&
-            page=0&
-            limit=999999
+    const {
+      dateRangeInit: prevDateRangeInit,
+      dateRangeFin: prevDateRangeFin,
+      user_id: prevUserId,
+      coinid: prevCoinid,
+    } = lastDataApiQuery.current;
+    const dateInitEq =
+      dateRangeInit.current?.format?.("YYYY-MM-DD") === prevDateRangeInit;
+    const dateFinEq =
+      dateRangeFin.current?.format?.("YYYY-MM-DD") === prevDateRangeFin;
+    const user_idEq = user_id === prevUserId;
+    const coinidEq = coinid === prevCoinid;
+    if (!dateInitEq || !dateFinEq || !user_idEq || !coinidEq) {
+      console.log("aaaa", {
+        dateInitEq,
+        dateFinEq,
+        user_idEq,
+        coinidEq,
+        lastDataApiQuery,
+      });
+      Object.assign(lastDataApiQuery.current, {
+        dateRangeInit: dateRangeInit.current?.format?.("YYYY-MM-DD"),
+        dateRangeFin: dateRangeFin.current?.format?.("YYYY-MM-DD"),
+        user_id,
+        coinid,
+      });
+      getResponse({
+        setLoading,
+        setApiData: (val) => {
+          console.log({ val });
+          apiData = val;
+        },
+        setError,
+        mock_default: mock_operation,
+        checkErrors: () => {
+          if (!user_id) {
+            return "No hay usuario seleccionado";
+          }
+          if (!dateRangeInit.current || !dateRangeFin.current) {
+            return "No se ha seleccionado un rango de fechas";
+          }
+        },
+        buildEndpoint: ({ baseUrl }) => {
+          console.log("build URL");
+          return `${baseUrl}/operations/${user_id}?
+            coinid=${coinid}
+            &start_date=${dateRangeInit.current?.format?.("YYYY-MM-DD")}
+            &end_date=${dateRangeFin.current?.format?.("YYYY-MM-DD")}
+            &page=0&limit=1000
         `;
-      },
-    });
-  }, [user_id, dateRangeInit, dateRangeFin]);
+        },
+      });
+    }
+  }, []);
 
   // Determinar qué datos mostrar: API o mock
   let content = user_id ? apiData : data?.content ?? mock_operation.content;

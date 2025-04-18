@@ -1,4 +1,5 @@
 import fluidCSS from "@jeff-aporta/fluidcss";
+import { DriverParams } from "@jeff-aporta/router";
 import {
   FormControl,
   Skeleton,
@@ -25,7 +26,7 @@ export { AutoSkeleton, DateRangeControls, UserFilterControl };
 
 function AutoSkeleton({ loading, w = "100%", h = "5vh", ...rest }) {
   return loading ? (
-    <Skeleton style={{ height: h, width: `max(300px, ${w})` }} />
+    <Skeleton style={{ height: h, width: `max(200px, ${w})` }} />
   ) : (
     <div {...rest} />
   );
@@ -104,6 +105,8 @@ function DateRangeControls({
   loading,
   period = "day", // day, week, month
 }) {
+  // Inicializar driverParams
+  const driverParams = DriverParams();
   const theme = useTheme();
   const [periodValue, setPeriodValue] = React.useState(period);
   const [selectedDate, setSelectedDate] = React.useState(dayjs());
@@ -147,8 +150,12 @@ function DateRangeControls({
 
   const handleDateChange = (date) => {
     setSelectedDate(date);
-    setDateRangeInit(date.startOf("day"));
-    setDateRangeFin(date.endOf("day"));
+    const start = date.startOf("day");
+    const end = date.endOf("day");
+    setDateRangeInit(start);
+    setDateRangeFin(end);
+    driverParams.set("start_date", start.format("YYYY-MM-DD"));
+    driverParams.set("end_date", end.format("YYYY-MM-DD"));
   };
 
   const getWeekRange = (month, week) => {
@@ -175,15 +182,22 @@ function DateRangeControls({
 
     // Verificar si el rango está en el futuro
     const today = dayjs();
+    let startDate, endDate;
     if (date.isAfter(today)) {
       // Si el inicio está en el futuro, usar la fecha actual
       setDateRangeInit(today);
       setDateRangeFin(today);
+      startDate = today;
+      endDate = today;
     } else {
       // Si está en el pasado o presente, usar el rango normal
       setDateRangeInit(date);
       setDateRangeFin(date.date(end));
+      startDate = date;
+      endDate = date.date(end);
     }
+    driverParams.set("start_date", startDate.format("YYYY-MM-DD"));
+    driverParams.set("end_date", endDate.format("YYYY-MM-DD"));
 
     // Actualizar el estado inicial al intervalo actual
     const currentWeek = Math.ceil(today.date() / 7);
@@ -194,11 +208,16 @@ function DateRangeControls({
     setSelectedMonth(month);
     setSelectedWeek(getInitWeek(month));
     const date = dayjs().month(month);
-    setDateRangeInit(date.startOf("month"));
-    setDateRangeFin(date.endOf("month"));
+    const start = date.startOf("month");
+    const end = date.endOf("month");
+    setDateRangeInit(start);
+    setDateRangeFin(end);
+    driverParams.set("start_date", start.format("YYYY-MM-DD"));
+    driverParams.set("end_date", end.format("YYYY-MM-DD"));
   };
 
-  // Establecer el valor por defecto de "1 día" al montar el componente
+  console.log("aaaaa")
+
   React.useEffect(() => {
     if (type !== "none") {
       const now = dayjs();

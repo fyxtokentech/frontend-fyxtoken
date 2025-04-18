@@ -12,7 +12,9 @@ export const getResponse = async ({
   mock_default,
 }) => {
   const error = checkErrors();
+
   setError(error);
+  
   if (error) {
     return;
   }
@@ -23,8 +25,6 @@ export const getResponse = async ({
     let apiUrl = buildEndpoint({
       baseUrl: context === "dev" ? localApiUrl : apiBaseUrl,
     });
-
-    console.log(apiUrl);
 
     apiUrl = apiUrl.replace(/\s+/g, ""); // Eliminar espacios en blanco
 
@@ -69,30 +69,28 @@ export const getResponse = async ({
         setApiData(mock_default.content);
       }
     } catch (error) {
+      if (
+        mock_default.content &&
+        Array.isArray(mock_default.content) &&
+        mock_default.content.length > 1
+      ) {
+        const headers = mock_default.content[0];
+        const processedMockData = mock_default.content.slice(1).map((row) => {
+          const obj = {};
+          headers.forEach((header, index) => {
+            obj[header] = row[index];
+          });
+          return obj;
+        });
+        setApiData(processedMockData);
+      } else {
+        setApiData([]);
+      }
       // Manejo de errores según el entorno
       if (context === "dev") {
         console.error("Error en entorno de desarrollo:", error.message);
         // En desarrollo, usar datos mock
         console.log("Usando datos mock debido al error");
-
-        // Procesar los datos mock que ahora también están en formato array de arrays
-        if (
-          mock_default.content &&
-          Array.isArray(mock_default.content) &&
-          mock_default.content.length > 1
-        ) {
-          const headers = mock_default.content[0];
-          const processedMockData = mock_default.content.slice(1).map((row) => {
-            const obj = {};
-            headers.forEach((header, index) => {
-              obj[header] = row[index];
-            });
-            return obj;
-          });
-          setApiData(processedMockData);
-        } else {
-          setApiData([]);
-        }
       } else {
         // En producción, mostrar error
         console.error("Error en entorno de producción:", error.message);

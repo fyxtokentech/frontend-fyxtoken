@@ -10,7 +10,6 @@ import TableTransactions from "@test/transaccion/TableTransactions";
 import GraphDriver from "@components/GUI/graph/graph-driver";
 
 import PanelBalance from "./PanelBalance";
-import CoinSelection from "./CoinSelection";
 
 import { DriverParams } from "@jeff-aporta/router";
 
@@ -37,32 +36,61 @@ function UpdateButton({ update_available, setUpdateAvailable, ...rest_props }) {
 
 export default function ActionMain({
   currency,
-  setCurrency,
   update_available,
   setUpdateAvailable,
   setView,
   setOperationTrigger,
   operationTrigger,
   setViewTable,
+  forceUpdate,
+  coinsOperatingList,
+  coinsToOperate,
+  coinsToDelete,
+  loadingCoinToOperate,
+  setLoadingCoinToOperate,
+  errorCoinOperate,
+  setErrorCoinOperate,
+  user_id
 }) {
   const driverParams = DriverParams();
 
   // Estado para la selección de monedas
-  const [coins, setCoins] = useState([]);
+  const [deletionTimers, setDeletionTimers] = useState([]);
+  const [,forceUpdateActionMain] = useState({});
 
   return (
     <PaperP className="d-flex flex-column gap-20px">
       <PanelBalance
         {...{
           currency,
-          setCurrency,
           update_available,
           setUpdateAvailable,
           setView,
+          coinsOperatingList,
+          forceUpdate,
+          coinsToOperate,
+          coinsToDelete,
+          loadingCoinToOperate,
+          setLoadingCoinToOperate,
+          errorCoinOperate,
+          setErrorCoinOperate,
+          user_id,
+          deletionTimers,
+          setDeletionTimers,
+          onSellCoin: (coinTitle, forceUpdatePanelBalance) => {
+            if (window.onSellCoinRef && window.onSellCoinRef.current) {
+              window.onSellCoinRef.current(coinTitle);
+            }
+            setTimeout(()=>forceUpdatePanelBalance({}));
+          },
         }}
       />
 
-      <CoinSelection coins={coins} setCoins={setCoins} />
+      {/* Ref para exponer la función de borrado externo */}
+      {(() => {
+        if (!window.onSellCoinRef) window.onSellCoinRef = React.createRef();
+        return null;
+      })()}
 
       {(() => {
         const viewTable = driverParams.get("view-table");
@@ -73,7 +101,7 @@ export default function ActionMain({
                 {...{
                   setOperationTrigger,
                   setViewTable,
-                  user_id: global.configApp.userID,
+                  user_id,
                   coinid: 24478,
                 }}
               />
@@ -83,7 +111,7 @@ export default function ActionMain({
               <TableTransactions
                 {...{
                   setViewTable,
-                  user_id: global.configApp.userID,
+                  user_id,
                   operationTrigger,
                 }}
                 pretable={
