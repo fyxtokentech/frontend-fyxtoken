@@ -16,6 +16,7 @@ export const getResponse = async ({
   setError(error);
   
   if (error) {
+    console.error(error)
     return;
   }
 
@@ -42,6 +43,9 @@ export const getResponse = async ({
     try {
       response = await axios.get(apiUrl, config);
 
+      console.log(response.data)
+      console.log(apiUrl)
+
       // Procesar la respuesta en formato array de arrays
       if (
         response.data &&
@@ -62,11 +66,15 @@ export const getResponse = async ({
         // Actualizar estado con los datos procesados
         setApiData(processedData);
       } else {
-        // Si la respuesta no tiene el formato esperado
-        console.error("Formato de respuesta inesperado:", response.data);
-        setError("Error en el formato de los datos recibidos.");
-        // Usar datos mock en caso de error
-        setApiData(mock_default.content);
+        if(response.data.length == 0){
+          setApiData([]);
+        }else{
+          // Si la respuesta no tiene el formato esperado
+          console.error("Formato de respuesta inesperado:", response.data);
+          setError("Error en el formato de los datos recibidos.");
+          // Usar datos mock en caso de error
+          setApiData(mock_default.content);
+        }
       }
     } catch (error) {
       if (
@@ -97,15 +105,13 @@ export const getResponse = async ({
         setError("Error al cargar las operaciones.");
         setApiData([]);
       }
-    } finally {
-      setLoading(false);
     }
   } catch (err) {
     console.error("Error al obtener datos de operaciones:", err);
     setError("Error al cargar las operaciones.");
     // Usar datos mock en caso de error
     setApiData(mock_default.content);
-  } finally {
-    setLoading(false);
   }
+  console.log("fin...")
+  setLoading(false);
 };

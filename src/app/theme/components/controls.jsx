@@ -108,17 +108,43 @@ function DateRangeControls({
   // Inicializar driverParams
   const driverParams = DriverParams();
   const theme = useTheme();
-  const [periodValue, setPeriodValue] = React.useState(period);
-  const [selectedDate, setSelectedDate] = React.useState(dayjs());
-  const [selectedMonth, setSelectedMonth] = React.useState(dayjs().month());
-  const [selectedWeek, setSelectedWeek] = React.useState(
-    getInitWeek(selectedMonth)
-  );
 
-  function getInitWeek(selectedMonth){
-    return selectedMonth == dayjs().month() ? Math.ceil(dayjs().date() / 7) : 1
+  let url_period = driverParams.get("period");
+  let url_date = driverParams.get("date");
+  let url_month = driverParams.get("month");
+  let url_week = driverParams.get("week");
+  if(!url_period){
+    url_period = period;
+    driverParams.set("period", url_period);
+  }
+  if(!url_date){
+    url_date = dayjs().format("YYYY-MM-DD");
+    driverParams.set("date", url_date);
+  }
+  if(!url_month){
+    url_month = dayjs().month();
+    driverParams.set("month", url_month);
+  }
+  if(!url_week){
+    url_week = getInitWeek(dayjs().month());
+    driverParams.set("week", url_week);
   }
 
+  // Migrar estados a useState para que los selectores sean reactivos
+  const [periodValue, setPeriodValue] = React.useState(url_period);
+  const [selectedDate, setSelectedDate] = React.useState(
+    dayjs(url_date)
+  );
+  const [selectedMonth, setSelectedMonth] = React.useState(
+    Number(url_month)
+  );
+  const [selectedWeek, setSelectedWeek] = React.useState(
+    Number(url_week)
+  );
+
+  function getInitWeek(selectedMonth) {
+    return selectedMonth == dayjs().month() ? Math.ceil(dayjs().date() / 7) : 1;
+  }
 
   // Configurar dayjs para español
   dayjs.locale(es);
@@ -126,36 +152,43 @@ function DateRangeControls({
   const handlePeriodChange = (event) => {
     const value = event?.target?.value || periodValue;
     setPeriodValue(value);
+    driverParams.set("period", value);
     setSelectedDate(dayjs());
+    driverParams.set("date", dayjs().format("YYYY-MM-DD"));
     setSelectedMonth(dayjs().month());
-    setSelectedWeek(getInitWeek(selectedMonth));
+    driverParams.set("month", dayjs().month());
+    setSelectedWeek(getInitWeek(dayjs().month()));
+    driverParams.set("week", getInitWeek(dayjs().month()));
+    setSelectedWeek(getInitWeek(dayjs().month()));
 
     const now = dayjs();
-    setDateRangeFin(now);
+    let init;
+    const end = now;
+    setDateRangeFin(end);
 
     switch (value) {
       case "day":
-        setDateRangeInit(now.startOf("day"));
+        init = now.startOf("day");
         break;
       case "week":
-        setDateRangeInit(now.startOf("week"));
+        init = now.startOf("week");
         break;
       case "month":
-        setDateRangeInit(now.startOf("month"));
+        init = now.startOf("month");
         break;
       default:
-        break;
+        init = now.startOf("day");
     }
+    setDateRangeInit(init);
+    driverParams.set("start_date", init.format("YYYY-MM-DD"));
+    driverParams.set("end_date", end.format("YYYY-MM-DD"));
   };
 
   const handleDateChange = (date) => {
     setSelectedDate(date);
-    const start = date.startOf("day");
-    const end = date.endOf("day");
-    setDateRangeInit(start);
-    setDateRangeFin(end);
-    driverParams.set("start_date", start.format("YYYY-MM-DD"));
-    driverParams.set("end_date", end.format("YYYY-MM-DD"));
+    driverParams.set("date", dayjs(date).format("YYYY-MM-DD"));
+    if (setDateRangeInit) setDateRangeInit(date);
+    if (setDateRangeFin) setDateRangeFin(date);
   };
 
   const getWeekRange = (month, week) => {
@@ -177,6 +210,7 @@ function DateRangeControls({
 
   const handleWeekChange = (week) => {
     setSelectedWeek(week);
+    driverParams.set("week", week);
     const { start, end } = getWeekRange(selectedMonth, week);
     const date = dayjs().month(selectedMonth).date(start);
 
@@ -206,7 +240,9 @@ function DateRangeControls({
 
   const handleMonthChange = (month) => {
     setSelectedMonth(month);
+    driverParams.set("month", month);
     setSelectedWeek(getInitWeek(month));
+    driverParams.set("week", getInitWeek(month));
     const date = dayjs().month(month);
     const start = date.startOf("month");
     const end = date.endOf("month");
@@ -216,19 +252,18 @@ function DateRangeControls({
     driverParams.set("end_date", end.format("YYYY-MM-DD"));
   };
 
-  console.log("aaaaa")
-
-  React.useEffect(() => {
-    if (type !== "none") {
-      const now = dayjs();
-      setDateRangeFin(now);
-      setDateRangeInit(now.startOf("day"));
-    }
-  }, [type, setDateRangeFin, setDateRangeInit]);
+  console.log("aaaaa");
 
   // Ejecutar handlePeriodChange al montar el componente
   React.useEffect(() => {
-    handlePeriodChange();
+    // Solo inicializa si las fechas no están definidas
+    if (!dateRangeInit || !dateRangeFin) {
+      console.log("bbbbb");
+      const now = dayjs();
+      setDateRangeFin(now);
+      setDateRangeInit(now.startOf("day"));
+      handlePeriodChange();
+    }
   }, []);
 
   // Si el tipo es "none", no mostrar ningún control

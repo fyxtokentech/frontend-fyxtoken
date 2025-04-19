@@ -11,7 +11,7 @@
     "@emotion/styled": "^11.14.0",
     "@jeff-aporta/fluidcss": "^1.1.28",
     "@jeff-aporta/js2css": "^1.0.6",
-    "@jeff-aporta/router": "^1.0.44",
+    "@jeff-aporta/router": "^1.0.45",
     "@jeff-aporta/theme-manager": "^1.0.31",
     "@mui/icons-material": "^6.4.8",
     "@mui/material": "^6.4.8",
