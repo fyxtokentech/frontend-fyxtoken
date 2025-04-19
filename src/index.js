@@ -1,4 +1,5 @@
 import React from "react";
+import { init } from "@src/polyfill";
 import { createRoot } from "react-dom/client";
 import {RoutingManagement} from "@jeff-aporta/router";
 import package_json from "@root/package.json";
@@ -9,6 +10,8 @@ global.configApp ??= {
   context: "dev",
   userID: "e6746a75-55dc-446a-974e-15a6b3b18aa3"
 }
+// Ejecutar configuraciones iniciales (polyfills)
+init();
 
 createRoot(document.getElementById("root")).render(
   <RoutingManagement

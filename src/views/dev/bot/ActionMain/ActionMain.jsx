@@ -11,7 +11,7 @@ import GraphDriver from "@components/GUI/graph/graph-driver";
 
 import PanelBalance from "./PanelBalance";
 
-import { DriverParams } from "@jeff-aporta/router";
+// Uso de viewTable prop en lugar de DriverParams
 
 const time_wait_update_available_again = 5;
 
@@ -42,6 +42,7 @@ export default function ActionMain({
   setOperationTrigger,
   operationTrigger,
   setViewTable,
+  viewTable,
   forceUpdate,
   coinsOperatingList,
   coinsToOperate,
@@ -52,7 +53,7 @@ export default function ActionMain({
   setErrorCoinOperate,
   user_id
 }) {
-  const driverParams = DriverParams();
+  // driverParams reemplazado por viewTable prop
 
   // Estado para la selección de monedas
   const [deletionTimers, setDeletionTimers] = useState([]);
@@ -93,19 +94,8 @@ export default function ActionMain({
       })()}
 
       {(() => {
-        const viewTable = driverParams.get("view-table");
+        console.log("ActionMain [DEV] viewTable:", viewTable);
         switch (viewTable) {
-          case "operations":
-            return (
-              <TableOperations
-                {...{
-                  setOperationTrigger,
-                  setViewTable,
-                  user_id,
-                  coinid: 24478,
-                }}
-              />
-            );
           case "transactions":
             return (
               <TableTransactions
@@ -120,6 +110,18 @@ export default function ActionMain({
                     <br />
                   </>
                 }
+              />
+            );
+          case "operations":
+          default:
+            return (
+              <TableOperations
+                {...{
+                  setOperationTrigger,
+                  setViewTable,
+                  user_id,
+                  coinid: 24478,
+                }}
               />
             );
         }

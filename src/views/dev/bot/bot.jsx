@@ -1,6 +1,5 @@
 import React, { useRef, useState, useEffect } from "react";
 
-import { DriverParams } from "@jeff-aporta/router";
 import fluidCSS from "@jeff-aporta/fluidcss";
 
 import { ThemeSwitcher } from "@templates";
@@ -35,12 +34,14 @@ import ActionMain from "./ActionMain/ActionMain";
 import Settings from "./Settings";
 
 export default function PanelRobot() {
-  const driverParams = DriverParams();
+  const params = new URLSearchParams(window.location.search);
 
   const [viewTable, setViewTable] = useState(
-    driverParams.get("view-table") ?? "operations"
+    params.get("view-table") ?? "operations"
   );
-  const [view, setView] = useState(driverParams.get("action-id") ?? "main");
+  const [view, setView] = useState(params.get("action-id") ?? "main");
+
+  console.log("PanelRobot render:", { view, viewTable });
 
   const [operationTrigger, setOperationTrigger] = useState(null);
   const currency = useRef("");
@@ -61,15 +62,12 @@ export default function PanelRobot() {
 
   const user_id = global.configApp.userID;
 
+  // Sync view and viewTable to URL params
   useEffect(() => {
-    const aid = driverParams.get("action-id");
-    const vt = driverParams.get("view-table");
-    if (aid != view) {
-      driverParams.set("action-id", view);
-    }
-    if (vt != viewTable) {
-      driverParams.set("view-table", viewTable);
-    }
+    const p = new URLSearchParams(window.location.search);
+    if (view !== p.get("action-id")) p.set("action-id", view);
+    if (viewTable !== p.get("view-table")) p.set("view-table", viewTable);
+    window.history.replaceState(null, "", `?${p.toString()}`);
   }, [view, viewTable]);
 
   useEffect(() => {

@@ -4,6 +4,7 @@ const path = require("path");
 module.exports = override(
   addWebpackAlias({
     "@root": path.resolve(__dirname),
+    "@src": path.resolve(__dirname, "src"),
     "@app": path.resolve(__dirname, "src/app"),
     "@api": path.resolve(__dirname, "src/api"),
     "@views": path.resolve(__dirname, "src/views"),
