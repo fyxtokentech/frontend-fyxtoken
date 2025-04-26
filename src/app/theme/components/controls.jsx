@@ -1,5 +1,5 @@
 import fluidCSS from "@jeff-aporta/fluidcss";
-import { DriverParams } from "@jeff-aporta/router";
+import { useLocation } from "react-router-dom";
 import {
   FormControl,
   Skeleton,
@@ -18,13 +18,16 @@ import es from "dayjs/locale/es";
 import { format } from "date-fns";
 import { es as esLocale } from "date-fns/locale";
 import { paletteConfig } from "@jeff-aporta/theme-manager";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import SearchIcon from "@mui/icons-material/Search";
 import ClearIcon from "@mui/icons-material/Clear";
 
 export { AutoSkeleton, DateRangeControls, UserFilterControl };
 
 function AutoSkeleton({ loading, w = "100%", h = "5vh", ...rest }) {
+  if (loading == null || loading == undefined) {
+    return <></>;
+  }
   return loading ? (
     <Skeleton style={{ height: h, width: `max(200px, ${w})` }} />
   ) : (
@@ -40,7 +43,7 @@ function UserFilterControl({
   label = "Usuario",
   width = 250,
 }) {
-  const [searchTerm, setSearchTerm] = React.useState(value);
+  const [searchTerm, setSearchTerm] = useState(value);
   const theme = useTheme();
   const palette_config = paletteConfig();
 
@@ -105,42 +108,30 @@ function DateRangeControls({
   loading,
   period = "day", // day, week, month
 }) {
-  // Inicializar driverParams
-  const driverParams = DriverParams();
-  const theme = useTheme();
+  // Inicializar parámetros de URL como driverParams
+  const location = useLocation();
+  const { driverParams } = global;
 
-  let url_period = driverParams.get("period");
-  let url_date = driverParams.get("date");
-  let url_month = driverParams.get("month");
-  let url_week = driverParams.get("week");
-  if(!url_period){
-    url_period = period;
+  let url_period = driverParams.get("period") || period;
+  let url_month = driverParams.get("month") || String(dayjs().month());
+  let url_week =
+    driverParams.get("week") || String(getInitWeek(dayjs().month()));
+  // update URL if missing params
+  if (
+    !location.search.includes("period") ||
+    !location.search.includes("month") ||
+    !location.search.includes("week")
+  ) {
     driverParams.set("period", url_period);
-  }
-  if(!url_date){
-    url_date = dayjs().format("YYYY-MM-DD");
-    driverParams.set("date", url_date);
-  }
-  if(!url_month){
-    url_month = dayjs().month();
     driverParams.set("month", url_month);
-  }
-  if(!url_week){
-    url_week = getInitWeek(dayjs().month());
     driverParams.set("week", url_week);
   }
 
   // Migrar estados a useState para que los selectores sean reactivos
-  const [periodValue, setPeriodValue] = React.useState(url_period);
-  const [selectedDate, setSelectedDate] = React.useState(
-    dayjs(url_date)
-  );
-  const [selectedMonth, setSelectedMonth] = React.useState(
-    Number(url_month)
-  );
-  const [selectedWeek, setSelectedWeek] = React.useState(
-    Number(url_week)
-  );
+  const [periodValue, setPeriodValue] = useState(url_period);
+  const [selectedDate, setSelectedDate] = useState(dateRangeInit);
+  const [selectedMonth, setSelectedMonth] = useState(Number(url_month));
+  const [selectedWeek, setSelectedWeek] = useState(Number(url_week));
 
   function getInitWeek(selectedMonth) {
     return selectedMonth == dayjs().month() ? Math.ceil(dayjs().date() / 7) : 1;
@@ -152,16 +143,17 @@ function DateRangeControls({
   const handlePeriodChange = (event) => {
     const value = event?.target?.value || periodValue;
     setPeriodValue(value);
-    driverParams.set("period", value);
-    setSelectedDate(dayjs());
-    driverParams.set("date", dayjs().format("YYYY-MM-DD"));
-    setSelectedMonth(dayjs().month());
-    driverParams.set("month", dayjs().month());
-    setSelectedWeek(getInitWeek(dayjs().month()));
-    driverParams.set("week", getInitWeek(dayjs().month()));
-    setSelectedWeek(getInitWeek(dayjs().month()));
-
     const now = dayjs();
+    setSelectedDate(now);
+    const d = now.format("YYYY-MM-DD");
+    if (value === "day") {
+      driverParams.sets({
+        start_date: d,
+        end_date: d,
+      });
+    }
+    const iw = getInitWeek(now.month());
+    setSelectedWeek(iw);
     let init;
     const end = now;
     setDateRangeFin(end);
@@ -180,16 +172,33 @@ function DateRangeControls({
         init = now.startOf("day");
     }
     setDateRangeInit(init);
-    driverParams.set("start_date", init.format("YYYY-MM-DD"));
-    driverParams.set("end_date", end.format("YYYY-MM-DD"));
+    driverParams.sets({
+      month: String(now.month()),
+      period: value,
+      week: String(iw),
+      start_date: init.format("YYYY-MM-DD"),
+      end_date: end.format("YYYY-MM-DD"),
+    });
   };
 
   const handleDateChange = (date) => {
     setSelectedDate(date);
-    driverParams.set("date", dayjs(date).format("YYYY-MM-DD"));
-    if (setDateRangeInit) setDateRangeInit(date);
-    if (setDateRangeFin) setDateRangeFin(date);
+    const d = dayjs(date).format("YYYY-MM-DD");
+    driverParams.sets({
+      start_date: d,
+      end_date: d,
+    });
+    setDateRangeInit(date);
+    setDateRangeFin(date);
   };
+
+  // Sync dateRange when date param changes
+  useEffect(() => {
+    if (periodValue === "day") {
+      setDateRangeInit(selectedDate);
+      setDateRangeFin(selectedDate);
+    }
+  }, [selectedDate, periodValue]);
 
   const getWeekRange = (month, week) => {
     const daysInMonth = dayjs().month(month).daysInMonth();
@@ -210,7 +219,6 @@ function DateRangeControls({
 
   const handleWeekChange = (week) => {
     setSelectedWeek(week);
-    driverParams.set("week", week);
     const { start, end } = getWeekRange(selectedMonth, week);
     const date = dayjs().month(selectedMonth).date(start);
 
@@ -230,9 +238,12 @@ function DateRangeControls({
       startDate = date;
       endDate = date.date(end);
     }
-    driverParams.set("start_date", startDate.format("YYYY-MM-DD"));
-    driverParams.set("end_date", endDate.format("YYYY-MM-DD"));
-
+    driverParams.sets({
+      week: String(week),
+      month: String(selectedMonth),
+      start_date: startDate.format("YYYY-MM-DD"),
+      end_date: endDate.format("YYYY-MM-DD"),
+    });
     // Actualizar el estado inicial al intervalo actual
     const currentWeek = Math.ceil(today.date() / 7);
     setSelectedWeek(currentWeek);
@@ -240,25 +251,24 @@ function DateRangeControls({
 
   const handleMonthChange = (month) => {
     setSelectedMonth(month);
-    driverParams.set("month", month);
-    setSelectedWeek(getInitWeek(month));
-    driverParams.set("week", getInitWeek(month));
+    const iw2 = getInitWeek(month);
+    setSelectedWeek(iw2);
     const date = dayjs().month(month);
     const start = date.startOf("month");
     const end = date.endOf("month");
     setDateRangeInit(start);
     setDateRangeFin(end);
-    driverParams.set("start_date", start.format("YYYY-MM-DD"));
-    driverParams.set("end_date", end.format("YYYY-MM-DD"));
+    driverParams.sets({
+      month: String(month),
+      week: String(iw2),
+      start_date: start.format("YYYY-MM-DD"),
+      end_date: end.format("YYYY-MM-DD"),
+    });
   };
-
-  console.log("aaaaa");
-
   // Ejecutar handlePeriodChange al montar el componente
-  React.useEffect(() => {
+  useEffect(() => {
     // Solo inicializa si las fechas no están definidas
     if (!dateRangeInit || !dateRangeFin) {
-      console.log("bbbbb");
       const now = dayjs();
       setDateRangeFin(now);
       setDateRangeInit(now.startOf("day"));
@@ -281,7 +291,7 @@ function DateRangeControls({
               <DateTimePicker
                 className="fullWidth"
                 label="Fecha inicio"
-                defaultValue={dateRangeInit}
+                value={dateRangeInit}
                 onChange={(date) => setDateRangeInit(date)}
                 slotProps={{ textField: { size: "small" } }}
               />
@@ -294,7 +304,7 @@ function DateRangeControls({
               <DateTimePicker
                 className="fullWidth"
                 label="Fecha Fin"
-                defaultValue={dateRangeFin}
+                value={dateRangeFin}
                 onChange={(date) => setDateRangeFin(date)}
                 slotProps={{ textField: { size: "small" } }}
               />
@@ -309,8 +319,8 @@ function DateRangeControls({
   const palette_config = paletteConfig();
   return (
     <div className="d-flex ai-stretch flex-wrap gap-20px">
-      <AutoSkeleton h="10vh" w="200px" loading={loading}>
-        <FormControl variant="outlined" size="small" sx={{ minWidth: 200 }}>
+      <AutoSkeleton h="10vh" w="150px" loading={loading}>
+        <FormControl variant="outlined" size="small" sx={{ minWidth: 120 }}>
           <InputLabel id="period-select-label">Período</InputLabel>
           <Select
             labelId="period-select-label"
@@ -330,8 +340,8 @@ function DateRangeControls({
       </AutoSkeleton>
 
       {periodValue === "day" && (
-        <div className={fluidCSS().ltX(700, { width: "100%" }).end()}>
-          <AutoSkeleton h="10vh" w="250px" loading={loading}>
+        <AutoSkeleton h="10vh" w="200px" loading={loading}>
+          <div style={{ width: "200px", display: "inline-block" }}>
             <LocalizationProvider dateAdapter={AdapterDayjs}>
               <DateTimePicker
                 className="fullWidth"
@@ -339,18 +349,27 @@ function DateRangeControls({
                 value={selectedDate}
                 onChange={handleDateChange}
                 views={["year", "month", "day"]}
-                slotProps={{ textField: { size: "small" } }}
-                maxDate={periodValue === "day" ? dayjs() : undefined}
+                slotProps={{
+                  textField: {
+                    size: "small",
+                    variant: "outlined",
+                  },
+                }}
+                maxDate={dayjs()}
               />
             </LocalizationProvider>
-          </AutoSkeleton>
-        </div>
+          </div>
+        </AutoSkeleton>
       )}
 
       {periodValue === "week" && (
-        <div className={fluidCSS().ltX(700, { width: "100%" }).end()}>
-          <AutoSkeleton h="10vh" w="250px" loading={loading}>
-            <FormControl variant="outlined" size="small" sx={{ minWidth: 200 }}>
+        <div
+          className={`d-flex ai-center flex-wrap gap-10px ${fluidCSS()
+            .ltX(700, { width: "100%" })
+            .end()}`}
+        >
+          <AutoSkeleton h="10vh" w="150px" loading={loading}>
+            <FormControl variant="outlined" size="small" sx={{ minWidth: 120 }}>
               <InputLabel id="month-select-label">Mes</InputLabel>
               <Select
                 labelId="month-select-label"
@@ -375,8 +394,8 @@ function DateRangeControls({
               </Select>
             </FormControl>
           </AutoSkeleton>
-          <AutoSkeleton h="10vh" w="250px" loading={loading}>
-            <FormControl variant="outlined" size="small" sx={{ minWidth: 200 }}>
+          <AutoSkeleton h="10vh" w="150px" loading={loading}>
+            <FormControl variant="outlined" size="small" sx={{ minWidth: 120 }}>
               <InputLabel id="week-select-label">Semana</InputLabel>
               <Select
                 labelId="week-select-label"

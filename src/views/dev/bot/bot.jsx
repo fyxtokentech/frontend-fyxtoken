@@ -34,17 +34,18 @@ import ActionMain from "./ActionMain/ActionMain";
 import Settings from "./Settings";
 
 export default function PanelRobot() {
-  const params = new URLSearchParams(window.location.search);
-
+  const { driverParams } = global;
   const [viewTable, setViewTable] = useState(
-    params.get("view-table") ?? "operations"
+    driverParams.get("view-table") || "operations"
   );
-  const [view, setView] = useState(params.get("action-id") ?? "main");
+  const [view, setView] = useState(
+    driverParams.get("action-id") || "main"
+  );
 
   console.log("PanelRobot render:", { view, viewTable });
 
   const [operationTrigger, setOperationTrigger] = useState(null);
-  const currency = useRef("");
+  const currency = useRef(driverParams.get("coin") || "");
 
   const [update_available, setUpdateAvailable] = useState(true);
 
@@ -64,14 +65,11 @@ export default function PanelRobot() {
 
   // Sync view and viewTable to URL params
   useEffect(() => {
-    const p = new URLSearchParams(window.location.search);
-    if (view !== p.get("action-id")) p.set("action-id", view);
-    if (viewTable !== p.get("view-table")) p.set("view-table", viewTable);
-    window.history.replaceState(null, "", `?${p.toString()}`);
+    driverParams.set("action-id", view);
+    driverParams.set("view-table", viewTable);
   }, [view, viewTable]);
 
   useEffect(() => {
-    console.log(coinsToOperate)
     if (coinsToOperate.current.length === 0) {
       setLoadingCoinToOperate(true);
       getResponse({
@@ -79,13 +77,24 @@ export default function PanelRobot() {
         checkErrors: () => null,
         setLoading: setLoadingCoinToOperate,
         setApiData: (data) => {
-          coinsToOperate.current = data.map(
-            (coin) => coin.symbol || coin.name || coin.id || "-"
-          );
+          coinsToOperate.current = data;
+          const paramCoin = driverParams.get("coin");
+          if (!paramCoin && coinsToOperate.current.length > 0) {
+            const first = coinsToOperate.current[0];
+            console.log(first)
+            const key = global.getCoinKey(first);
+            currency.current = key;
+            driverParams.set("coin", key);
+            driverParams.set("id_coin", first.id);
+          } else {
+            currency.current = paramCoin;
+          }
+          coinsOperatingList.current = data
+            .filter((coin) => coin.status === "A");
         },
-        buildEndpoint: ({ baseUrl }) => `${baseUrl}/coins/active/${user_id}`,
+        buildEndpoint: ({ baseUrl }) => `${baseUrl}/coins/${user_id}`,
         mock_default: {
-          content: [["symbol"], ["BTC"], ["ETH"], ["BNB"], ["XRP"], ["XAI"]],
+          content: [["symbol", "id"], ["BTC", "1"], ["ETH", "2"]],
         },
       });
     }

@@ -1,9 +1,15 @@
-import { IconButton, Paper, Tooltip, Typography, Alert } from "@mui/material";
+import {
+  IconButton,
+  Paper,
+  Tooltip,
+  Typography,
+  Alert,
+  Button,
+  Badge,
+} from "@mui/material";
 import TransactionsIcon from "@mui/icons-material/PriceChange";
 
-import { DateTimePicker, LocalizationProvider } from "@mui/x-date-pickers";
-
-import { DynTable, rendersTemplate } from "@components/GUI/DynTable/DynTable";
+import { DynTable } from "@components/GUI/DynTable/DynTable";
 
 import mock_operation from "./mock-operation.json";
 import columns_operation from "./columns-operation.jsx";
@@ -11,140 +17,213 @@ import columns_operation from "./columns-operation.jsx";
 import { getResponse } from "@api/requestTable";
 
 import { AutoSkeleton, DateRangeControls } from "@components/controls";
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, { Component } from "react";
 import dayjs from "dayjs";
-import { DriverParams } from "@jeff-aporta/router";
 
-export default TableOperations;
+export default class TableOperations extends Component {
+  constructor(props) {
+    super(props);
+    this.delay = -1;
+    this.loadingTableOperation = null;
+    const { driverParams } = global;
+    const [start, end] = driverParams.gets("start_date", "end_date");
+    this.state = {
+      dateRangeInit: start ? dayjs(start) : null,
+      dateRangeFin: end ? dayjs(end) : null,
+      error: null,
+      tableData: [],
+    };
+  }
 
-function TableOperations({
-  useForUser = true, // if true, is used for user
-  setOperationTrigger, // only use for user
-  data,
-  columns_config,
-  user_id,
-  setViewTable,
-  coinid = 1, // Valor por defecto 1 si no se proporciona
-  ...rest
-}) {
-  const driverParams = DriverParams();
-  let dateRangeInitParam = driverParams.get("start_date");
-  let dateRangeFinParam = driverParams.get("end_date");
+  setError = (error) => this.setState({ error });
+  setTableData = (tableData) => this.setState({ tableData });
+  // Forzar re-render cuando no llegan datos
+  setForceUpdate = () => this.forceUpdate();
 
-  const [dateRangeInit, setDateRangeInit] = useState(
-    dateRangeInitParam ? dayjs(dateRangeInitParam) : null
-  );
+  componentDidMount() {
+    this.invokeFetch();
+  }
 
-  const [dateRangeFin, setDateRangeFin] = useState(
-    dateRangeFinParam ? dayjs(dateRangeFinParam) : null
-  );
-  const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [tableData, setTableData] = useState([]);
+  componentDidUpdate(prevProps) {
+    const { user_id } = this.props;
+    if (prevProps.user_id !== user_id) {
+      this.invokeFetch();
+    }
+  }
 
-  const fetchData = useCallback(async () => {
-    if (!user_id || !dateRangeInit || !dateRangeFin) return;
-    setLoading(true);
+  async fetchData({
+    setError,
+    setTableData,
+    user_id,
+    dateRangeInit,
+    dateRangeFin,
+    setForceUpdate,
+    tableData,
+  }) {
+    if (Date.now() - this.delay < 1000) {
+      console.log(
+        "Fetch cancelado, tiempo de espera",
+        (Date.now() - this.delay) / 1000
+      );
+      return;
+    }
+    this.delay = Date.now();
+    this.loadingTableOperation = true;
+    if (!user_id || !dateRangeInit || !dateRangeFin) {
+      console.log("Fetch cancelado (faltan parámetros)", {
+        user_id,
+        dateRangeInit,
+        dateRangeFin,
+      });
+      return;
+    }
     try {
       await getResponse({
         setError,
-        setLoading,
-        setApiData: (data) =>
-          setTableData(Array.isArray(data) ? [...data] : data),
+        setLoading: (value) => {
+          this.loadingTableOperation = value;
+        },
+        setApiData: (data) => {
+          const parsed = Array.isArray(data) ? [...data] : data;
+          setTableData(parsed);
+          console.log(parsed);
+        },
         mock_default: mock_operation,
         checkErrors: () => {
-          if (!user_id) return "No hay usuario seleccionado";
-          if (!dateRangeInit || !dateRangeFin)
+          if (!user_id) {
+            return "No hay usuario seleccionado";
+          }
+          if (!dateRangeInit || !dateRangeFin) {
             return "No se ha seleccionado un rango de fechas";
+          }
         },
-        buildEndpoint: ({ baseUrl }) =>
-          `${baseUrl}/operations/${user_id}?coinid=${coinid}&start_date=${dateRangeInit.format(
-            "YYYY-MM-DD"
-          )}&end_date=${dateRangeFin.format("YYYY-MM-DD")}&page=0&limit=1000`,
+        buildEndpoint: ({ baseUrl }) => {
+          return `
+            ${baseUrl}/operations/${user_id}?
+              coinid=${global.driverParams.get("id_coin")}&
+              start_date=${dateRangeInit.format("YYYY-MM-DD")}&
+              end_date=${dateRangeFin.format("YYYY-MM-DD")}&
+              page=0&limit=1000
+          `;
+        },
       });
     } catch (e) {
       console.error(e);
       setError(e.message || e);
       setTableData([]);
     } finally {
-      setLoading(false);
+      this.loadingTableOperation = false;
+      this.delay = Date.now();
+      if (tableData.length === 0) setForceUpdate();
     }
-  }, [dateRangeInit, dateRangeFin, user_id, coinid, mock_operation]);
+  }
 
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+  invokeFetch() {
+    const { user_id } = this.props;
+    const { dateRangeInit, dateRangeFin, tableData } = this.state;
+    this.fetchData({
+      setError: this.setError,
+      setTableData: this.setTableData,
+      user_id,
+      dateRangeInit,
+      dateRangeFin,
+      setForceUpdate: this.setForceUpdate,
+      tableData,
+    });
+  }
 
-  const processedContent = useMemo(() => {
-    const base = user_id ? tableData : data?.content ?? mock_operation.content;
-    return Array.isArray(base)
+  handleInitChange = (dateRangeInit) => {
+    this.setState({ dateRangeInit });
+    if (dateRangeInit && typeof dateRangeInit.format === "function") {
+      global.driverParams.set("start_date", dateRangeInit.format("YYYY-MM-DD"));
+    }
+  };
+
+  handleFinChange = (dateRangeFin) => {
+    this.setState({ dateRangeFin });
+    if (dateRangeFin && typeof dateRangeFin.format === "function") {
+      global.driverParams.set("end_date", dateRangeFin.format("YYYY-MM-DD"));
+    }
+  };
+
+  render() {
+    const {
+      useForUser,
+      setOperationTrigger,
+      data,
+      columns_config,
+      user_id,
+      setViewTable,
+      ...rest
+    } = this.props;
+    const { dateRangeInit, dateRangeFin, error, tableData } = this.state;
+    const loading = this.loadingTableOperation;
+
+    const base = user_id ? tableData : data?.content ?? [];
+    const processedContent = Array.isArray(base)
       ? base.map((item) => ({ ...item, name_coin: item.name_coin ?? "FYX" }))
       : [];
-  }, [tableData, data, mock_operation]);
 
-  const finalColumns = useMemo(() => {
-    const base = columns_config ?? [...columns_operation.config];
-    if (!useForUser) return base;
-    return [
-      {
-        field: "actions",
-        headerName: "Transacciones",
-        sortable: false,
-        renderCell: ({ row }) => (
-          <Tooltip title="Transacciones" placement="left">
-            <Paper
-              className="circle d-center"
-              style={{ width: 30, height: 30, margin: "auto", marginTop: 10 }}
+    let finalColumns = columns_config ?? [...columns_operation.config];
+
+    // console.log(useForUser);
+
+    if (useForUser) {
+      finalColumns = [
+        {
+          field: "actions",
+          headerName: "Transacciones",
+          sortable: false,
+          renderCell: ({ row }) => (
+            <Tooltip
+              title={`Transacciones (${row.number_of_transactions})`}
+              placement="left"
             >
-              <IconButton
-                size="small"
-                onClick={() => {
-                  const table = "transactions";
-                  // Merge both query params at once to avoid losing one
-                  const params = new URLSearchParams(window.location.search);
-                  params.set("operation-id", row.id_operation);
-                  params.set("view-table", table);
-                  window.history.replaceState(null, "", `?${params.toString()}`);
-                  setOperationTrigger(row);
-                  setViewTable(table);
-                }}
+              <Paper
+                className="circle d-center"
+                style={{ width: 30, height: 30, margin: "auto", marginTop: 10 }}
               >
-                <TransactionsIcon />
-              </IconButton>
-            </Paper>
-          </Tooltip>
-        ),
-      },
-      ...base,
-    ];
-  }, [
-    columns_config,
-    columns_operation.config,
-    useForUser,
-    setOperationTrigger,
-    setViewTable,
-  ]);
+                <IconButton
+                  size="small"
+                  onClick={() => {
+                    const table = "transactions";
+                    const params = new URLSearchParams(window.location.search);
+                    params.set("operation-id", row.id_operation);
+                    params.set("view-table", table);
+                    window.history.replaceState(
+                      null,
+                      "",
+                      `?${params.toString()}`
+                    );
+                    setOperationTrigger(row);
+                    setViewTable(table);
+                  }}
+                >
+                  <Badge
+                    badgeContent={row.number_of_transactions}
+                    color="primary"
+                    sx={{ '& .MuiBadge-badge': { color: '#fff' } }}
+                  >
+                    <TransactionsIcon fontSize="small" />
+                  </Badge>
+                </IconButton>
+              </Paper>
+            </Tooltip>
+          ),
+        },
+        ...columns_operation.config,
+      ];
+    }
 
-  return (
-    <>
-      {!user_id ? (
-        <Typography variant="body1">
-          Seleccione un usuario para ver operaciones.
-        </Typography>
-      ) : (
-        <>
-          <Typography variant="h5" className="mh-20px">
-            Operaciones
+    return (
+      <>
+        {!user_id ? (
+          <Typography variant="body1">
+            Seleccione un usuario para ver operaciones.
           </Typography>
-          <div className={loading ? "" : "mh-30px"}>
-            <DateRangeControls
-              loading={loading}
-              dateRangeInit={dateRangeInit}
-              dateRangeFin={dateRangeFin}
-              setDateRangeInit={setDateRangeInit}
-              setDateRangeFin={setDateRangeFin}
-            />
-            <br />
+        ) : (
+          <>
+            <Typography variant="h5">Operaciones</Typography>
             <Typography
               variant="caption"
               color="text.secondary"
@@ -152,22 +231,44 @@ function TableOperations({
             >
               Usuario: {user_id}
             </Typography>
-          </div>
-          {error && <Typography color="error">{error}</Typography>}
-          <AutoSkeleton h="auto" loading={loading}>
-            <div style={{ width: "100%", overflowX: "auto" }}>
-              <DynTable
-                {...rest}
-                columns={finalColumns}
-                rows={processedContent}
-                getRowId={(row) =>
-                  row.id_operation || row.id || Math.random().toString()
-                }
+            <div
+              className={`d-flex ai-center jc-space-between flex-wrap gap-10px ${
+                loading ? "" : "mh-10px"
+              }`}
+            >
+              <DateRangeControls
+                loading={loading}
+                dateRangeInit={dateRangeInit}
+                dateRangeFin={dateRangeFin}
+                setDateRangeInit={this.handleInitChange}
+                setDateRangeFin={this.handleFinChange}
               />
+              <Button
+                variant="contained"
+                size="small"
+                onClick={() => this.invokeFetch()}
+                disabled={loading}
+                sx={{ mt: 1, mb: 1 }}
+              >
+                Aplicar filtros
+              </Button>
             </div>
-          </AutoSkeleton>
-        </>
-      )}
-    </>
-  );
+            {error && <Typography color="error">{error}</Typography>}
+            <AutoSkeleton loading={loading} h="auto">
+              <div style={{ width: "100%", overflowX: "auto" }}>
+                <DynTable
+                  {...rest}
+                  columns={finalColumns}
+                  rows={processedContent}
+                  getRowId={(row) =>
+                    row.id_operation || row.id || Math.random().toString()
+                  }
+                />
+              </div>
+            </AutoSkeleton>
+          </>
+        )}
+      </>
+    );
+  }
 }

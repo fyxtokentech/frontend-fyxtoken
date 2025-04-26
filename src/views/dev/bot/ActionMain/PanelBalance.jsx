@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { Typography, Grid, Button, Tooltip, Chip } from "@mui/material";
 import SettingsIcon from "@mui/icons-material/Settings";
 import UpdateIcon from "@mui/icons-material/Cached";
@@ -9,11 +9,12 @@ import CurrencyExchangeIcon from "@mui/icons-material/CurrencyExchange";
 
 import fluidCSS from "@jeff-aporta/fluidcss";
 import { TooltipIconButton, generate_selects } from "@recurrent";
-import { PaperP } from "@containers";
+import { PaperP } from "@components/containers";
 
-import { AutoSkeleton } from "@app/theme/components/controls";
+import { AutoSkeleton } from "@components/controls";
 
 import CoinsOperating from "./CoinsOperating";
+import { putResponse } from "@api/requestTable";
 
 const time_wait_update_available_again = 5;
 
@@ -25,7 +26,6 @@ export default function PanelBalance({
   coinsOperatingList,
   coinsToOperate,
   loadingCoinToOperate,
-  setLoadingCoinToOperate,
   coinsToDelete,
   errorCoinOperate,
   setErrorCoinOperate,
@@ -34,9 +34,10 @@ export default function PanelBalance({
   deletionTimers,
   setDeletionTimers,
 }) {
-  const [, forceUpdatePanelBalance] = useState({});
-  // State for price projection animation
-  const priceProjection = useRef(-3);
+  const [actionInProcess, setActionInProcess] = useState(false);
+
+  // price projection in state for automatic re-renders
+  const [priceProjectionValue, setPriceProjectionValue] = useState(-3);
   const flatNumber = 12345;
   const roi = 0.05; // 5% ROI
   const balanceUSDT = 10000; // Example USDT balance
@@ -44,22 +45,14 @@ export default function PanelBalance({
 
   // Helper functions
   const getPriceProjectionColor = () => {
-    if (priceProjection.current > 0) {
-      return "ok";
-    }
-    if (priceProjection.current < 0) {
-      return "error";
-    }
+    if (priceProjectionValue > 0) return "ok";
+    if (priceProjectionValue < 0) return "error";
     return "warning";
   };
 
   const getPriceProjectionIcon = () => {
-    if (priceProjection.current > 0) {
-      return <TrendingUpIcon />;
-    }
-    if (priceProjection.current < 0) {
-      return <TrendingDownIcon />;
-    }
+    if (priceProjectionValue > 0) return <TrendingUpIcon />;
+    if (priceProjectionValue < 0) return <TrendingDownIcon />;
     return <TrendingFlatIcon />;
   };
 
@@ -75,20 +68,18 @@ export default function PanelBalance({
     />
   );
 
-  // Animation effect
+  // Animation effect for price projection
   useEffect(() => {
     const interval = setInterval(() => {
-      const newValue = priceProjection.current + 1;
-      const finalValue = newValue > 3 ? -3 : newValue;
-      priceProjection.current = finalValue;
-      // Forzar renderizado si es necesario
-      forceUpdatePanelBalance({});
+      setPriceProjectionValue((prev) => {
+        const next = prev + 1 > 3 ? -3 : prev + 1;
+        return next;
+      });
     }, 10000);
-
     return () => clearInterval(interval);
   }, []);
 
-  const hayMoneda = currency.current.trim();
+  const hayMoneda = currency.current.trim() && !loadingCoinToOperate;
 
   return (
     <>
@@ -103,15 +94,14 @@ export default function PanelBalance({
               <CoinSelectionOperate
                 {...{
                   currency,
-                  forceUpdate: forceUpdatePanelBalance,
                   coinsToOperate,
                   coinsToDelete,
                   loadingCoinToOperate,
-                  setLoadingCoinToOperate,
                   errorCoinOperate,
                   setErrorCoinOperate,
                   user_id,
                   coinsOperatingList,
+                  setUpdateAvailable
                 }}
               />
 
@@ -130,7 +120,7 @@ export default function PanelBalance({
                   />
                   <PriceProjectionCard
                     {...{
-                      priceProjection: priceProjection.current,
+                      priceProjection: priceProjectionValue,
                       getPriceProjectionColor,
                       getPriceProjectionIcon,
                     }}
@@ -151,24 +141,36 @@ export default function PanelBalance({
                 settingIcon,
                 currency,
                 coinsOperatingList,
-                forceUpdatePanelBalance,
+                coinsToOperate,
                 onSellCoin,
                 coinsToDelete,
+                setErrorCoinOperate,
+                user_id,
+                actionInProcess,
+                setActionInProcess,
               }}
             />
           )}
         </div>
-        <br />
-        <CoinsOperating
-          {...{
-            coinsOperatingList,
-            coinsToDelete,
-            deletionTimers,
-            setDeletionTimers,
-            forceUpdatePanelBalance,
-            onExternalDeleteRef: window.onSellCoinRef,
-          }}
-        />
+        {hayMoneda && (
+          <>
+            <br />
+            <CoinsOperating
+              {...{
+                coinsOperatingList,
+                coinsToDelete,
+                deletionTimers,
+                setDeletionTimers,
+                onExternalDeleteRef: window.onSellCoinRef,
+                user_id,
+                setErrorCoinOperate,
+                setUpdateAvailable,
+                actionInProcess,
+                setActionInProcess,
+              }}
+            />
+          </>
+        )}
       </PaperP>
     </>
   );
@@ -176,18 +178,20 @@ export default function PanelBalance({
 
 function CoinSelectionOperate({
   currency,
-  forceUpdate,
   coinsToOperate,
   coinsToDelete,
   loadingCoinToOperate,
-  setLoadingCoinToOperate,
   errorCoinOperate,
   setErrorCoinOperate,
   user_id,
   coinsOperatingList,
+  setUpdateAvailable,
 }) {
-  // Solo mostrar monedas que NO están en operación actualmente
-  const opns = coinsToOperate.current;
+  const { driverParams, getCoinKey } = global;
+  // Solo mostrar símbolos de monedas que NO están en operación actualmente
+  const opns = coinsToOperate.current.map(
+    (coin) => coin.symbol || coin.name || coin.id || "-"
+  );
 
   return (
     <PaperP className="d-center" p_min="5" p_max="10">
@@ -197,7 +201,14 @@ function CoinSelectionOperate({
             value: currency.current,
             setter: (value) => {
               currency.current = value;
-              forceUpdate({});
+              driverParams.set("coin", value);
+              const selected = coinsToOperate.current.find(
+                (c) => getCoinKey(c) === value
+              );
+              if (selected) {
+                driverParams.set("id_coin", selected.id);
+              }
+              setUpdateAvailable((prev) => !prev);
             },
             name: "currency",
             label: "Moneda",
@@ -359,19 +370,24 @@ function ActionButtons({
   settingIcon,
   currency,
   coinsOperatingList,
+  coinsToOperate,
   onSellCoin,
-  forceUpdatePanelBalance,
   coinsToDelete,
+  setErrorCoinOperate,
+  user_id,
+  actionInProcess,
+  setActionInProcess,
 }) {
+  const { getCoinKey } = global;
   const hayMoneda = currency.current.trim();
-  const monedasLimiteAlcanzado = coinsOperatingList.current.length >= 3;
   const monedaYaOperando = coinsOperatingList.current.some(
-    (c) => c.title === currency.current
+    (c) => getCoinKey(c) === currency.current
   );
   const monedasDisponibles = coinsOperatingList.current.length === 0;
   const monedaEnBorrado = coinsToDelete.current.some(
-    (c) => c.title === currency.current
+    (c) => getCoinKey(c) === currency.current
   );
+
   return (
     <div
       className={`d-flex ai-center flex-wrap gap-10px ${fluidCSS()
@@ -390,20 +406,18 @@ function ActionButtons({
             if (!hayMoneda) {
               return "Seleccione una moneda";
             }
-            if (monedasLimiteAlcanzado) {
-              return "Solo 3 monedas";
-            }
             if (monedaYaOperando) {
               return "Moneda ya operando";
             }
-            return "Comprar";
+            if (actionInProcess) {
+              return "Espere...";
+            }
+            return "Operar";
           })()}
         >
           <div>
-            <Comprar
-              disabled={
-                !hayMoneda || monedasLimiteAlcanzado || monedaYaOperando
-              }
+            <Operar
+              disabled={!hayMoneda || monedaYaOperando || actionInProcess}
             />
           </div>
         </Tooltip>
@@ -421,16 +435,20 @@ function ActionButtons({
             if (monedaEnBorrado) {
               return "Moneda en proceso de borrado";
             }
-            return "Vender";
+            if (actionInProcess) {
+              return "Espere...";
+            }
+            return "Detener";
           })()}
         >
           <div>
-            <Vender
+            <Detener
               disabled={
                 !hayMoneda ||
                 monedasDisponibles ||
                 !monedaYaOperando ||
-                monedaEnBorrado
+                monedaEnBorrado ||
+                actionInProcess
               }
             />
           </div>
@@ -439,7 +457,55 @@ function ActionButtons({
     </div>
   );
 
-  function Vender(props) {
+  function Operar(props) {
+    return (
+      <Button
+        {...props}
+        variant="contained"
+        color="ok"
+        size="small"
+        onClick={async () => {
+          if (!currency.current.trim()) {
+            return;
+          }
+          const coinObj = coinsToOperate.current.find(
+            (c) => getCoinKey(c) === currency.current
+          );
+          if (!coinObj) {
+            return;
+          }
+          setActionInProcess(true);
+
+          try {
+            putResponse({
+              buildEndpoint: ({ baseUrl }) => {
+                return `${baseUrl}/coins/start/${user_id}/${coinObj.id}`;
+              },
+              setError: setErrorCoinOperate,
+              willEnd,
+            });
+            // refresh operating coins list and UI
+            coinsOperatingList.current = [
+              ...coinsOperatingList.current,
+              coinObj,
+            ];
+          } catch (err) {
+            console.error("Error operando moneda:", err);
+            willEnd();
+          }
+
+          function willEnd() {
+            setActionInProcess(false);
+            setUpdateAvailable((prev) => !prev);
+          }
+        }}
+      >
+        Operar
+      </Button>
+    );
+  }
+
+  function Detener(props) {
     return (
       <Button
         {...props}
@@ -447,34 +513,11 @@ function ActionButtons({
         color="cancel"
         size="small"
         onClick={() => {
-          onSellCoin(currency.current, forceUpdatePanelBalance);
+          setActionInProcess(true);
+          onSellCoin(currency.current);
         }}
       >
-        Vender
-      </Button>
-    );
-  }
-
-  function Comprar(props) {
-    return (
-      <Button
-        {...props}
-        variant="contained"
-        color="ok"
-        size="small"
-        onClick={() => {
-          if (!currency.current || currency.current.trim() === "") {
-            return;
-          }
-          coinsOperatingList.current = [
-            ...coinsOperatingList.current,
-            { title: currency.current },
-          ];
-          // currency.current = "";
-          forceUpdatePanelBalance({});
-        }}
-      >
-        Comprar
+        Detener
       </Button>
     );
   }

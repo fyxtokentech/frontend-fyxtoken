@@ -139,6 +139,7 @@ const retorno = {
       field: "number_of_transactions",
       headerName: "Cantidad de transacciones.",
       description: "Número de transacciones realizadas.",
+      inTable: false,
     },
   ],
 };

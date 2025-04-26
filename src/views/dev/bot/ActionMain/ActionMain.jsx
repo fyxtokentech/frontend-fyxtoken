@@ -57,7 +57,6 @@ export default function ActionMain({
 
   // Estado para la selección de monedas
   const [deletionTimers, setDeletionTimers] = useState([]);
-  const [,forceUpdateActionMain] = useState({});
 
   return (
     <PaperP className="d-flex flex-column gap-20px">
@@ -78,11 +77,10 @@ export default function ActionMain({
           user_id,
           deletionTimers,
           setDeletionTimers,
-          onSellCoin: (coinTitle, forceUpdatePanelBalance) => {
+          onSellCoin: (coinTitle) => {
             if (window.onSellCoinRef && window.onSellCoinRef.current) {
               window.onSellCoinRef.current(coinTitle);
             }
-            setTimeout(()=>forceUpdatePanelBalance({}));
           },
         }}
       />
@@ -93,39 +91,52 @@ export default function ActionMain({
         return null;
       })()}
 
-      {(() => {
-        console.log("ActionMain [DEV] viewTable:", viewTable);
-        switch (viewTable) {
-          case "transactions":
-            return (
-              <TableTransactions
-                {...{
-                  setViewTable,
-                  user_id,
-                  operationTrigger,
-                }}
-                pretable={
-                  <>
-                    <GraphDriver typeDataInput="none" />
-                    <br />
-                  </>
-                }
-              />
-            );
-          case "operations":
-          default:
-            return (
-              <TableOperations
-                {...{
-                  setOperationTrigger,
-                  setViewTable,
-                  user_id,
-                  coinid: 24478,
-                }}
-              />
-            );
-        }
-      })()}
+      <ViewTable
+        {...{
+          viewTable,
+          setViewTable,
+          user_id,
+          operationTrigger,
+          setOperationTrigger
+        }}
+      />
     </PaperP>
   );
+}
+
+function ViewTable({ viewTable, setViewTable, user_id, operationTrigger, setOperationTrigger }) {
+  console.log("ActionMain [DEV] viewTable:", viewTable);
+  // Load coinid from URL parameters via global.driverParams
+  const { driverParams } = global;
+  const coinidStr = driverParams.get("id_coin");
+  const coinidFromUrl = coinidStr ? parseInt(coinidStr, 10) : undefined;
+
+  switch (viewTable) {
+    case "transactions":
+      return (
+        <TableTransactions
+          {...{
+            setViewTable,
+            user_id,
+            operationTrigger,
+          }}
+          pretable={<>
+            <GraphDriver typeDataInput="none" />
+            <br />
+          </>} />
+      );
+    case "operations":
+    default:
+      return (
+        <TableOperations
+          {...{
+            setOperationTrigger,
+            setViewTable,
+            user_id,
+            coinid: coinidFromUrl,
+            useForUser: true,
+          }}
+        />
+      );
+  }
 }
