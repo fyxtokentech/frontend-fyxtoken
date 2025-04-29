@@ -107,12 +107,14 @@ function DateRangeControls({
   setDateRangeFin,
   loading,
   period = "most_recent", // day, week, month
+  willPeriodChange = (period) => {},
 }) {
   // Inicializar parámetros de URL como driverParams
   const location = useLocation();
   const { driverParams } = global;
 
   let url_period = driverParams.get("period") || period;
+  const url_start_date = driverParams.get("start_date");
   let url_month = driverParams.get("month") || String(dayjs().month());
   let url_week =
     driverParams.get("week") || String(getInitWeek(dayjs().month()));
@@ -142,6 +144,8 @@ function DateRangeControls({
 
   const handlePeriodChange = (event) => {
     const value = event?.target?.value || periodValue;
+    console.log("Period change", value);
+    willPeriodChange(value);
     if (value === "most_recent") {
       setPeriodValue(value);
       driverParams.sets({ period: value });
@@ -149,37 +153,37 @@ function DateRangeControls({
       return;
     }
     setPeriodValue(value);
-    const now = dayjs();
-    setSelectedDate(now);
-    const d = now.format("YYYY-MM-DD");
+    const day_value = dayjs(url_start_date);
+    setSelectedDate(day_value);
+    const day_value_string = day_value.format("YYYY-MM-DD");
     if (value === "day") {
       driverParams.sets({
-        start_date: d,
-        end_date: d,
+        start_date: day_value_string,
+        end_date: day_value_string,
       });
     }
-    const iw = getInitWeek(now.month());
+    const iw = getInitWeek(day_value.month());
     setSelectedWeek(iw);
     let init;
-    const end = now;
+    const end = day_value;
     setDateRangeFin(end);
 
     switch (value) {
       case "day":
-        init = now.startOf("day");
+        init = day_value.startOf("day");
         break;
       case "week":
-        init = now.startOf("week");
+        init = day_value.startOf("week");
         break;
       case "month":
-        init = now.startOf("month");
+        init = day_value.startOf("month");
         break;
       default:
-        init = now.startOf("day");
+        init = day_value.startOf("day");
     }
     setDateRangeInit(init);
     driverParams.sets({
-      month: String(now.month()),
+      month: String(day_value.month()),
       period: value,
       week: String(iw),
       start_date: init.format("YYYY-MM-DD"),

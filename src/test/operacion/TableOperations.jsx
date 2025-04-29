@@ -20,14 +20,14 @@ import { AutoSkeleton, DateRangeControls } from "@components/controls";
 import React, { Component } from "react";
 import dayjs from "dayjs";
 
-import FilterAltIcon from '@mui/icons-material/FilterAlt';
+import FilterAltIcon from "@mui/icons-material/FilterAlt";
 
 export default class TableOperations extends Component {
   constructor(props) {
     super(props);
     this.delay = -1;
     this.loadingTableOperation = null;
-    const { driverParams } = global;
+    const { driverParams, IS_GITHUB_IO } = global;
     const [start, end] = driverParams.gets("start_date", "end_date");
     this.state = {
       dateRangeInit: start ? dayjs(start) : null,
@@ -55,7 +55,16 @@ export default class TableOperations extends Component {
       this.invokeFetch();
     }
     // enable filterApply when date range changes
-    if (prevState.dateRangeInit !== this.state.dateRangeInit || prevState.dateRangeFin !== this.state.dateRangeFin) {
+    if (
+      !prevState.dateRangeInit.isSame(this.state.dateRangeInit) ||
+      !prevState.dateRangeFin.isSame(this.state.dateRangeFin)
+    ) {
+      console.log("Date range change", {
+        init: this.state.dateRangeInit,
+        fin: this.state.dateRangeFin,
+        prevInit: prevState.dateRangeInit,
+        prevFin: prevState.dateRangeFin,
+      });
       this.setFilterApply(true);
     }
   }
@@ -78,7 +87,7 @@ export default class TableOperations extends Component {
     }
     this.delay = Date.now();
     this.loadingTableOperation = true;
-    const { driverParams } = global;
+    const { driverParams, IS_GITHUB_IO } = global;
     if (!user_id || !dateRangeInit || !dateRangeFin) {
       console.log("Fetch cancelado (faltan parámetros)", {
         user_id,
@@ -98,7 +107,7 @@ export default class TableOperations extends Component {
           setTableData(parsed);
           console.log(parsed);
         },
-        mock_default: [] ?? mock_operation,
+        mock_default: IS_GITHUB_IO ? mock_operation : [],
         checkErrors: () => {
           if (!user_id) {
             return "No hay usuario seleccionado";
@@ -171,7 +180,8 @@ export default class TableOperations extends Component {
       setViewTable,
       ...rest
     } = this.props;
-    const { dateRangeInit, dateRangeFin, error, tableData, filterApply } = this.state;
+    const { dateRangeInit, dateRangeFin, error, tableData, filterApply } =
+      this.state;
     const loading = this.loadingTableOperation;
 
     const base = user_id ? tableData : data?.content ?? [];
@@ -204,7 +214,7 @@ export default class TableOperations extends Component {
                     const table = "transactions";
                     const params = new URLSearchParams(window.location.search);
                     params.set("operation-id", row.id_operation);
-                    window["operation-id"] = row.id_operation;
+                    window["operation-row"] = row;
                     params.set("view-table", table);
                     window.history.replaceState(
                       null,
@@ -218,7 +228,7 @@ export default class TableOperations extends Component {
                   <Badge
                     badgeContent={row.number_of_transactions}
                     color="primary"
-                    sx={{ '& .MuiBadge-badge': { color: '#fff' } }}
+                    sx={{ "& .MuiBadge-badge": { color: "#fff" } }}
                   >
                     <TransactionsIcon fontSize="small" />
                   </Badge>
@@ -258,11 +268,15 @@ export default class TableOperations extends Component {
                 dateRangeFin={dateRangeFin}
                 setDateRangeInit={this.handleInitChange}
                 setDateRangeFin={this.handleFinChange}
+                willPeriodChange={(period) => this.setFilterApply(true)}
               />
               <Button
                 variant="contained"
                 size="small"
-                onClick={() => { this.invokeFetch(); this.setFilterApply(false); }}
+                onClick={() => {
+                  this.invokeFetch();
+                  this.setFilterApply(false);
+                }}
                 disabled={loading || !this.state.filterApply}
                 sx={{ mt: 1, mb: 1 }}
                 startIcon={<FilterAltIcon />}

@@ -13,9 +13,16 @@ import {
   TableRow,
   Tooltip,
   Typography,
+  Chip,
+  Stack,
 } from "@mui/material";
 import InfoIcon from "@mui/icons-material/Info";
 import CloseIcon from "@mui/icons-material/HighlightOff";
+import PaidIcon from "@mui/icons-material/Paid";
+import SellIcon from "@mui/icons-material/Sell";
+import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
+import ApiIcon from "@mui/icons-material/Api";
+import MonetizationOnIcon from "@mui/icons-material/MonetizationOn";
 import { AutoSkeleton } from "@components/controls";
 
 import FyxDialog from "@components/GUI/dialog";
@@ -48,12 +55,32 @@ function TableTransactions({
   user_id,
   ...rest
 }) {
+  const { IS_GITHUB_IO } = global;
+
   const driverParams = DriverParams();
 
   const [loading, setLoading] = useState(true);
 
   const operationID =
-    window["operation-id"] ?? driverParams.get("operation-id");
+    window["operation-row"]?.id_operation ?? driverParams.get("operation-id");
+
+  // Si no existe rowData, obtenerla desde el endpoint
+  useEffect(() => {
+    if (!window["operation-row"] && operationID) {
+      getResponse({
+        setLoading: () => {},
+        // Recibe el objeto ya procesado
+        setApiData: (data) => {
+          window["operation-row"] = data[0];
+        },
+        setError: () => {},
+        mock_default: [],
+        checkErrors: () => {},
+        buildEndpoint: ({ baseUrl }) =>
+          `${baseUrl}/operations/id/${operationID}`,
+      });
+    }
+  }, [operationID]);
 
   const [apiData, setApiData] = useState([]);
   const [error, setError] = useState(null);
@@ -72,7 +99,7 @@ function TableTransactions({
       setLoading,
       setApiData,
       setError,
-      mock_default: [] ?? mock_transaction,
+      mock_default: IS_GITHUB_IO ? mock_transaction : [],
       checkErrors: () => {
         if (!operationID) {
           return "No hay operación seleccionada";
@@ -89,12 +116,9 @@ function TableTransactions({
     }
   }, [operationID]);
 
-  const content = apiData ?? ([] ?? mock_transaction).content;
+  const content = apiData ?? (IS_GITHUB_IO ? mock_transaction : []).content;
 
   columns_config ??= [...columns_transaction.config];
-
-  console.log(operationID);
-  console.log(content);
 
   const { name_coin } = content.find((m) => m["name_coin"]) ?? {};
 
@@ -151,32 +175,71 @@ function TableTransactions({
     );
 
     function Info() {
-      if (!operationTrigger) {
-        operationTrigger = {
-          id_operation: operationID,
-          name_coin: name_coin,
-        };
-      }
+      console.log(window["operation-row"]);
+      const rowData = (() => {
+        if (window["operation-row"]) {
+          return window["operation-row"];
+        }
+        if (operationTrigger) {
+          return operationTrigger;
+        }
+        return { id_operation: operationID, name_coin };
+      })();
 
-      let moneda;
-
-      if (name_coin) {
-        moneda = (
-          <Typography variant="caption" color="secondary" className="mb-10px">
-            Moneda: {name_coin}
-          </Typography>
-        );
-      }
       return (
         <>
-          <AutoSkeleton loading={loading} w="60%">
-            <Typography variant="caption" color="secondary" className="mb-10px">
-              Operación: {operationTrigger["id_operation"]}
-            </Typography>
-          </AutoSkeleton>
-          <AutoSkeleton loading={loading} w="60%">
-            {moneda}
-          </AutoSkeleton>
+          <Stack
+            direction="row"
+            sx={{ flexWrap: "wrap", gap: "15px" }}
+            className="mb-10px"
+          >
+            <AutoSkeleton loading={loading} w="60%">
+              <Chip
+                icon={<InfoIcon />}
+                label={`ID: ${rowData.id_operation}`}
+                size="small"
+              />
+            </AutoSkeleton>
+            <AutoSkeleton loading={loading} w="60%">
+              <Chip
+                icon={<MonetizationOnIcon />}
+                label={`Moneda: ${rowData.name_coin}`}
+                size="small"
+              />
+            </AutoSkeleton>
+            <Chip
+              icon={<PaidIcon />}
+              label={`Invertido: ${
+                rowData.total_bought?.toLocaleString(undefined, {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                }) ?? "0.00"
+              } USDC`}
+              size="small"
+            />
+            <Chip
+              icon={<SellIcon />}
+              label={`Vendido: ${
+                rowData.total_sold?.toLocaleString(undefined, {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                }) ?? "0.00"
+              } USDC`}
+              size="small"
+            />
+            <Chip
+              icon={<CalendarTodayIcon />}
+              label={`Periodo: ${dayjs(rowData.start_date_operation).format(
+                "YYYY-MM-DD"
+              )} / ${dayjs(rowData.end_date_operation).format("YYYY-MM-DD")}`}
+              size="small"
+            />
+            <Chip
+              icon={<ApiIcon />}
+              label={`API: ${rowData.name_platform}`}
+              size="small"
+            />
+          </Stack>
           {/* <AutoSkeleton loading={loading} w="60%">
             <Typography variant="caption" color="secondary" className="mb-10px">
               Fecha inicio: {operationTrigger["start_date_operation"]}

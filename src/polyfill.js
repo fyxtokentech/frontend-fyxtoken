@@ -25,6 +25,9 @@ export function init() {
     },
   };
 
+  // Define helper para entorno GitHub Pages
+  global.IS_GITHUB_IO = window.location.href.includes('.github.io');
+
   // Global helper para clave de moneda
   global.getCoinKey = (coin) => coin.symbol || coin.name || coin.id || "";
 }
