@@ -16,13 +16,14 @@ import {
   Chip,
   Stack,
 } from "@mui/material";
-import InfoIcon from "@mui/icons-material/Info";
 import CloseIcon from "@mui/icons-material/HighlightOff";
 import PaidIcon from "@mui/icons-material/Paid";
 import SellIcon from "@mui/icons-material/Sell";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import ApiIcon from "@mui/icons-material/Api";
 import MonetizationOnIcon from "@mui/icons-material/MonetizationOn";
+import InfoIcon from "@mui/icons-material/Info";
+import AccountTreeIcon from "@mui/icons-material/AccountTree";
 import { AutoSkeleton } from "@components/controls";
 
 import FyxDialog from "@components/GUI/dialog";
@@ -195,8 +196,8 @@ function TableTransactions({
           >
             <AutoSkeleton loading={loading} w="60%">
               <Chip
-                icon={<InfoIcon />}
-                label={`ID: ${rowData.id_operation}`}
+                icon={<AccountTreeIcon />}
+                label={`CLUSTER: ${rowData.id_operation}`}
                 size="small"
               />
             </AutoSkeleton>
