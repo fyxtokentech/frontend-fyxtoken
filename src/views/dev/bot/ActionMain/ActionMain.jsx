@@ -75,6 +75,8 @@ export default function ActionMain({
           errorCoinOperate,
           setErrorCoinOperate,
           user_id,
+          viewTable,
+          setViewTable,
           deletionTimers,
           setDeletionTimers,
           onSellCoin: (coinTitle) => {
@@ -110,6 +112,8 @@ function ViewTable({ viewTable, setViewTable, user_id, operationTrigger, setOper
   const { driverParams } = global;
   const coinidStr = driverParams.get("id_coin");
   const coinidFromUrl = coinidStr ? parseInt(coinidStr, 10) : undefined;
+
+  console.log(user_id)
 
   switch (viewTable) {
     case "transactions":

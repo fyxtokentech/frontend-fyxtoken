@@ -106,7 +106,7 @@ function DateRangeControls({
   setDateRangeInit,
   setDateRangeFin,
   loading,
-  period = "day", // day, week, month
+  period = "most_recent", // day, week, month
 }) {
   // Inicializar parámetros de URL como driverParams
   const location = useLocation();
@@ -142,6 +142,12 @@ function DateRangeControls({
 
   const handlePeriodChange = (event) => {
     const value = event?.target?.value || periodValue;
+    if (value === "most_recent") {
+      setPeriodValue(value);
+      driverParams.sets({ period: value });
+      // no date filters for most_recent
+      return;
+    }
     setPeriodValue(value);
     const now = dayjs();
     setSelectedDate(now);
@@ -332,6 +338,7 @@ function DateRangeControls({
               disableScrollLock: true, // Evita que se bloquee el scroll
             }}
           >
+            <MenuItem value="most_recent">Más recientes</MenuItem>
             <MenuItem value="day">1 día</MenuItem>
             <MenuItem value="week">1 semana</MenuItem>
             <MenuItem value="month">1 mes</MenuItem>

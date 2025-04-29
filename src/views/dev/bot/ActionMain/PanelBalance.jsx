@@ -1,5 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { Typography, Grid, Button, Tooltip, Chip } from "@mui/material";
+import {
+  Typography,
+  Grid,
+  Button,
+  Tooltip,
+  Chip,
+  TextField,
+  Slider,
+} from "@mui/material";
 import SettingsIcon from "@mui/icons-material/Settings";
 import UpdateIcon from "@mui/icons-material/Cached";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
@@ -33,6 +41,8 @@ export default function PanelBalance({
   onSellCoin,
   deletionTimers,
   setDeletionTimers,
+  viewTable,
+  setViewTable,
 }) {
   const [actionInProcess, setActionInProcess] = useState(false);
 
@@ -42,6 +52,17 @@ export default function PanelBalance({
   const roi = 0.05; // 5% ROI
   const balanceUSDT = 10000; // Example USDT balance
   const balanceCoin = 2.5; // Example coin balance
+
+  // Estado para input y slider de dinero proyectado
+  const [inputValue, setInputValue] = useState(10);
+  const [sliderExp, setSliderExp] = useState(Math.log10(10));
+  const marks = [
+    { value: 1, label: "10" },
+    { value: 2, label: "100" },
+    { value: 3, label: "1.000" },
+    { value: 5, label: "100.000" },
+  ];
+  const valuetext = (exp) => `${Math.round(10 ** exp)} USD`;
 
   // Helper functions
   const getPriceProjectionColor = () => {
@@ -82,75 +103,159 @@ export default function PanelBalance({
   const hayMoneda = currency.current.trim() && !loadingCoinToOperate;
 
   return (
-    <>
+    <div key={currency.current}>
       <PaperP elevation={0}>
-        <div className="d-flex ai-center jc-space-between flex-wrap gap-10px">
-          <div className="d-flex ai-center flex-wrap gap-10px">
-            <div
-              className={`d-flex ai-center flex-wrap gap-10px ${fluidCSS()
-                .ltX(480, { width: "100%" })
-                .end()}`}
-            >
-              <CoinSelectionOperate
-                {...{
-                  currency,
-                  coinsToOperate,
-                  coinsToDelete,
-                  loadingCoinToOperate,
-                  errorCoinOperate,
-                  setErrorCoinOperate,
-                  user_id,
-                  coinsOperatingList,
-                  setUpdateAvailable
-                }}
-              />
-
+        <div>
+          <div>
+            <div className={`d-flex ai-center jc-space-evenly`}>
               {hayMoneda && (
-                <>
-                  <BalanceUSDTCard
-                    {...{
-                      balance: balanceUSDT,
-                    }}
-                  />
-                  <BalanceCoinCard
-                    {...{
-                      balance: balanceCoin,
-                      currency: currency.current,
-                    }}
-                  />
-                  <PriceProjectionCard
-                    {...{
-                      priceProjection: priceProjectionValue,
-                      getPriceProjectionColor,
-                      getPriceProjectionIcon,
-                    }}
-                  />
-                  <FlatNumberCard flatNumber={flatNumber} />
-                  <ROICard roi={roi} />
-                </>
+                <Grid
+                  container
+                  direction="row"
+                  spacing={2}
+                  alignItems="stretch"
+                  wrap="wrap"
+                  sx={{ width: "100%" }}
+                >
+                  <Grid item xs={12} sm={12} md={3}>
+                    <PaperP elevation={3} p_min="5" p_max="10">
+                      <div className="gap-10px flex-column">
+                        <CoinSelectionOperate
+                          {...{
+                            currency,
+                            coinsToOperate,
+                            coinsToDelete,
+                            loadingCoinToOperate,
+                            errorCoinOperate,
+                            setErrorCoinOperate,
+                            user_id,
+                            coinsOperatingList,
+                            setUpdateAvailable,
+                            viewTable,
+                            setViewTable,
+                          }}
+                        />
+                        <div className="d-flex jc-space-evenly flex-row gap-10px">
+                          <BalanceUSDTCard balance={balanceUSDT} />
+                          <BalanceCoinCard
+                            balance={balanceCoin}
+                            currency={currency.current}
+                          />
+                        </div>
+                      </div>
+                    </PaperP>
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={4}>
+                    <PaperP
+                      className="d-center"
+                      p_min="5"
+                      p_max="10"
+                      sx={{ width: "100%", height: "100%" }}
+                    >
+                      <div
+                        className="d-flex flex-column gap-10px"
+                        style={{ width: "100%" }}
+                      >
+                        <div
+                          className="d-flex ai-center jc-space-between gap-10px"
+                          style={{ width: "100%" }}
+                        >
+                          <PriceProjectionCard
+                            priceProjection={priceProjectionValue}
+                            getPriceProjectionColor={getPriceProjectionColor}
+                            getPriceProjectionIcon={getPriceProjectionIcon}
+                          />
+                          <ROICard roi={roi} />
+                        </div>
+                        <FlatNumberCard flatNumber={flatNumber} />
+                      </div>
+                    </PaperP>
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={3}>
+                    <PaperP
+                      className="d-center"
+                      p_min="5"
+                      p_max="10"
+                      sx={{ width: "100%", height: "100%" }}
+                    >
+                      <div
+                        className="d-flex flex-column gap-5px"
+                        style={{ width: "100%" }}
+                      >
+                        <Typography variant="caption" color="text.secondary">
+                          Insertar Dinero
+                        </Typography>
+                        <TextField
+                          type="number"
+                          label="USD"
+                          variant="outlined"
+                          size="small"
+                          inputProps={{
+                            min: 10,
+                            max: 100000,
+                            step: 1,
+                            pattern: "[0-9]*",
+                            inputMode: "numeric",
+                          }}
+                          value={inputValue}
+                          onChange={(e) => {
+                            const v = Math.floor(Number(e.target.value));
+                            const b = Math.min(100000, Math.max(10, v));
+                            setInputValue(b);
+                            setSliderExp(Math.log10(b));
+                          }}
+                          sx={{ mt: 1, width: "100%" }}
+                        />
+                        <div className="d-center">
+                          <Slider
+                            aria-label="Custom marks"
+                            value={sliderExp}
+                            getAriaValueText={valuetext}
+                            min={1}
+                            max={5}
+                            step={0.01}
+                            valueLabelDisplay="auto"
+                            valueLabelFormat={valuetext}
+                            marks={marks}
+                            onChange={(e, expVal) => {
+                              setSliderExp(expVal);
+                              const m = Math.round(10 ** expVal);
+                              setInputValue(m);
+                            }}
+                            sx={{
+                              width: "80%",
+                              mt: 2,
+                              "& .MuiSlider-mark": { width: 4, height: 4 },
+                              "& .MuiSlider-markLabel": { fontSize: "0.65rem" },
+                            }}
+                          />
+                        </div>
+                      </div>
+                    </PaperP>
+                  </Grid>
+                  <Grid item xs={12} sm={12} md={2}>
+                    <ActionButtons
+                      {...{
+                        update_available,
+                        setUpdateAvailable,
+                        setView,
+                        settingIcon,
+                        currency,
+                        coinsOperatingList,
+                        coinsToOperate,
+                        onSellCoin,
+                        coinsToDelete,
+                        setErrorCoinOperate,
+                        user_id,
+                        actionInProcess,
+                        setActionInProcess,
+                      }}
+                    />
+                  </Grid>
+                </Grid>
               )}
             </div>
           </div>
-
-          {hayMoneda && (
-            <ActionButtons
-              {...{
-                update_available,
-                setUpdateAvailable,
-                setView,
-                settingIcon,
-                currency,
-                coinsOperatingList,
-                coinsToOperate,
-                onSellCoin,
-                coinsToDelete,
-                setErrorCoinOperate,
-                user_id,
-                actionInProcess,
-                setActionInProcess,
-              }}
-            />
-          )}
         </div>
         {hayMoneda && (
           <>
@@ -172,7 +277,7 @@ export default function PanelBalance({
           </>
         )}
       </PaperP>
-    </>
+    </div>
   );
 }
 
@@ -186,6 +291,8 @@ function CoinSelectionOperate({
   user_id,
   coinsOperatingList,
   setUpdateAvailable,
+  viewTable,
+  setViewTable,
 }) {
   const { driverParams, getCoinKey } = global;
   // Solo mostrar símbolos de monedas que NO están en operación actualmente
@@ -201,7 +308,9 @@ function CoinSelectionOperate({
             value: currency.current,
             setter: (value) => {
               currency.current = value;
+              driverParams.set("view-table", "operations");
               driverParams.set("coin", value);
+              setViewTable("operations");
               const selected = coinsToOperate.current.find(
                 (c) => getCoinKey(c) === value
               );
@@ -228,6 +337,7 @@ function CoinSelectionOperate({
 }
 
 function UpdateButton({ update_available, setUpdateAvailable, ...rest_props }) {
+  console.log(update_available);
   return (
     <TooltipIconButton
       {...rest_props}
@@ -258,7 +368,7 @@ function BalanceUSDTCard({ balance }) {
     >
       <div className="d-flex flex-column gap-5px">
         <Typography variant="caption" color="text.secondary" className="mb-5px">
-          Balance USDT
+          Balance USDC
         </Typography>
         <Typography>${balance.toLocaleString()}</Typography>
       </div>
@@ -294,16 +404,13 @@ function PriceProjectionCard({
   getPriceProjectionIcon,
 }) {
   return (
-    <PaperP
-      className={`d-center ${fluidCSS()
-        .ltX(480, { width: "calc(33% - 5px)" })
-        .end()}`}
-      elevation={3}
-      p_min="5"
-      p_max="10"
-    >
+    <PaperP elevation={3} p_min="5" p_max="10">
       <div className="d-flex flex-column gap-5px">
-        <Typography variant="caption" color="text.secondary" className="mb-5px">
+        <Typography
+          variant="caption"
+          color="text.secondary"
+          className="mb-5px nowrap"
+        >
           Precio Proyectado
         </Typography>
         <div className="d-flex ai-center gap-5px">
@@ -323,7 +430,7 @@ function PriceProjectionCard({
 function FlatNumberCard({ flatNumber }) {
   return (
     <PaperP
-      className={`d-center ${fluidCSS()
+      className={`d-flex ${fluidCSS()
         .ltX(480, { width: "calc(33% - 5px)" })
         .end()}`}
       elevation={3}
@@ -331,7 +438,11 @@ function FlatNumberCard({ flatNumber }) {
       p_max="10"
     >
       <div className="d-flex flex-column gap-5px">
-        <Typography variant="caption" color="text.secondary" className="mb-5px">
+        <Typography
+          variant="caption"
+          color="text.secondary"
+          className="mb-5px nowrap"
+        >
           Ganancia Proyectada
         </Typography>
         <Typography>{flatNumber}</Typography>
@@ -351,7 +462,11 @@ function ROICard({ roi }) {
       p_max="10"
     >
       <div className="d-flex flex-column gap-5px">
-        <Typography variant="caption" color="text.secondary" className="mb-5px">
+        <Typography
+          variant="caption"
+          color="text.secondary"
+          className="mb-5px nowrap"
+        >
           Porcentaje Proyectado
         </Typography>
         <div className="d-flex ai-center gap-5px">
@@ -390,9 +505,8 @@ function ActionButtons({
 
   return (
     <div
-      className={`d-flex ai-center flex-wrap gap-10px ${fluidCSS()
+      className={`d-flex ai-center jc-end fullWidth flex-wrap gap-10px ${fluidCSS()
         .ltX(768, {
-          width: "100%",
           justifyContent: "flex-end",
           marginTop: "10px",
         })

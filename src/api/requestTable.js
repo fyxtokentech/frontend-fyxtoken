@@ -84,6 +84,7 @@ export const getResponse = async ({
   const requestUrl = resolveUrl(buildEndpoint);
   const cacheKey = `getResponse:${requestUrl}`;
   const cached = loadWithTTL(cacheKey);
+  console.log({ cacheKey, cached });
   if (cached) {
     setApiData(cached);
     setLoading(false);

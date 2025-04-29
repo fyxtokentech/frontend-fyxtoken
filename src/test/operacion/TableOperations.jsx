@@ -20,6 +20,8 @@ import { AutoSkeleton, DateRangeControls } from "@components/controls";
 import React, { Component } from "react";
 import dayjs from "dayjs";
 
+import FilterAltIcon from '@mui/icons-material/FilterAlt';
+
 export default class TableOperations extends Component {
   constructor(props) {
     super(props);
@@ -32,7 +34,10 @@ export default class TableOperations extends Component {
       dateRangeFin: end ? dayjs(end) : null,
       error: null,
       tableData: [],
+      filterApply: false,
     };
+    // Method to update filterApply
+    this.setFilterApply = (apply) => this.setState({ filterApply: apply });
   }
 
   setError = (error) => this.setState({ error });
@@ -44,10 +49,14 @@ export default class TableOperations extends Component {
     this.invokeFetch();
   }
 
-  componentDidUpdate(prevProps) {
-    const { user_id } = this.props;
-    if (prevProps.user_id !== user_id) {
+  componentDidUpdate(prevProps, prevState) {
+    const { user_id, viewTable } = this.props;
+    if (prevProps.user_id !== user_id || prevProps.viewTable !== viewTable) {
       this.invokeFetch();
+    }
+    // enable filterApply when date range changes
+    if (prevState.dateRangeInit !== this.state.dateRangeInit || prevState.dateRangeFin !== this.state.dateRangeFin) {
+      this.setFilterApply(true);
     }
   }
 
@@ -69,6 +78,7 @@ export default class TableOperations extends Component {
     }
     this.delay = Date.now();
     this.loadingTableOperation = true;
+    const { driverParams } = global;
     if (!user_id || !dateRangeInit || !dateRangeFin) {
       console.log("Fetch cancelado (faltan parámetros)", {
         user_id,
@@ -88,7 +98,7 @@ export default class TableOperations extends Component {
           setTableData(parsed);
           console.log(parsed);
         },
-        mock_default: mock_operation,
+        mock_default: [] ?? mock_operation,
         checkErrors: () => {
           if (!user_id) {
             return "No hay usuario seleccionado";
@@ -98,9 +108,14 @@ export default class TableOperations extends Component {
           }
         },
         buildEndpoint: ({ baseUrl }) => {
+          const period = driverParams.get("period");
+          const coinid = driverParams.get("id_coin");
+          if (period === "most_recent") {
+            return `${baseUrl}/operations/most_recent/${user_id}?coinid=${coinid}`;
+          }
           return `
             ${baseUrl}/operations/${user_id}?
-              coinid=${global.driverParams.get("id_coin")}&
+              coinid=${coinid}&
               start_date=${dateRangeInit.format("YYYY-MM-DD")}&
               end_date=${dateRangeFin.format("YYYY-MM-DD")}&
               page=0&limit=1000
@@ -156,7 +171,7 @@ export default class TableOperations extends Component {
       setViewTable,
       ...rest
     } = this.props;
-    const { dateRangeInit, dateRangeFin, error, tableData } = this.state;
+    const { dateRangeInit, dateRangeFin, error, tableData, filterApply } = this.state;
     const loading = this.loadingTableOperation;
 
     const base = user_id ? tableData : data?.content ?? [];
@@ -189,6 +204,7 @@ export default class TableOperations extends Component {
                     const table = "transactions";
                     const params = new URLSearchParams(window.location.search);
                     params.set("operation-id", row.id_operation);
+                    window["operation-id"] = row.id_operation;
                     params.set("view-table", table);
                     window.history.replaceState(
                       null,
@@ -246,9 +262,10 @@ export default class TableOperations extends Component {
               <Button
                 variant="contained"
                 size="small"
-                onClick={() => this.invokeFetch()}
-                disabled={loading}
+                onClick={() => { this.invokeFetch(); this.setFilterApply(false); }}
+                disabled={loading || !this.state.filterApply}
                 sx={{ mt: 1, mb: 1 }}
+                startIcon={<FilterAltIcon />}
               >
                 Aplicar filtros
               </Button>
