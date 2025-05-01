@@ -88,7 +88,7 @@ export default class CoinsOperating extends Component {
       }
       const postResult = await postRequest({
         buildEndpoint: ({ baseUrl }) => {
-          return `${baseUrl}/exchange/operation/${id_operation}/side/buy`;
+          return `${baseUrl}/exchange/operation/${id_operation}/side/sell`;
         },
         setError: setErrorCoinOperate,
         service: "robot_prototype",
