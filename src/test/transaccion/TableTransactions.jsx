@@ -77,8 +77,9 @@ function TableTransactions({
         setError: () => {},
         mock_default: [],
         checkErrors: () => {},
-        buildEndpoint: ({ baseUrl }) =>
-          `${baseUrl}/operations/id/${operationID}`,
+        buildEndpoint: ({ baseUrl }) => {
+          return `${baseUrl}/operations/id/${operationID}`;
+        }
       });
     }
   }, [operationID]);
@@ -106,7 +107,9 @@ function TableTransactions({
           return "No hay operación seleccionada";
         }
       },
-      buildEndpoint: ({ baseUrl }) => `${baseUrl}/transactions/${operationID}`,
+      buildEndpoint: ({ baseUrl }) => {
+        return `${baseUrl}/transactions/${operationID}`;
+      },
     });
   }, [operationID]);
 

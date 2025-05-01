@@ -4,7 +4,7 @@ import DoDisturbOnIcon from "@mui/icons-material/DoDisturbOn";
 import PendingIcon from "@mui/icons-material/Pending";
 import CircularProgress from "@mui/material/CircularProgress";
 import { PaperP } from "@containers";
-import { putResponse } from "@api/requestTable";
+import { getResponse, putRequest, postRequest } from "@api/requestTable";
 
 export default class CoinsOperating extends Component {
   constructor(props) {
@@ -49,19 +49,65 @@ export default class CoinsOperating extends Component {
       setActionInProcess,
     } = this.props;
     try {
-      putResponse({
-        buildEndpoint: ({ baseUrl }) =>{
+      const putStopResult = await putRequest({
+        buildEndpoint: ({ baseUrl }) => {
           return `${baseUrl}/coins/stop/${user_id}/${coin.id}`;
         },
         setError: setErrorCoinOperate,
         willEnd,
       });
-      coinsOperatingList.current = coinsOperatingList.current.filter(
-        (c) => c.id !== coin.id
-      );
-      coinsToDelete.current = coinsToDelete.current.filter(
-        (c) => c.id !== coin.id
-      );
+      console.log({ putStopResult });
+      // Verificar éxito de stop: { updated: 1 }
+      if (
+        !putStopResult ||
+        putStopResult.updated !== 1 ||
+        putStopResult.status >= 400
+      ) {
+        throw new Error("Error deteniendo moneda");
+      }
+      let operationOpen = {};
+      await getResponse({
+        buildEndpoint: ({ baseUrl }) => {
+          return `${baseUrl}/operations/open/${user_id}/${coin.id}`;
+        },
+        setError: setErrorCoinOperate,
+        checkErrors: () => null,
+        setLoading: () => {},
+        setApiData: (data) => {
+          // Se recupera la primer fila de la consulta
+          operationOpen = data[0];
+        },
+        mock_default: { content: [] },
+        service: "robot_backend",
+      });
+      console.log({ operationOpen });
+      const { id_operation } = operationOpen;
+      console.log({ id_operation });
+      if (!id_operation) {
+        throw new Error("No se encontro la operacion");
+      }
+      const postResult = await postRequest({
+        buildEndpoint: ({ baseUrl }) => {
+          return `${baseUrl}/exchange/operation/${id_operation}/side/buy`;
+        },
+        setError: setErrorCoinOperate,
+        service: "robot_prototype",
+        willEnd,
+        responseBodyReceived: (json) => {
+          // Manejar respuesta con status >= 400
+          if (json && json.status && json.status >= 400) {
+            setErrorCoinOperate(json.message || "Error en operación");
+          }
+        },
+      });
+      if (!(postResult && postResult.status && postResult.status >= 400)) {
+        coinsOperatingList.current = coinsOperatingList.current.filter(
+          (c) => c.id !== coin.id
+        );
+        coinsToDelete.current = coinsToDelete.current.filter(
+          (c) => c.id !== coin.id
+        );
+      }
     } catch (err) {
       console.error("Error deteniendo moneda:", err);
       coinsToDelete.current = coinsToDelete.current.filter(

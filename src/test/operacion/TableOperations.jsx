@@ -59,12 +59,6 @@ export default class TableOperations extends Component {
       !prevState.dateRangeInit.isSame(this.state.dateRangeInit) ||
       !prevState.dateRangeFin.isSame(this.state.dateRangeFin)
     ) {
-      console.log("Date range change", {
-        init: this.state.dateRangeInit,
-        fin: this.state.dateRangeFin,
-        prevInit: prevState.dateRangeInit,
-        prevFin: prevState.dateRangeFin,
-      });
       this.setFilterApply(true);
     }
   }
@@ -105,7 +99,6 @@ export default class TableOperations extends Component {
         setApiData: (data) => {
           const parsed = Array.isArray(data) ? [...data] : data;
           setTableData(parsed);
-          console.log(parsed);
         },
         mock_default: IS_GITHUB_IO ? mock_operation : [],
         checkErrors: () => {
@@ -190,8 +183,6 @@ export default class TableOperations extends Component {
       : [];
 
     let finalColumns = columns_config ?? [...columns_operation.config];
-
-    // console.log(useForUser);
 
     if (useForUser) {
       finalColumns = [

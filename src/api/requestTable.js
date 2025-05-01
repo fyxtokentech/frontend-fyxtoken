@@ -55,15 +55,24 @@ async function sweepExpiredCache() {
 // perform cleanup on module load without blocking
 setTimeout(sweepExpiredCache);
 
-const apiBaseUrl = "http://82.29.198.89:8000";
-const localApiUrl = "http://localhost:8000";
+const urlapi = {
+  local: {
+    robot_backend: "http://localhost:8000",
+    robot_prototype: "http://168.231.97.207:8001",
+  },
+  web: {
+    robot_backend: "http://168.231.97.207:8000",
+    robot_prototype: "http://168.231.97.207:8001",
+  },
+};
 
 /**
  * Resolve full API URL by buildEndpoint using current context.
  */
-function resolveUrl(buildEndpoint) {
+function resolveUrl(buildEndpoint, service = "robot_backend") {
   const { context } = global.configApp;
-  const base = context === "dev" ? localApiUrl : apiBaseUrl;
+  const env = global.IS_LOCAL ? "local" : "web";
+  const base = urlapi[env][service];
   return buildEndpoint({ baseUrl: base }).replace(/\s+/g, "");
 }
 
@@ -76,12 +85,14 @@ export const getResponse = async ({
   setApiData,
   buildEndpoint,
   mock_default,
+  service = "robot_backend",
 }) => {
+  let result;
   const validationError = checkErrors();
   setError(validationError);
   if (validationError) return;
   const { context } = global.configApp;
-  const requestUrl = resolveUrl(buildEndpoint);
+  const requestUrl = resolveUrl(buildEndpoint, service);
   const cacheKey = `getResponse:${requestUrl}`;
   const cached = loadWithTTL(cacheKey);
   console.log({ cacheKey, cached });
@@ -107,11 +118,12 @@ export const getResponse = async ({
           let tableRows2 = [];
           if (Array.isArray(rawData2) && rawData2.length > 1) {
             const headers2 = rawData2[0];
-            tableRows2 = rawData2
-              .slice(1)
-              .map((row) =>
-                headers2.reduce((obj, h, i) => ({ ...obj, [h]: row[i] }), {})
-              );
+            tableRows2 = rawData2.slice(1).map((rowValues) =>
+              headers2.reduce((rowObject, header, index) => {
+                rowObject[header] = rowValues[index];
+                return rowObject;
+              }, {})
+            );
           } else if (Array.isArray(rawData2) && rawData2.length === 0) {
             tableRows2 = [];
           }
@@ -120,7 +132,8 @@ export const getResponse = async ({
         } catch {}
       })();
     }
-    return;
+    result = cached;
+    return result;
   }
   if (context === "dev") {
     console.log(`[getResponse] [DEV] Fetching URL: ${requestUrl}`);
@@ -134,20 +147,21 @@ export const getResponse = async ({
     const { data: rawData } = await axios.get(requestUrl, axiosConfig);
     if (Array.isArray(rawData) && rawData.length > 1) {
       const columnHeaders = rawData[0];
-      const tableRows = rawData.slice(1).map((row) =>
-        columnHeaders.reduce(
-          (obj, header, index) => ({
-            ...obj,
-            [header]: row[index],
-          }),
-          {}
-        )
+      const tableRows = rawData.slice(1).map((rowValues) =>
+        columnHeaders.reduce((rowObject, header, index) => {
+          rowObject[header] = rowValues[index];
+          return rowObject;
+        }, {})
       );
       // store successful data in cache
       saveWithTTL(cacheKey, tableRows);
-      setApiData(tableRows);
+      result = tableRows;
+      setApiData(result);
+      return result;
     } else if (Array.isArray(rawData) && rawData.length === 0) {
-      setApiData([]);
+      result = [];
+      setApiData(result);
+      return result;
     } else {
       throw new Error("Formato de respuesta inesperado");
     }
@@ -162,54 +176,66 @@ export const getResponse = async ({
       mock_default.content.length > 1
     ) {
       const columnHeaders = mock_default.content[0];
-      const tableRows = mock_default.content.slice(1).map((row) =>
-        columnHeaders.reduce(
-          (obj, header, index) => ({
-            ...obj,
-            [header]: row[index],
-          }),
-          {}
-        )
+      const tableRows = mock_default.content.slice(1).map((rowValues) =>
+        columnHeaders.reduce((rowObject, header, index) => {
+          rowObject[header] = rowValues[index];
+          return rowObject;
+        }, {})
       );
-      setApiData(tableRows);
       console.log("[getResponse] [DEV] - Using mock data after error");
+      result = tableRows;
+      setApiData(result);
+      return result;
     } else {
       setError("Error al cargar las operaciones.");
-      setApiData([]);
+      result = [];
+      setApiData(result);
+      return result;
     }
   } finally {
     setLoading(false);
   }
 };
 
-export const putResponse = async ({
+export const request = async ({
+  method = "post", // "post" o "put"
   buildEndpoint, // Función que construye la URL de la API.
   setError, // Función para manejar errores.
-  payload = {}, // Payload para el PUT request.
-  willEnd = () => 0,
+  payload = {}, // Payload para la petición.
+  willEnd = () => 0, // Callback tras éxito.
+  service = "robot_backend", // Servicio en urlapi.
+  responseBodyReceived = () => {}, // Callback para recibir el body de la respuesta (success o error)
 }) => {
   setError(null);
-  const requestUrl = resolveUrl(buildEndpoint);
-  console.log(`[putResponse] Sending PUT to ${requestUrl} with data:`, payload);
+  const requestUrl = resolveUrl(buildEndpoint, service);
+  console.log(
+    `[request] Enviando ${method.toUpperCase()} a ${requestUrl} con data:`,
+    payload
+  );
   const axiosConfig = {
     headers: { Accept: "application/json", "Content-Type": "application/json" },
     ...(global.configApp.context !== "dev" && { withCredentials: false }),
   };
   try {
-    const { data: responseData } = await axios.put(
+    const response = await axios[method.toLowerCase()](
       requestUrl,
       payload,
       axiosConfig
     );
-    console.log(
-      `[putResponse] Success response from ${requestUrl}:`,
-      responseData
-    );
+    console.log(`[request] Éxito respuesta de ${requestUrl}:`, response.data);
+    responseBodyReceived(response.data);
     willEnd();
-    return responseData;
+    return response.data;
   } catch (err) {
-    console.error(`[putResponse] Error on PUT to ${requestUrl}:`, err);
-    setError(err.message || "Error al ejecutar PUT");
+    console.error(
+      `[request] Error en ${method.toUpperCase()} a ${requestUrl}:`,
+      err
+    );
+    setError(err.message || `Error al ejecutar ${method.toUpperCase()}`);
+    responseBodyReceived(err.response?.data || err);
     throw err;
   }
 };
+
+export const postRequest = (params) => request({ ...params, method: 'post' });
+export const putRequest = (params) => request({ ...params, method: 'put' });

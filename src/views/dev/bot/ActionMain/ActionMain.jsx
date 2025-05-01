@@ -89,7 +89,9 @@ export default function ActionMain({
 
       {/* Ref para exponer la función de borrado externo */}
       {(() => {
-        if (!window.onSellCoinRef) window.onSellCoinRef = React.createRef();
+        if (!window.onSellCoinRef) {
+          window.onSellCoinRef = React.createRef();
+        }
         return null;
       })()}
 

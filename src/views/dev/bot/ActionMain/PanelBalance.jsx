@@ -22,7 +22,7 @@ import { PaperP } from "@components/containers";
 import { AutoSkeleton } from "@components/controls";
 
 import CoinsOperating from "./CoinsOperating";
-import { putResponse } from "@api/requestTable";
+import { putRequest } from "@api/requestTable";
 
 const time_wait_update_available_again = 5;
 
@@ -591,7 +591,7 @@ function ActionButtons({
           setActionInProcess(true);
 
           try {
-            putResponse({
+            putRequest({
               buildEndpoint: ({ baseUrl }) => {
                 return `${baseUrl}/coins/start/${user_id}/${coinObj.id}`;
               },
