@@ -125,8 +125,12 @@ function rendersTemplate(columns_config) {
        return {
          renderString(params) {
            let { value } = params;
-           const { text, color, icon } = label[value];
-           return { texto: text, tooltip: text, color, icon };
+           const item = label[value] || {};
+           const textVal = item.text ?? String(value);
+           const tooltipVal = textVal;
+           const colorVal = item.color;
+           const iconVal = item.icon;
+           return { texto: textVal, tooltip: tooltipVal, color: colorVal, icon: iconVal };
          },
          renderCell(params) {
            let renderString;

@@ -79,7 +79,7 @@ function TableTransactions({
         checkErrors: () => {},
         buildEndpoint: ({ baseUrl }) => {
           return `${baseUrl}/operations/id/${operationID}`;
-        }
+        },
       });
     }
   }, [operationID]);
@@ -190,6 +190,21 @@ function TableTransactions({
         return { id_operation: operationID, name_coin };
       })();
 
+      const startDate = dayjs(rowData.start_date_operation);
+      const endDate = dayjs(rowData.end_date_operation);
+      const startLabel = (() => {
+        if (startDate.isValid()) {
+          return startDate.format("YYYY-MM-DD HH:mm");
+        }
+        return "---";
+      })();
+      const endLabel = (() => {
+        if (endDate.isValid()) {
+          return endDate.format("YYYY-MM-DD HH:mm");
+        }
+        return "---";
+      })();
+
       return (
         <>
           <Stack
@@ -233,9 +248,7 @@ function TableTransactions({
             />
             <Chip
               icon={<CalendarTodayIcon />}
-              label={`Periodo: ${dayjs(rowData.start_date_operation).format(
-                "YYYY-MM-DD"
-              )} / ${dayjs(rowData.end_date_operation).format("YYYY-MM-DD")}`}
+              label={`Periodo: ${startLabel} / ${endLabel}`}
               size="small"
             />
             <Chip

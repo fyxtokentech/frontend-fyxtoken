@@ -54,11 +54,22 @@ export default class TableOperations extends Component {
     if (prevProps.user_id !== user_id || prevProps.viewTable !== viewTable) {
       this.invokeFetch();
     }
-    // enable filterApply when date range changes
-    if (
-      !prevState.dateRangeInit.isSame(this.state.dateRangeInit) ||
-      !prevState.dateRangeFin.isSame(this.state.dateRangeFin)
-    ) {
+    // enable filterApply when date range changes, safely handle null dates
+    const { dateRangeInit: prevInit, dateRangeFin: prevFin } = prevState;
+    const { dateRangeInit: currInit, dateRangeFin: currFin } = this.state;
+    const initChanged = (() => {
+      if (prevInit && currInit) {
+        return !prevInit.isSame(currInit);
+      }
+      return prevInit !== currInit;
+    })();
+    const finChanged = (() => {
+      if (prevFin && currFin) {
+        return !prevFin.isSame(currFin);
+      }
+      return prevFin !== currFin;
+    })();
+    if (initChanged || finChanged) {
       this.setFilterApply(true);
     }
   }
