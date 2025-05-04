@@ -1,60 +1,5 @@
 import axios from "axios";
 
-// TTL constant: 1 minute with 40 seconds
-const TIME_LIMIT_TTL = 100_000;
-
-const persistentRules = [`/coins/`];
-
-// Save data to localStorage with timestamp
-function saveWithTTL(key, data) {
-  try {
-    localStorage.setItem(key, JSON.stringify({ t: Date.now(), data }));
-  } catch {}
-}
-
-// Load data if not expired
-function loadWithTTL(key) {
-  // No debe hacer el borrado, el sweepExpiredCache lo hace
-  const raw = localStorage.getItem(key);
-  if (!raw) {
-    return;
-  }
-  try {
-    const { t, data } = JSON.parse(raw);
-    return data;
-  } catch {}
-}
-
-// Sweep expired cache entries to free memory asynchronously
-async function sweepExpiredCache() {
-  // iterate backwards as keys may be removed
-  for (let i = localStorage.length - 1; i >= 0; i--) {
-    const key = localStorage.key(i);
-    if (!key.startsWith("getResponse:")) {
-      continue;
-    }
-    // skip persistent entries (e.g. coins)
-    if (persistentRules.some((rule) => key.includes(rule))) {
-      continue;
-    }
-    try {
-      const raw = localStorage.getItem(key);
-      if (!raw) {
-        localStorage.removeItem(key);
-        continue;
-      }
-      const { t } = JSON.parse(raw);
-      if (Date.now() - t < 10 * TIME_LIMIT_TTL) {
-        continue;
-      }
-    } catch {}
-    localStorage.removeItem(key);
-  }
-}
-
-// perform cleanup on module load without blocking
-setTimeout(sweepExpiredCache);
-
 const urlapi = {
   local: {
     robot_backend: "http://localhost:8000",
@@ -76,8 +21,6 @@ function resolveUrl(buildEndpoint, service = "robot_backend") {
   return buildEndpoint({ baseUrl: base }).replace(/\s+/g, "");
 }
 
-// Manual caching: responses cached in localStorage for 1 minute
-
 export const getResponse = async ({
   setError,
   checkErrors,
@@ -93,48 +36,7 @@ export const getResponse = async ({
   if (validationError) return;
   const { context } = global.configApp;
   const requestUrl = resolveUrl(buildEndpoint, service);
-  const cacheKey = `getResponse:${requestUrl}`;
-  const cached = loadWithTTL(cacheKey);
-  console.log({ cacheKey, cached });
-  if (cached) {
-    setApiData(cached);
-    setLoading(false);
 
-    // background refresh for coins endpoint only if TTL expired
-    const raw = localStorage.getItem(cacheKey);
-    let cachedTime = 0;
-
-    try {
-      cachedTime = JSON.parse(raw).t;
-    } catch {}
-
-    if (
-      persistentRules.some((rule) => requestUrl.includes(rule)) ||
-      Date.now() - cachedTime >= TIME_LIMIT_TTL
-    ) {
-      (async () => {
-        try {
-          const { data: rawData2 } = await axios.get(requestUrl);
-          let tableRows2 = [];
-          if (Array.isArray(rawData2) && rawData2.length > 1) {
-            const headers2 = rawData2[0];
-            tableRows2 = rawData2.slice(1).map((rowValues) =>
-              headers2.reduce((rowObject, header, index) => {
-                rowObject[header] = rowValues[index];
-                return rowObject;
-              }, {})
-            );
-          } else if (Array.isArray(rawData2) && rawData2.length === 0) {
-            tableRows2 = [];
-          }
-          saveWithTTL(cacheKey, tableRows2);
-          setApiData(tableRows2);
-        } catch {}
-      })();
-    }
-    result = cached;
-    return result;
-  }
   if (context === "dev") {
     console.log(`[getResponse] [DEV] Fetching URL: ${requestUrl}`);
   }
@@ -153,8 +55,6 @@ export const getResponse = async ({
           return rowObject;
         }, {})
       );
-      // store successful data in cache
-      saveWithTTL(cacheKey, tableRows);
       result = tableRows;
       setApiData(result);
       return result;
