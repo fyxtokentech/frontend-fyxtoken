@@ -49,7 +49,7 @@ function LoginForm() {
     event.preventDefault();
   };
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     const username = document.getElementById('username').value;
     const password = document.getElementById('password').value;
     // Validaciones de campos
@@ -71,7 +71,7 @@ function LoginForm() {
       setTimeout(() => setShowAlert(false), 10000);
       return;
     }
-    const user = window["loadUser"](username, password);
+    const user = await window["loadUser"](username, password);
     if (!user) {
       setShowAlert(true);
       toast.error("Credenciales inválidas");
