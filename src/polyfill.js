@@ -1,4 +1,7 @@
 // Polyfills and environment adjustments
+import { postRequest } from "./api/requestTable";
+import { href as routerHref } from "@jeff-aporta/theme-manager";
+
 export function init() {
   const { configApp } = global;
   const context = configApp?.context;
@@ -34,18 +37,47 @@ export function init() {
     },
   };
 
-  const { href } = window.location;
+  const locationHref = window.location.href;
 
   global.configApp ??= {
-    context: "dev",
-    userID: "e6746a75-55dc-446a-974e-15a6b3b18aa3",
+    context: "test",
   };
 
-  global.IS_LOCAL = href.includes("localhost");
+  global.IS_LOCAL = locationHref.includes("localhost");
 
   // Define helper para entorno GitHub Pages
-  global.IS_GITHUB_IO = href.includes(".github.io");
+  global.IS_GITHUB_IO = locationHref.includes(".github.io");
 
   // Global helper para clave de moneda
   global.getCoinKey = (coin) => coin.symbol || coin.name || coin.id || "";
+
+  // Función para simular carga de usuario con credenciales
+  window["loadUser"] = async (username, password) => {
+    try {
+      let user = await postRequest({
+        buildEndpoint: ({ baseUrl }) =>
+          `${baseUrl}/login/?username=${encodeURIComponent(
+            username
+          )}&password=${encodeURIComponent(password)}`,
+        setError: (err) => err && console.error(err),
+        isTable: true
+      });
+      if(Array.isArray(user)){
+        user = user[0]
+      }
+      console.log(user);
+      localStorage.setItem("user", JSON.stringify(user));
+      return user;
+    } catch (err) {
+      console.error("Credenciales inválidas", err);
+      return null;
+    }
+  };
+
+  // Función global para logout de usuario
+  window["logoutUser"] = () => {
+    localStorage.removeItem("user");
+    window.location.href = routerHref({ view: "/" });
+    delete window["currentUser"];
+  };
 }

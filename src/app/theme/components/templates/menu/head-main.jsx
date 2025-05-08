@@ -1,4 +1,6 @@
 import "./head-main.css";
+import React, { useState } from 'react';
+import Menu from '@mui/material/Menu';
 
 import {
   Button,
@@ -38,6 +40,14 @@ export default HeadMain;
 
 function HeadMain({ updateTheme = () => 0 }) {
   const isLoginPage = queryPath().includes('/users/login');
+  const [anchorEl, setAnchorEl] = useState(null);
+  const handleOpen = (e) => setAnchorEl(e.currentTarget);
+  const handleClose = () => setAnchorEl(null);
+  const handleLogout = () => {
+    window["logoutUser"]();
+  };
+  const user = window["currentUser"] ?? null;
+  const isLogged = !!user;
 
   JS2CSS.insertStyle({
     id: "headmain-root",
@@ -67,7 +77,7 @@ function HeadMain({ updateTheme = () => 0 }) {
     >
       <BotonInicio />
       <div className="d-center gap-10px">
-        {!isLoginPage && (
+        {!isLoginPage && !isLogged && (
           <Button
             variant="contained"
             color="primary"
@@ -82,6 +92,28 @@ function HeadMain({ updateTheme = () => 0 }) {
           >
             Inicia sesión
           </Button>
+        )}
+        {isLogged && (
+          <>
+            <Button
+              variant="contained"
+              color="primary"
+              size="small"
+              onClick={handleOpen}
+              sx={{ textTransform: "none", fontWeight: "bold" }}
+            >
+              {user.name}
+            </Button>
+            <Menu
+              anchorEl={anchorEl}
+              open={Boolean(anchorEl)}
+              onClose={handleClose}
+              anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+              transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+            >
+              <MenuItem onClick={handleLogout}>Cerrar sesión</MenuItem>
+            </Menu>
+          </>
         )}
         <Tooltip title={"Cambiar a tema " + (isDark() ? "claro" : "oscuro")}>
           <LuminanceThemeSwitch
