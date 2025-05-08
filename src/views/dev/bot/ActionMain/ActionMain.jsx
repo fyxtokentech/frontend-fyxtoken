@@ -58,6 +58,8 @@ export default function ActionMain({
   // Estado para la selección de monedas
   const [deletionTimers, setDeletionTimers] = useState([]);
 
+  console.log(user_id, currency)
+
   return (
     <PaperP className="d-flex flex-column gap-20px">
       <PanelBalance

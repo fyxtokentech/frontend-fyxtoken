@@ -16,9 +16,25 @@ const urlapi = {
  */
 function resolveUrl(buildEndpoint, service = "robot_backend") {
   const { context } = global.configApp;
-  const env = global.IS_LOCAL ? "local" : "web";
+  const env = global.IS_LOCAL && global.configApp.context === "dev" ? "local" : "web";
   const base = urlapi[env][service];
   return buildEndpoint({ baseUrl: base }).replace(/\s+/g, "");
+}
+
+/**
+ * Convierte tabla (array de arrays) a array de objetos usando la primera fila como cabeceras.
+ * @param {Array<Array<any>>} table
+ * @returns {Array<Object>}
+ */
+function table2obj(table) {
+  if (!Array.isArray(table) || table.length < 1) return [];
+  const [headers, ...rows] = table;
+  return rows.map((rowValues) =>
+    headers.reduce((obj, header, i) => {
+      obj[header] = rowValues[i];
+      return obj;
+    }, {})
+  );
 }
 
 export const getResponse = async ({
@@ -47,19 +63,8 @@ export const getResponse = async ({
   setLoading(true);
   try {
     const { data: rawData } = await axios.get(requestUrl, axiosConfig);
-    if (Array.isArray(rawData) && rawData.length > 1) {
-      const columnHeaders = rawData[0];
-      const tableRows = rawData.slice(1).map((rowValues) =>
-        columnHeaders.reduce((rowObject, header, index) => {
-          rowObject[header] = rowValues[index];
-          return rowObject;
-        }, {})
-      );
-      result = tableRows;
-      setApiData(result);
-      return result;
-    } else if (Array.isArray(rawData) && rawData.length === 0) {
-      result = [];
+    if (Array.isArray(rawData)) {
+      result = table2obj(rawData);
       setApiData(result);
       return result;
     } else {
@@ -70,20 +75,9 @@ export const getResponse = async ({
       console.log("getResponse [DEV] - Error detected, using mock data");
     }
     console.error(err);
-    if (
-      context === "dev" &&
-      Array.isArray(mock_default.content) &&
-      mock_default.content.length > 1
-    ) {
-      const columnHeaders = mock_default.content[0];
-      const tableRows = mock_default.content.slice(1).map((rowValues) =>
-        columnHeaders.reduce((rowObject, header, index) => {
-          rowObject[header] = rowValues[index];
-          return rowObject;
-        }, {})
-      );
+    if (context === "dev" && Array.isArray(mock_default.content)) {
       console.log("[getResponse] [DEV] - Using mock data after error");
-      result = tableRows;
+      result = table2obj(mock_default.content);
       setApiData(result);
       return result;
     } else {
@@ -105,6 +99,7 @@ export const request = async ({
   willEnd = () => 0, // Callback tras éxito.
   service = "robot_backend", // Servicio en urlapi.
   responseBodyReceived = () => {}, // Callback para recibir el body de la respuesta (success o error)
+  isTable = false, // Si es true, transforma la respuesta con table2obj
 }) => {
   setError(null);
   const requestUrl = resolveUrl(buildEndpoint, service);
@@ -122,10 +117,12 @@ export const request = async ({
       payload,
       axiosConfig
     );
-    console.log(`[request] Éxito respuesta de ${requestUrl}:`, response.data);
-    responseBodyReceived(response.data);
+    let data = response.data;
+    if (isTable) data = table2obj(data);
+    console.log(`[request] Éxito respuesta de ${requestUrl}:`, data);
+    responseBodyReceived(data);
     willEnd();
-    return response.data;
+    return data;
   } catch (err) {
     console.error(
       `[request] Error en ${method.toUpperCase()} a ${requestUrl}:`,

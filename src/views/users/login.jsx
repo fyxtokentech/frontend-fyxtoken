@@ -1,4 +1,6 @@
-import React from "react";
+import React, { useState } from 'react';
+import Alert from '@mui/material/Alert';
+import toast, { Toaster } from 'react-hot-toast';
 
 import { ThemeSwitcher } from "@templates";
 import { DivM, PaperP } from "@containers";
@@ -35,6 +37,7 @@ function Index() {
 
 function LoginForm() {
   const [showPassword, setShowPassword] = React.useState(false);
+  const [showAlert, setShowAlert] = useState(false);
 
   const handleClickShowPassword = () => setShowPassword((show) => !show);
 
@@ -44,6 +47,39 @@ function LoginForm() {
 
   const handleMouseUpPassword = (event) => {
     event.preventDefault();
+  };
+
+  const handleLogin = () => {
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+    // Validaciones de campos
+    if (!username && !password) {
+      setShowAlert(true);
+      toast.error("Por favor ingresa usuario y contraseña");
+      setTimeout(() => setShowAlert(false), 10000);
+      return;
+    }
+    if (!username) {
+      setShowAlert(true);
+      toast.error("Por favor ingresa usuario");
+      setTimeout(() => setShowAlert(false), 10000);
+      return;
+    }
+    if (!password) {
+      setShowAlert(true);
+      toast.error("Por favor ingresa contraseña");
+      setTimeout(() => setShowAlert(false), 10000);
+      return;
+    }
+    const user = window["loadUser"](username, password);
+    if (!user) {
+      setShowAlert(true);
+      toast.error("Credenciales inválidas");
+      setTimeout(() => setShowAlert(false), 10000);
+      return;
+    }
+    const target = href({ view: "/users/wallet", params: { "action-id": "investment" } });
+    window.location.href = target;
   };
 
   const { themized } = controlComponents();
@@ -56,6 +92,7 @@ function LoginForm() {
       <center className="pad-10px">
         <Typography variant="h4">Ingresa al Wallet</Typography>
       </center>
+      {showAlert && <Alert severity="error" sx={{ width: '100%' }}>Credenciales inválidas</Alert>}
       <Credentials
         {...{
           showPassword,
@@ -103,10 +140,7 @@ function LoginForm() {
         <Button
           variant="contained"
           fullWidth
-          href={href({
-            view: "/users/wallet",
-            params: { "action-id": "investment" },
-          })}
+          onClick={handleLogin}
         >
           Iniciar
         </Button>
@@ -125,6 +159,7 @@ function LoginForm() {
     </PaperP>
   );
 }
+
 function Credentials({
   showPassword,
   handleClickShowPassword,
@@ -143,7 +178,7 @@ function Credentials({
           <EmailIcon sx={{ mr: 1 }} color="secondary" />
           <Input
             fullWidth
-            id="email"
+            id="username"
             placeholder="Ingresa Correo electrónico"
             color={enfasis_input}
             variant="filled"

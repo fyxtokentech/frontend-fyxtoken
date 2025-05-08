@@ -5,10 +5,14 @@ import "@theme/scss/main.scss";
 import JS2CSS from "@jeff-aporta/js2css";
 import fluidCSS from "@jeff-aporta/fluidcss";
 
+import { assignedPath } from "@jeff-aporta/router";
+import { routeCheck } from "@app/routeCheck";
+import { Toaster } from "react-hot-toast";
+import Alert from "@mui/material/Alert";
+
 import {} from "@identity/loader";
 import { bgdefault, portal } from "./back-texture";
 
-import { Toaster } from "react-hot-toast";
 import { CssBaseline } from "@mui/material";
 import { ThemeProvider } from "@mui/material/styles";
 
@@ -35,11 +39,19 @@ function Notifier({ children }) {
   return (
     <Themized>
       {children}
-      <Toaster />
+      <Toaster
+        position="bottom-right"
+        toastOptions={{
+          style: { animation: "fadeIn 1s ease, fadeOut 0.3s ease 4.7s" },
+        }}
+      />{" "}
     </Themized>
   );
 
   function Themized({ children }) {
+    {
+      /* Keyframes CSS para fade */
+    }
     return (
       <ThemeProvider theme={getTheme()}>
         <CssBaseline />
@@ -49,7 +61,13 @@ function Notifier({ children }) {
   }
 }
 
-function ThemeSwitcher({ children, urlShader, bgtype = "1", h_init = "0", h_fin = "0" }) {
+function ThemeSwitcher({
+  children,
+  urlShader,
+  bgtype = "1",
+  h_init = "0",
+  h_fin = "0",
+}) {
   const [theme_name, updateThemeName] = useState(getThemeName());
   const [theme_luminance, updateThemeLuminance] = useState(getThemeLuminance());
 
@@ -70,7 +88,6 @@ function ThemeSwitcher({ children, urlShader, bgtype = "1", h_init = "0", h_fin 
   return (
     <Notifier>
       <FirstPart />
-      {/* <ThreeBackground urlShader={urlShader} /> */}
       <Footer updateThemeName={updateThemeName} getThemeName={getThemeName} />
       <CursorLight />
     </Notifier>
@@ -102,9 +119,7 @@ function ThemeSwitcher({ children, urlShader, bgtype = "1", h_init = "0", h_fin 
                 portal();
                 break;
             }
-            return fluid.end(
-              `expand back-texture dyn-filter z-index-1`
-            );
+            return fluid.end(`expand back-texture dyn-filter z-index-1`);
           })()}
         />
         <div className={`${minH}`}>
@@ -118,4 +133,4 @@ function ThemeSwitcher({ children, urlShader, bgtype = "1", h_init = "0", h_fin 
   }
 }
 
-export { ThemeSwitcher, themeSwitch_listener };
+export { ThemeSwitcher, Notifier, themeSwitch_listener };

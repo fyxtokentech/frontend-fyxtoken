@@ -38,9 +38,7 @@ export default function PanelRobot() {
   const [viewTable, setViewTable] = useState(
     driverParams.get("view-table") || "operations"
   );
-  const [view, setView] = useState(
-    driverParams.get("action-id") || "main"
-  );
+  const [view, setView] = useState(driverParams.get("action-id") || "main");
 
   console.log("PanelRobot render:", { view, viewTable });
 
@@ -61,7 +59,9 @@ export default function PanelRobot() {
   // Error al cargar monedas disponibles
   const [errorCoinOperate, setErrorCoinOperate] = useState(null);
 
-  const user_id = global.configApp.userID;
+  const { user_id } = window["currentUser"];
+
+  console.log(user_id)
 
   // Sync view and viewTable to URL params
   useEffect(() => {
@@ -81,7 +81,7 @@ export default function PanelRobot() {
           const paramCoin = driverParams.get("coin");
           if (!paramCoin && coinsToOperate.current.length > 0) {
             const first = coinsToOperate.current[0];
-            console.log(first)
+            console.log(first);
             const key = global.getCoinKey(first);
             currency.current = key;
             driverParams.set("coin", key);
@@ -89,12 +89,17 @@ export default function PanelRobot() {
           } else {
             currency.current = paramCoin;
           }
-          coinsOperatingList.current = data
-            .filter((coin) => coin.status === "A");
+          coinsOperatingList.current = data.filter(
+            (coin) => coin.status === "A"
+          );
         },
         buildEndpoint: ({ baseUrl }) => `${baseUrl}/coins/${user_id}`,
         mock_default: {
-          content: [["symbol", "id"], ["BTC", "1"], ["ETH", "2"]],
+          content: [
+            ["symbol", "id"],
+            ["BTC", "1"],
+            ["ETH", "2"],
+          ],
         },
       });
     }
