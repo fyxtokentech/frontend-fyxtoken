@@ -1,7 +1,7 @@
 import React from 'react';
 import { Typography, Box } from '@mui/material';
 
-import TableOperations from "@test/operacion/TableOperations";
+import TableOperations from "@tables/operations/TableOperations";
 
 export default function OperationsTable() {
   return (

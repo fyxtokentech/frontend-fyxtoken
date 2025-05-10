@@ -37,8 +37,8 @@ import {
 import mock_transaction from "./mock-transaction.json";
 import columns_transaction from "./columns-transaction.jsx";
 
-import mock_operation from "@test/operacion/mock-operation.json";
-import columns_operation from "@test/operacion/columns-operation.jsx";
+import mock_operation from "@tables/operations/mock-operation.json";
+import columns_operation from "@tables/operations/columns-operation.jsx";
 import dayjs from "dayjs";
 import { getResponse } from "@api/requestTable";
 import { DriverParams } from "@jeff-aporta/router";

@@ -78,7 +78,7 @@ function LoginForm() {
       setTimeout(() => setShowAlert(false), 10000);
       return;
     }
-    const target = href({ view: "/users/wallet", params: { "action-id": "investment" } });
+    const target = href({ view: "@wallet" });
     window.location.href = target;
   };
 

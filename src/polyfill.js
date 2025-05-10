@@ -3,16 +3,23 @@ import { postRequest } from "./api/requestTable";
 import { href as routerHref } from "@jeff-aporta/theme-manager";
 
 export function init() {
+  // --- Sección 1: Entorno ---
   const { configApp } = global;
   const context = configApp?.context;
-  // En producción, desactivar console.log, console.warn y console.error
+  // En producción, desactivar console
   if (["prod", "production"].includes(context)) {
     console.log = () => {};
     console.warn = () => {};
     console.error = () => {};
   }
 
-  // Define global URL parameter helper
+  // --- Sección 2: Configuración global y flags ---
+  global.configApp ??= { context: "dev" };
+  const locationHref = window.location.href;
+  global.IS_LOCAL = locationHref.includes("localhost");
+  global.IS_GITHUB_IO = locationHref.includes(".github.io");
+
+  // --- Sección 3: URL params helper ---
   global.driverParams = {
     get: (key) => new URLSearchParams(window.location.search).get(key),
     gets: (...keys) =>
@@ -37,21 +44,12 @@ export function init() {
     },
   };
 
-  const locationHref = window.location.href;
-
-  global.configApp ??= {
-    context: "test",
-  };
-
-  global.IS_LOCAL = locationHref.includes("localhost");
-
-  // Define helper para entorno GitHub Pages
-  global.IS_GITHUB_IO = locationHref.includes(".github.io");
-
-  // Global helper para clave de moneda
+  // --- Sección 4: Helpers globales ---
+  // Clave de moneda
   global.getCoinKey = (coin) => coin.symbol || coin.name || coin.id || "";
 
-  // Función para simular carga de usuario con credenciales
+  // --- Sección 5: Autenticación ---
+  // Carga de usuario
   window["loadUser"] = async (username, password) => {
     try {
       let user = await postRequest({
@@ -60,10 +58,10 @@ export function init() {
             username
           )}&password=${encodeURIComponent(password)}`,
         setError: (err) => err && console.error(err),
-        isTable: true
+        isTable: true,
       });
-      if(Array.isArray(user)){
-        user = user[0]
+      if (Array.isArray(user)) {
+        user = user[0];
       }
       console.log(user);
       localStorage.setItem("user", JSON.stringify(user));
@@ -74,10 +72,64 @@ export function init() {
     }
   };
 
-  // Función global para logout de usuario
+  // Logout de usuario
   window["logoutUser"] = () => {
     localStorage.removeItem("user");
     window.location.href = routerHref({ view: "/" });
     delete window["currentUser"];
+  };
+
+  // --- Sección 6: Utilidades ---
+  // Formateo de números
+  function processNumberFormat(number_format, value, local, retorno) {
+    if (number_format) {
+      const number = Number(value);
+      const numeroFormateado = new Intl.NumberFormat(
+        local ?? "es-ES",
+        number_format
+      ).format(number);
+      retorno = numeroFormateado;
+    }
+    return { retorno };
+  }
+
+  window.processNumberFormat = processNumberFormat;
+
+  window.dynamicNumberFormat = function ({ value }) {
+    const absValue = Math.abs(value);
+    if (!absValue || isNaN(absValue)) {
+      return { maximumFractionDigits: 2 };
+    }
+    const decimals = Math.min(
+      8,
+      Math.max(2, Math.floor(1 - Math.log10(absValue)))
+    );
+    return { maximumFractionDigits: decimals };
+  };
+
+  // Función global para formateo rápido de número actual
+  window.numberFormatCurrent = function (value, local) {
+    // Genera formato dinámico según valor
+    const number_format = window.dynamicNumberFormat({ value });
+    // Aplica formato mediante processNumberFormat
+    const { retorno } = window.processNumberFormat(
+      number_format,
+      value,
+      local,
+      ""
+    );
+    return retorno;
+  };
+
+  window.diffNumberFormatCurrent = function (value1, value2, local) {
+    const diff = (value1 - value2) / 10;
+    const number_format = window.dynamicNumberFormat({ value: diff });
+    const { retorno } = window.processNumberFormat(
+      number_format,
+      value1,
+      local,
+      ""
+    );
+    return retorno;
   };
 }

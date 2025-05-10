@@ -14,7 +14,7 @@ import SaveIcon from "@mui/icons-material/Save";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 
-const exchanges = ["Binance", "Libertex", "Coinbase"];
+const exchanges = ["Binance", "Bitget"];
 
 // Helper component for password fields
 function PasswordField({ label, value, onChange }) {
@@ -53,12 +53,15 @@ function PasswordField({ label, value, onChange }) {
 
 export default function Settings({ setView }) {
   // State for API keys and secrets for each exchange
-  const [apiKeys, setApiKeys] = useState(() => 
-    exchanges.reduce((acc, ex) => {
+  const [apiKeys, setApiKeys] = useState(() => {
+    const init = exchanges.reduce((acc, ex) => {
       acc[ex.toLowerCase()] = { apiKey: "", secretKey: "" };
       return acc;
-    }, {})
-  );
+    }, {});
+    // Se agrega API de retiro para Kraken
+    init["kraken"] = { apiKey: "", secretKey: "" };
+    return init;
+  });
 
   const handleInputChange = (exchange, field, value) => {
     setApiKeys(prev => ({
@@ -138,6 +141,27 @@ export default function Settings({ setView }) {
             </Grid>
           </React.Fragment>
         ))}
+        {/* Sección API de retiro (Kraken) */}
+        <Grid item xs={12} sx={{ mt: 2 }}>
+          <Typography variant="h6">APIs de Retiro (Kraken)</Typography>
+        </Grid>
+        <Grid item xs={3} sx={{ display: 'flex', alignItems: 'center' }}>
+          <Typography>Kraken</Typography>
+        </Grid>
+        <Grid item xs={5}>
+          <PasswordField
+            label="Kraken API Key"
+            value={apiKeys['kraken'].apiKey}
+            onChange={(e) => handleInputChange('kraken', 'apiKey', e.target.value)}
+          />
+        </Grid>
+        <Grid item xs={4}>
+          <PasswordField
+            label="Kraken Secret Key"
+            value={apiKeys['kraken'].secretKey}
+            onChange={(e) => handleInputChange('kraken', 'secretKey', e.target.value)}
+          />
+        </Grid>
 
         {/* Save Button Row */}
         <Grid item xs={12} sx={{ display: "flex", justifyContent: "flex-end", mt: 2 }}>

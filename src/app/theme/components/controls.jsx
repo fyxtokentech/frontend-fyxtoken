@@ -29,7 +29,7 @@ function AutoSkeleton({ loading, w = "100%", h = "5vh", ...rest }) {
     return <></>;
   }
   return loading ? (
-    <Skeleton style={{ height: h, width: `max(200px, ${w})` }} />
+    <Skeleton style={{ height: h, width: `max(100px, ${w})` }} />
   ) : (
     <div {...rest} />
   );

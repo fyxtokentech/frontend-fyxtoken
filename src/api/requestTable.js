@@ -16,7 +16,8 @@ const urlapi = {
  */
 function resolveUrl(buildEndpoint, service = "robot_backend") {
   const { context } = global.configApp;
-  const env = global.IS_LOCAL && global.configApp.context === "dev" ? "local" : "web";
+  const env =
+    global.IS_LOCAL && global.configApp.context === "dev" ? "local" : "web";
   const base = urlapi[env][service];
   return buildEndpoint({ baseUrl: base }).replace(/\s+/g, "");
 }
@@ -39,9 +40,9 @@ function table2obj(table) {
 
 export const getResponse = async ({
   setError,
-  checkErrors,
-  setLoading,
-  setApiData,
+  checkErrors = () => null,
+  setLoading = () => {},
+  setApiData = () => {},
   buildEndpoint,
   mock_default,
   service = "robot_backend",
@@ -65,6 +66,7 @@ export const getResponse = async ({
     const { data: rawData } = await axios.get(requestUrl, axiosConfig);
     if (Array.isArray(rawData)) {
       result = table2obj(rawData);
+      console.log("[getResponse] Result: ", requestUrl, result);
       setApiData(result);
       return result;
     } else {
@@ -75,7 +77,11 @@ export const getResponse = async ({
       console.log("getResponse [DEV] - Error detected, using mock data");
     }
     console.error(err);
-    if (context === "dev" && Array.isArray(mock_default.content)) {
+    if (
+      context === "dev" &&
+      mock_default &&
+      Array.isArray(mock_default.content)
+    ) {
       console.log("[getResponse] [DEV] - Using mock data after error");
       result = table2obj(mock_default.content);
       setApiData(result);
@@ -134,5 +140,5 @@ export const request = async ({
   }
 };
 
-export const postRequest = (params) => request({ ...params, method: 'post' });
-export const putRequest = (params) => request({ ...params, method: 'put' });
+export const postRequest = (params) => request({ ...params, method: "post" });
+export const putRequest = (params) => request({ ...params, method: "put" });

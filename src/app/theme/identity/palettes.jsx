@@ -1,5 +1,6 @@
 import { PaletteBaseMonochrome } from "@jeff-aporta/theme-manager";
 import { Checkbox, Input } from "@mui/material";
+import { hrefManagement } from "@app/hrefManagement";
 
 const {
   verde_cielo,
@@ -11,18 +12,21 @@ const {
   springgreen,
   negro,
   blanco,
-  blacktheme
+  blacktheme,
 } = global.identity.colors;
 
-class Fyxbase extends PaletteBaseMonochrome{
-  constructor(props){
-    super(props)
+class Fyxbase extends PaletteBaseMonochrome {
+  constructor(props) {
+    super(props);
   }
   control_components(darkmode) {
     const _THIS_ = this;
     const enfasis_input = [this.name_color, this.name_contrast][+darkmode];
+    const themeComponents = super.control_components(darkmode);
+    const themeHref = themeComponents.href;
     return {
-      ...super.control_components(darkmode),
+      ...themeComponents,
+      href: (props) => themeHref(hrefManagement(props)),
       enfasis_input,
       themized: {
         Checkbox(props) {

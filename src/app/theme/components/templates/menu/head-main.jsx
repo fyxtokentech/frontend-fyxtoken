@@ -1,6 +1,6 @@
 import "./head-main.css";
-import React, { useState } from 'react';
-import Menu from '@mui/material/Menu';
+import React, { useState } from "react";
+import Menu from "@mui/material/Menu";
 
 import {
   Button,
@@ -18,6 +18,9 @@ import { ImageLocal } from "@recurrent";
 import fluidCSS from "@jeff-aporta/fluidcss";
 import { LuminanceThemeSwitch } from "@components/templates/menu/switch";
 import LoginIcon from "@mui/icons-material/Login";
+import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
+import LogoutIcon from "@mui/icons-material/Logout";
 
 import {
   isDark,
@@ -39,7 +42,7 @@ export default HeadMain;
 //------------ definitions ------------
 
 function HeadMain({ updateTheme = () => 0 }) {
-  const isLoginPage = queryPath().includes('/users/login');
+  const isLoginPage = queryPath().includes("/users/login");
   const [anchorEl, setAnchorEl] = useState(null);
   const handleOpen = (e) => setAnchorEl(e.currentTarget);
   const handleClose = () => setAnchorEl(null);
@@ -101,17 +104,29 @@ function HeadMain({ updateTheme = () => 0 }) {
               size="small"
               onClick={handleOpen}
               sx={{ textTransform: "none", fontWeight: "bold" }}
+              endIcon={<AccountCircleIcon />}
             >
-              {user.name}
+              {[user.name, user.last_name].filter(Boolean).join(" ")}
             </Button>
             <Menu
               anchorEl={anchorEl}
               open={Boolean(anchorEl)}
               onClose={handleClose}
-              anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
-              transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+              anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+              transformOrigin={{ vertical: "top", horizontal: "right" }}
             >
-              <MenuItem onClick={handleLogout}>Cerrar sesión</MenuItem>
+              <MenuItem
+                component={Link}
+                href={href("@wallet")}
+                onClick={handleClose}
+              >
+                Wallet
+                <AccountBalanceWalletIcon fontSize="small" sx={{ ml: 1 }} />
+              </MenuItem>
+              <MenuItem onClick={handleLogout}>
+                Cerrar sesión
+                <LogoutIcon fontSize="small" sx={{ ml: 1 }} />
+              </MenuItem>
             </Menu>
           </>
         )}

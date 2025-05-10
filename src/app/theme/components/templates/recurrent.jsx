@@ -33,7 +33,7 @@ const PUBLIC_URL = process.env.PUBLIC_URL;
 function TooltipIconButton({ title, disabled, onClick, icon, ...rest_props }) {
   return (
     <div {...rest_props} className={rest_props.className ?? ""}>
-      <Tooltip
+      <TooltipNoPointerEvents
         title={typeof title === "string" ? title : title()}
         placement="left"
       >
@@ -53,7 +53,7 @@ function TooltipIconButton({ title, disabled, onClick, icon, ...rest_props }) {
             {icon}
           </IconButton>
         </div>
-      </Tooltip>
+      </TooltipNoPointerEvents>
     </div>
   );
 }
@@ -132,6 +132,15 @@ function TitleInfo(props) {
   );
 }
 
+function TooltipNoPointerEvents(props) {
+  return (
+    <Tooltip
+      {...props}
+      PopperProps={{ sx: { pointerEvents: "none" } }}
+    />
+  );
+}
+
 function Info(props) {
   const [, setWindowWidth] = useState(0);
 
@@ -151,11 +160,14 @@ function Info(props) {
       text={title}
       title_text={title_text ?? "Información"}
     >
-      <Tooltip {...rest_props} title={title}>
+      <TooltipNoPointerEvents  
+        {...rest_props}
+        title={title}
+      >
         <Typography color="secondary" className="d-inline-block c-pointer">
           <i className="fa-solid fa-info-circle" />
         </Typography>
-      </Tooltip>
+      </TooltipNoPointerEvents>
     </FyxDialog>
   );
 }
@@ -344,7 +356,6 @@ function AnSelect(props) {
   }
 }
 
-
 function Title({ txt }) {
   if (!txt) return null;
   // Asegurarse que el selector del título exista antes de modificarlo
@@ -371,6 +382,7 @@ export {
   ImageLocal,
   generate_inputs,
   generate_selects,
+  TooltipNoPointerEvents,
   Info,
   BoxForm,
   TitleInfo,

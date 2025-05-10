@@ -13,19 +13,7 @@ function currentSufix(sufix){
       local: "es-ES",
       sufix,
       type: "number",
-      "number-format"(params) {
-        let { value } = params;
-        value = Math.abs(value);
-        if (value < 0.01) {
-          return {
-            maximumFractionDigits: 8,
-          };
-        } else {
-          return {
-            maximumFractionDigits: 2,
-          };
-        }
-      },
+      "number-format": window.dynamicNumberFormat,
     },
   };
 }

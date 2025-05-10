@@ -1,4 +1,4 @@
-import modelsFormat from "@components/GUI/DynTable/modelsFormat";
+import modelsFormat from "@GUI/DynTable/modelsFormat";
 
 import StatusOpenIcon from '@mui/icons-material/HourglassTop';
 import StatusCloseIcon from '@mui/icons-material/HourglassBottom';

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Typography, Box } from '@mui/material';
 
-import TableTransactions from "@test/transaccion/TableTransactions";
+import TableTransactions from "@tables/transactions/TableTransactions";
 
 export default function TransactionsTable() {
   // TODO: Fetch and display transactions data

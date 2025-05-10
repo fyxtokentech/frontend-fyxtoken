@@ -7,7 +7,7 @@ export {
 }
 
 function DivM(props) {
-  const { m_min = 10, m_max = 30 } = props;
+  const { m_min = 5, m_max = 20 } = props;
   return (
     <div
       {...props}
@@ -21,7 +21,7 @@ function DivM(props) {
 }
 
 function PaperP(props) {
-  const { p_min = 10, p_max = 20 } = props;
+  const { p_min = 3, p_max = 10 } = props;
   return (
     <Paper
       {...props}

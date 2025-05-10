@@ -104,7 +104,7 @@ function rendersTemplate(columns_config) {
                ? number_format(params)
                : number_format;
 
-           ({ retorno } = processNumberFormat(
+           ({ retorno } = window.processNumberFormat(
              number_format_,
              value,
              local,
@@ -171,18 +171,6 @@ function rendersTemplate(columns_config) {
        </Tooltip>
      );
    };
- }
-
- function processNumberFormat(number_format, value, local, retorno) {
-   if (number_format) {
-     const number = Number(value);
-     const numeroFormateado = new Intl.NumberFormat(
-       local ?? "es-ES",
-       number_format
-     ).format(number);
-     retorno = numeroFormateado;
-   }
-   return { retorno };
  }
 
  function processSufix(row, sufix, retorno) {
