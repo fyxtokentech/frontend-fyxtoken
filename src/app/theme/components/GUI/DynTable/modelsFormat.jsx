@@ -1,52 +1,99 @@
 import BenefitUplineIcon from "@mui/icons-material/TrendingUpOutlined";
 import BenefitDownlineIcon from "@mui/icons-material/TrendingDownOutlined";
 import BenefitConstantlineIcon from "@mui/icons-material/TrendingFlatOutlined";
+import { Chip } from "@mui/material";
 
-const currentBitcoin = currentSufix("name_coin");
+const currentCoin = currentSufix("name_coin");
 
-const currentUSDT = currentSufix("USDT");
-
-function currentSufix(sufix){
+function currentSufix(sufix) {
   return {
     fit_content: true,
     renderInfo: {
       local: "es-ES",
       sufix,
       type: "number",
-      "number-format": window.dynamicNumberFormat,
+      "number-format": window["format"]["number"]["dynamic"],
     },
   };
 }
 
+function iconized_profit(op = false) {
+  return (params, renderString) => {
+    let { value } = params;
+    const { real_roi } = params.row;
+
+    const texto = (() => {
+      if (op) {
+        return (
+          <div className="d-flex jc-space-between ai-center">
+            {renderString}
+            {real_roi ? (
+              <Chip
+                label={`${real_roi.toFixed(2)}%`}
+                {...window["props"]["ChipSmall"]}
+                sx={{
+                  ...window["style"]["ChipSmall"],
+                  ...window["style"]["Chip-right"],
+                }}
+              />
+            ) : (
+              ""
+            )}
+          </div>
+        );
+      }
+      return renderString;
+    })();
+    const tooltip = (() => {
+      if (op) {
+        const percent = real_roi ? `(${real_roi.toFixed(2)}%)` : "";
+        return `${renderString} ${percent}`;
+      }
+      return renderString;
+    })();
+    const strings = { texto, tooltip };
+    if (value == 0) {
+      return {
+        ...strings,
+        icon: <BenefitConstantlineIcon />,
+        color: "warning",
+      };
+    }
+    if (value < 0) {
+      return {
+        ...strings,
+        icon: <BenefitDownlineIcon />,
+        color: "error",
+      };
+    }
+    if (value > 0) {
+      return { ...strings, icon: <BenefitUplineIcon />, color: "ok" };
+    }
+  };
+}
+
 export default {
+  profit_op: {
+    ...{
+      ...currentCoin,
+      extra_width: 30,
+      renderInfo: {
+        ...currentCoin.renderInfo,
+        iconized: iconized_profit(true),
+      },
+    },
+  },
   profit: {
     ...{
-      ...currentBitcoin,
+      ...currentCoin,
+      style: {
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+      },
       renderInfo: {
-        ...currentBitcoin.renderInfo,
-        iconized(params, renderString) {
-          let { value } = params;
-          const texto = renderString;
-          const tooltip = texto;
-          const strings = { texto, tooltip };
-          if (value == 0) {
-            return {
-              ...strings,
-              icon: <BenefitConstantlineIcon />,
-              color: "warning",
-            };
-          }
-          if (value < 0) {
-            return {
-              ...strings,
-              icon: <BenefitDownlineIcon />,
-              color: "error",
-            };
-          }
-          if (value > 0) {
-            return { ...strings, icon: <BenefitUplineIcon />, color: "ok" };
-          }
-        },
+        ...currentCoin.renderInfo,
+        iconized: iconized_profit(),
       },
     },
   },
@@ -80,6 +127,6 @@ export default {
       },
     },
   },
-  currentBitcoin,
-  currentUSDT,
+  currentCoin,
+  currentSufix,
 };

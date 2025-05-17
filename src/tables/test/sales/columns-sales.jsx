@@ -54,13 +54,13 @@ const columns_sales = [
     headerName: "Monto Recibido",
     description:
       "Cantidad de la moneda de cotización (USDT) recibida por la venta.",
-    ...modelsFormat.currentBitcoin, // Formato moneda
+    ...modelsFormat.currentCoin, // Formato moneda
   },
   {
     field: "execution_price", // 7. A qué precio se ejecutó
     headerName: "Precio Venta",
     description: "Precio unitario al que se ejecutó la orden de venta.",
-    ...modelsFormat.currentBitcoin, // Formato moneda
+    ...modelsFormat.currentCoin, // Formato moneda
   },
   {
     field: "execution_date", // 8. Cuándo se ejecutó

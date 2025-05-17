@@ -133,12 +133,7 @@ function TitleInfo(props) {
 }
 
 function TooltipNoPointerEvents(props) {
-  return (
-    <Tooltip
-      {...props}
-      PopperProps={{ sx: { pointerEvents: "none" } }}
-    />
-  );
+  return <Tooltip {...props} PopperProps={{ sx: { pointerEvents: "none" } }} />;
 }
 
 function Info(props) {
@@ -160,10 +155,7 @@ function Info(props) {
       text={title}
       title_text={title_text ?? "Información"}
     >
-      <TooltipNoPointerEvents  
-        {...rest_props}
-        title={title}
-      >
+      <TooltipNoPointerEvents {...rest_props} title={title}>
         <Typography color="secondary" className="d-inline-block c-pointer">
           <i className="fa-solid fa-info-circle" />
         </Typography>
@@ -361,7 +353,7 @@ function Title({ txt }) {
   // Asegurarse que el selector del título exista antes de modificarlo
   const titleElement = document.querySelector("title");
   if (titleElement) {
-      titleElement.innerHTML = txt;
+    titleElement.innerHTML = txt;
   }
   return (
     <>
@@ -378,6 +370,19 @@ function Title({ txt }) {
   );
 }
 
+function ChipSmall(props) {
+  return (
+    <Chip
+      {...window["props"]["ChipSmall"]}
+      sx={{
+        ...window["style"]["ChipSmall"],
+        ...window["style"]["Chip-right"],
+      }}
+      {...props}
+    />
+  );
+}
+
 export {
   ImageLocal,
   generate_inputs,
@@ -388,4 +393,5 @@ export {
   TitleInfo,
   TooltipIconButton,
   Title,
+  ChipSmall,
 };

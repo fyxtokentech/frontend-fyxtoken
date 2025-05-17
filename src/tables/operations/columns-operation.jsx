@@ -53,7 +53,7 @@ const retorno = {
       field: "profit",
       headerName: "Beneficio",
       description: "Ganancia obtenida de la operación.",
-      ...modelsFormat.profit,
+      ...modelsFormat.profit_op,
     },
     {
       inTable: false,
@@ -71,31 +71,31 @@ const retorno = {
       field: "price_buy",
       headerName: "Compra",
       description: "Precio de compra de la moneda en USDC.",
-      ...modelsFormat.currentBitcoin,
+      ...modelsFormat.currentCoin,
     },
     {
       field: "price_sell",
       headerName: "Venta",
       description: "Precio de venta de la moneda.",
-      ...modelsFormat.currentBitcoin,
+      ...modelsFormat.currentCoin,
     },
     {
       field: "total_quantity",
       headerName: "Cantidad",
       description: "Cantidad total de la moneda en la operación.",
-      ...modelsFormat.currentBitcoin,
+      ...modelsFormat.currentCoin,
     },
     {
       field: "total_bought",
       headerName: "Comprado",
       description: "Cantidad comprada de la moneda.",
-      ...modelsFormat.currentUSDT,
+      ...modelsFormat.currentSufix("symbolpar_buy"),
     },
     {
       field: "total_sold",
       headerName: "Vendido",
       description: "Cantidad vendida de la moneda.",
-      ...modelsFormat.currentUSDT,
+      ...modelsFormat.currentSufix("symbolpar_sell")
     },
     {
       inTable: false,
@@ -107,13 +107,13 @@ const retorno = {
       field: "initial_balance",
       headerName: "Balance inicial",
       description: "Saldo disponible antes de la operación.",
-      ...modelsFormat.currentBitcoin,
+      ...modelsFormat.currentCoin,
     },
     {
       field: "final_balance",
       headerName: "Balance final",
       description: "Saldo disponible después de la operación.",
-      ...modelsFormat.currentBitcoin,
+      ...modelsFormat.currentCoin,
     },
     {
       field: "start_date_operation",

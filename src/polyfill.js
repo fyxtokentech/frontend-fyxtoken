@@ -1,6 +1,8 @@
 // Polyfills and environment adjustments
-import { postRequest } from "./api/requestTable";
+import { postRequest } from "@api/requestTable";
 import { href as routerHref } from "@jeff-aporta/theme-manager";
+
+import utilities from "./utilities";
 
 export function init() {
   // --- Sección 1: Entorno ---
@@ -53,6 +55,7 @@ export function init() {
   window["loadUser"] = async (username, password) => {
     try {
       let user = await postRequest({
+
         buildEndpoint: ({ baseUrl }) =>
           `${baseUrl}/login/?username=${encodeURIComponent(
             username
@@ -80,56 +83,71 @@ export function init() {
   };
 
   // --- Sección 6: Utilidades ---
-  // Formateo de números
-  function processNumberFormat(number_format, value, local, retorno) {
-    if (number_format) {
-      const number = Number(value);
-      const numeroFormateado = new Intl.NumberFormat(
-        local ?? "es-ES",
-        number_format
-      ).format(number);
-      retorno = numeroFormateado;
-    }
-    return { retorno };
+  Object.assign(window, {
+    utilities,
+    format: {
+      number: {
+        simple: numberFormat,
+        dynamic: dynamicNumberFormat,
+        toCoin: numberFormatCoins,
+        toCoinDifference: diffNumberFormatCoins,
+      },
+    },
+    props: {
+      "ChipSmall": {
+        size: "small",
+        variant: "filled",
+      },
+    },
+    style: {
+      "ChipSmall": {
+        transform: "scale(0.8)",
+        fontSize: "smaller",
+      },
+      "Chip-right": {
+        position: "absolute",
+        right: "10px",
+      },
+    },
+  });
+}
+
+function numberFormat(number_format, value, local, retorno) {
+  if (number_format) {
+    const number = Number(value);
+    const numeroFormateado = new Intl.NumberFormat(
+      local ?? "es-ES",
+      number_format
+    ).format(number);
+    retorno = numeroFormateado;
   }
+  return { retorno };
+}
 
-  window.processNumberFormat = processNumberFormat;
+function dynamicNumberFormat({ value }) {
+  const absValue = Math.abs(value);
+  if (!absValue || isNaN(absValue)) {
+    return { maximumFractionDigits: 2 };
+  }
+  const decimals = Math.min(
+    8,
+    Math.max(2, Math.floor(1 - Math.log10(absValue))+4)
+  );
+  return { maximumFractionDigits: decimals };
+}
 
-  window.dynamicNumberFormat = function ({ value }) {
-    const absValue = Math.abs(value);
-    if (!absValue || isNaN(absValue)) {
-      return { maximumFractionDigits: 2 };
-    }
-    const decimals = Math.min(
-      8,
-      Math.max(2, Math.floor(1 - Math.log10(absValue)))
-    );
-    return { maximumFractionDigits: decimals };
-  };
+// Función global para formateo rápido de número actual
+function numberFormatCoins(value, local) {
+  // Genera formato dinámico según valor
+  const number_format = dynamicNumberFormat({ value });
+  // Aplica formato mediante processNumberFormat
+  const { retorno } = numberFormat(number_format, value, local, "");
+  return retorno;
+}
 
-  // Función global para formateo rápido de número actual
-  window.numberFormatCurrent = function (value, local) {
-    // Genera formato dinámico según valor
-    const number_format = window.dynamicNumberFormat({ value });
-    // Aplica formato mediante processNumberFormat
-    const { retorno } = window.processNumberFormat(
-      number_format,
-      value,
-      local,
-      ""
-    );
-    return retorno;
-  };
-
-  window.diffNumberFormatCurrent = function (value1, value2, local) {
-    const diff = (value1 - value2) / 10;
-    const number_format = window.dynamicNumberFormat({ value: diff });
-    const { retorno } = window.processNumberFormat(
-      number_format,
-      value1,
-      local,
-      ""
-    );
-    return retorno;
-  };
+function diffNumberFormatCoins(value1, value2, local) {
+  const diff = (value1 - value2) / 10;
+  const number_format = dynamicNumberFormat({ value: diff });
+  const { retorno } = numberFormat(number_format, value1, local, "");
+  return retorno;
 }

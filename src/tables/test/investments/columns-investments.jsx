@@ -27,19 +27,19 @@ const columns_investments = [
     field: "position_value", // 3. Cuánto vale ahora
     headerName: "Valor Posición",
     description: "Valor total actual de la posición.",
-    ...modelsFormat.currentBitcoin, // Formato moneda
+    ...modelsFormat.currentCoin, // Formato moneda
   },
   {
     field: "current_price", // 5. Precio actual de mercado
     headerName: "Precio Actual",
     description: "Precio de mercado actual del activo.",
-    ...modelsFormat.currentBitcoin, // Formato moneda
+    ...modelsFormat.currentCoin, // Formato moneda
   },
   {
     field: "purchase_price", // 6. A cuánto compré (promedio)
     headerName: "Precio Compra",
     description: "Precio promedio al que se adquirió el activo.",
-    ...modelsFormat.currentBitcoin, // Formato moneda
+    ...modelsFormat.currentCoin, // Formato moneda
   },
   {
     field: "pair", // 7. Par de trading asociado

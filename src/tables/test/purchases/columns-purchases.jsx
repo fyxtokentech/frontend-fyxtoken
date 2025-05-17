@@ -49,13 +49,13 @@ const columns_purchases = [
     field: "price",
     headerName: "Precio Compra",
     description: "Precio por unidad de la moneda base al momento de la compra.",
-    ...modelsFormat.currentBitcoin,
+    ...modelsFormat.currentCoin,
   },
   {
     field: "amount_quote",
     headerName: "Total Pagado",
     description: "Cantidad total de la moneda cotizada pagada por la compra.",
-    ...modelsFormat.currentBitcoin,
+    ...modelsFormat.currentCoin,
   },
   {
     field: "user_id",

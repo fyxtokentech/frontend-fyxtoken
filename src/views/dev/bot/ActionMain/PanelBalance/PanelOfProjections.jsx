@@ -15,45 +15,31 @@ import { getThemeLuminance } from "@jeff-aporta/theme-manager";
 export default class PanelOfProjections extends Component {
   constructor(props) {
     super(props);
-    this.state = { coinMetric: {}, loadingMetrics: false, errorMetrics: null };
-    this.fetchMetrics = this.fetchMetrics.bind(this);
+    this.state = {
+      coinMetric: {},
+      loadingMetrics: false,
+      errorMetrics: null,
+    };
   }
+
+  // Propiedad de clase para obtener métricas con binding de setState
+  fetchMetrics = async (
+    props = this.props,
+    setState = (state) => this.setState(state)
+  ) => {
+    return window.fetchMetrics(props, setState);
+  };
 
   componentDidMount() {
     this.fetchMetrics();
-    this.metricsInterval = setInterval(this.fetchMetrics, 310000);
+    this.metricsInterval = setInterval(
+      () => this.fetchMetrics(),
+      310000
+    );
   }
 
   componentWillUnmount() {
     clearInterval(this.metricsInterval);
-  }
-
-  async fetchMetrics() {
-    const { user_id } = this.props;
-    const { driverParams } = global;
-    const id_coin = driverParams.get("id_coin");
-    if (!id_coin) return;
-    this.setState({ loadingMetrics: true });
-    try {
-      await getResponse({
-        setError: (err) => this.setState({ errorMetrics: err }),
-        setLoading: (loading) => this.setState({ loadingMetrics: loading }),
-        setApiData: ([data]) => {
-          if (!data) {
-            console.log("No data received");
-            return;
-          }
-          console.log(data);
-          this.setState({ coinMetric: data });
-        },
-        buildEndpoint: ({ baseUrl }) =>
-          `${baseUrl}/coins/metrics/${user_id}/${id_coin}`,
-      });
-    } catch (err) {
-      this.setState({ errorMetrics: err.message });
-    } finally {
-      this.setState({ loadingMetrics: false });
-    }
   }
 
   render() {
@@ -74,8 +60,6 @@ export default class PanelOfProjections extends Component {
       etiqueta,
     } = coinMetric;
 
-    console.log(coinMetric);
-
     // Colores semáforo
     const color = (() => {
       const diff = projectedPrice - currentPrice;
@@ -87,21 +71,16 @@ export default class PanelOfProjections extends Component {
       }
       return "warning";
     })();
-    const hasReal = (() => {
-      if (typeof roiReal !== "number" || isNaN(roiReal)) return false;
-      return roiReal >= 0;
-    })();
-    const colorROI = getROIColor(roiReal, roiProy, hasReal);
+    const hasReal = !!roiReal;
 
-    // Cálculo de ganancia proyectada basado en $100
+    const displayedRoi = hasReal ? roiReal : roiProy;
+    const diffPrice = projectedPrice - currentPrice;
+
     const tokensIn100usd = currentPrice > 0 ? 100 / currentPrice : 0;
     const projectedGain =
       projectedPrice != null && currentPrice > 0
         ? (projectedPrice - currentPrice) * tokensIn100usd
         : 0;
-
-    const displayedRoi = hasReal ? roiReal : roiProy;
-    const diffPrice = projectedPrice - currentPrice;
 
     return (
       <PaperP
@@ -112,7 +91,7 @@ export default class PanelOfProjections extends Component {
       >
         <div className="d-flex flex-column gap-10px" style={{ width: "100%" }}>
           <div
-            className="d-flex ai-center jc-space-between gap-10px"
+            className="d-flex ai-stretch jc-space-between gap-10px"
             style={{ width: "100%" }}
           >
             <PriceProjectionCard
@@ -138,11 +117,11 @@ export default class PanelOfProjections extends Component {
               totalBought={totalBought}
               clase={clase}
               etiqueta={etiqueta}
-              color={colorROI}
             />
           </div>
           <ProfitProjCard
-            flatNumber={projectedGain.toFixed(2)}
+            currentPrice={currentPrice}
+            projectedPrice={projectedPrice}
             loading={loadingMetrics}
             color={diffPrice > 0 ? "ok" : diffPrice < 0 ? "error" : "warning"}
           />
@@ -158,92 +137,139 @@ export default class PanelOfProjections extends Component {
 }
 
 // Tarjetas de precios (proyección y actual)
-function PriceProjectionCard({
-  priceProjection,
-  currentPrice,
-  projectionColor,
-  actualColor,
-  getPriceProjectionIcon,
-  loading,
-}) {
-  if (loading) {
+class PriceProjectionCard extends Component {
+  render() {
+    const {
+      priceProjection,
+      currentPrice,
+      projectionColor,
+      actualColor,
+      getPriceProjectionIcon,
+      loading,
+    } = this.props;
+    if (loading) {
+      return (
+        <PaperP elevation={3}>
+          <AutoSkeleton loading={true} w="50px" h="50px" />
+        </PaperP>
+      );
+    }
     return (
-      <PaperP elevation={3}>
-        <AutoSkeleton loading={true} w="50px" h="50px" />
-      </PaperP>
-    );
-  }
-  return (
-    <PaperP elevation={3} className="p-relative">
-      <div className="d-flex flex-column">
-        <TooltipNoPointerEvents title="Periodo operación">
-          <Chip
-            size="small"
-            label="5 Minutos"
-            variant="filled"
-            color="primary"
-            className="p-absolute"
-            style={{
-              top: "5px",
-              right: 0,
-              scale: "0.7",
-              color: getThemeLuminance() === "dark" ? "white" : "black",
-            }}
-          />
-        </TooltipNoPointerEvents>
-        <Typography variant="caption" color="text.secondary" className="nowrap">
-          <small>Precio</small>
-        </Typography>
-        <div className="d-flex ai-center gap-5px">
-          <PriceCard
-            title="Proyectado USD"
-            value={priceProjection}
-            value2={currentPrice}
-            icon={priceProjection && getPriceProjectionIcon()}
-            color={projectionColor}
-            loading={loading}
-          />
-          <PriceCard
-            title="Actual USD"
-            value={currentPrice}
-            value2={priceProjection}
-            icon={priceProjection && getPriceProjectionIcon()}
-            color={actualColor}
-            loading={loading}
-          />
+      <PaperP elevation={3} className="p-relative">
+        <div className="d-flex flex-column">
+          <TooltipNoPointerEvents title="Periodo operación: 5 Minutos">
+            <Chip
+              size="small"
+              label="5 Minutos"
+              variant="filled"
+              color="primary"
+              className="p-absolute"
+              style={{
+                top: "5px",
+                right: 0,
+                transform: "scale(0.6)",
+                transformOrigin: "right top",
+                color: getThemeLuminance() === "dark" ? "white" : "black",
+              }}
+            />
+          </TooltipNoPointerEvents>
+          <Typography
+            variant="caption"
+            color="text.secondary"
+            className="nowrap"
+          >
+            <small>Precio</small>
+          </Typography>
+          <div className="d-flex ai-center gap-5px">
+            <TooltipNoPointerEvents
+              title={`Actual USD: ${window["format"]["number"][
+                "toCoinDifference"
+              ](currentPrice, priceProjection)}`}
+            >
+              <span>
+                <PriceCard
+                  title="Actual USD"
+                  value={currentPrice}
+                  value2={priceProjection}
+                  color={actualColor}
+                  loading={loading}
+                />
+              </span>
+            </TooltipNoPointerEvents>
+            <TooltipNoPointerEvents
+              title={`Proyectado USD: ${window["format"]["number"][
+                "toCoinDifference"
+              ](priceProjection, currentPrice)}`}
+            >
+              <span>
+                <PriceCard
+                  title="Proyectado USD"
+                  value={priceProjection}
+                  value2={currentPrice}
+                  icon={priceProjection && getPriceProjectionIcon()}
+                  color={projectionColor}
+                  loading={loading}
+                />
+              </span>
+            </TooltipNoPointerEvents>
+          </div>
         </div>
-      </div>
-    </PaperP>
-  );
-}
-
-function PriceCard({ title, value, value2, icon, color, loading }) {
-  const { diffNumberFormatCurrent } = window;
-
-  if (loading) {
-    return (
-      <PaperP elevation={3} p_min={2} p_max={10} className="d-flex-col">
-        <AutoSkeleton loading width="100%" height="50px" />
       </PaperP>
     );
   }
-  return (
-    <PaperP p_min={2} p_max={10} className="d-flex-col">
-      <Typography color="text.secondary" variant="caption">
-        <small>{title}</small>
-      </Typography>
-      <Typography color={color} variant="caption">
-        <small className="nowrap d-flex ai-center">
-          {icon && <>{icon}&nbsp;&nbsp;</>}
-          {value != null ? diffNumberFormatCurrent(value, value2) : "---"}
-        </small>
-      </Typography>
-    </PaperP>
-  );
 }
 
-function ProfitProjCard({ flatNumber: profitValue, loading, color }) {
-  if (loading) {
+class PriceCard extends Component {
+  render() {
+    const { title, value, value2, icon, color, loading } = this.props;
+    if (loading) {
+      return (
+        <PaperP p_min={2} p_max={10} className="d-flex-col">
+          <AutoSkeleton loading width="100%" height="50px" />
+        </PaperP>
+      );
+    }
+    return (
+      <PaperP p_min={2} p_max={10} className="d-flex-col">
+        <Typography color="text.secondary" variant="caption">
+          <small>{title}</small>
+        </Typography>
+        <Typography color={color} variant="caption">
+          <span className="nowrap d-flex ai-center">
+            {icon && <>{icon}&nbsp;&nbsp;</>}
+            {value != null
+              ? window["format"]["number"]["toCoinDifference"](value, value2)
+              : "---"}
+          </span>
+        </Typography>
+      </PaperP>
+    );
+  }
+}
+
+class ProfitProjCard extends Component {
+  render() {
+    const { currentPrice, projectedPrice, loading, color } = this.props;
+    if (loading) {
+      return (
+        <PaperP
+          className={`d-flex ${fluidCSS()
+            .ltX(480, { width: "calc(33% - 5px)" })
+            .end()}`}
+          elevation={3}
+        >
+          <AutoSkeleton loading={true} w="100%" h="80px" />
+        </PaperP>
+      );
+    }
+    const projectedGainUSD = this.calculateProjectedGain(
+      100,
+      currentPrice,
+      projectedPrice
+    );
+    const valueProfitProjected = projectedGainUSD.toFixed(2);
+    const labelTitle = "Beneficio estimado";
+
     return (
       <PaperP
         className={`d-flex ${fluidCSS()
@@ -253,126 +279,167 @@ function ProfitProjCard({ flatNumber: profitValue, loading, color }) {
         p_min="5"
         p_max="10"
       >
-        <AutoSkeleton loading={true} w="100%" h="80px" />
+        <div className="d-flex flex-column gap-5px">
+          <TooltipNoPointerEvents
+            title={
+              !!projectedGainUSD &&
+              `${labelTitle}: ${valueProfitProjected} USD por cada 100 USD`
+            }
+          >
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              className="mb-5px nowrap"
+            >
+              {labelTitle} (100 USD)
+            </Typography>
+            <Typography color={color}>
+              {["---", `${valueProfitProjected} USD`][+!!projectedGainUSD]}
+            </Typography>
+          </TooltipNoPointerEvents>
+        </div>
       </PaperP>
     );
   }
-  const F = +profitValue;
-  return (
-    <PaperP
-      className={`d-flex ${fluidCSS()
-        .ltX(480, { width: "calc(33% - 5px)" })
-        .end()}`}
-      elevation={3}
-      p_min="5"
-      p_max="10"
-    >
-      <div className="d-flex flex-column gap-5px">
-        <Typography
-          variant="caption"
-          color="text.secondary"
-          className="mb-5px nowrap"
-        >
-          Beneficio proyectado (100 USD)
-        </Typography>
-        <Typography color={color}>{["---", `${F} USD`][+!!F]}</Typography>
-      </div>
-    </PaperP>
-  );
+
+  // Calcula ganancia proyectada para un monto dado (USD)
+  calculateProjectedGain(amountUSD, currentPrice, projectedPrice) {
+    if (!projectedPrice || currentPrice <= 0) {
+      return 0;
+    }
+    const tokens = amountUSD / currentPrice;
+    const diffProfit = projectedPrice - currentPrice;
+    return diffProfit * tokens;
+  }
 }
 
 // Tarjeta de ROI
-function ROICard({
-  roi,
-  isReal = false,
-  loading,
-  totalBought,
-  clase,
-  etiqueta,
-  color,
-}) {
-  if (loading) {
+class ROICard extends Component {
+  render() {
+    const {
+      roi,
+      isReal = false,
+      loading,
+      totalBought,
+      clase,
+      etiqueta,
+    } = this.props;
+    if (loading) {
+      return (
+        <PaperP
+          className={`d-center ${fluidCSS()
+            .ltX(480, { width: "calc(33% - 5px)" })
+            .end()}`}
+          elevation={3}
+        >
+          <AutoSkeleton loading={true} w="50px" h="50px" />
+        </PaperP>
+      );
+    }
+    const valid = !!roi && typeof roi === "number" && !isNaN(roi);
+    const displayText = valid ? `${roi.toFixed(2)}%` : "---";
+    const label = "ROI " + (valid ? (isReal ? "Real" : "Proyectado") : "");
+    const computedColor = (() => {
+      // Color según ROI proyectado (abierta) o real (cerrada)
+      if (roi == 0) {
+        return;
+      }
+      if (!isReal) {
+        return roi >= 0 ? "warning" : "error";
+      }
+      return roi >= 0 ? "success" : "warning";
+    })();
+    const cardOpacity = valid ? 1 : 0.5;
     return (
-      <PaperP
-        className={`d-center ${fluidCSS()
-          .ltX(480, { width: "calc(33% - 5px)" })
-          .end()}`}
-        elevation={3}
-        p_min="5"
-        p_max="10"
+      <TooltipNoPointerEvents
+        title={(() => {
+          if (!totalBought) {
+            return "No hay compra";
+          }
+          if (!valid) return "ROI no válido";
+          return `${label}: ${displayText} (${clase})`;
+        })()}
       >
-        <AutoSkeleton loading={true} w="50px" h="50px" />
-      </PaperP>
+        <PaperP
+          className={`d-flex ai-stretch p-relative`}
+          elevation={3}
+          sx={{ opacity: cardOpacity, minWidth: "100px" }}
+        >
+          <ClaseROI />
+          <ContentText />
+        </PaperP>
+      </TooltipNoPointerEvents>
     );
-  }
-  const valid = !!roi && typeof roi === "number" && !isNaN(roi);
-  const displayText = valid ? `${(+roi).toFixed(2)}%` : "---";
-  const cardOpacity = valid ? 1 : 0.5;
-  const label = "ROI " + (valid ? (isReal ? "Real" : "Proyectado") : "");
-  return (
-    <TooltipNoPointerEvents
-      title={(() => {
-        if (!totalBought) {
-          return "No hay compra";
-        }
-        if (!valid) return "ROI no válido";
-        return `${label}: ${displayText}`;
-      })()}
-    >
-      <PaperP
-        className={`d-flex p-relative ${fluidCSS()
-          .ltX(480, { width: "calc(33% - 5px)" })
-          .end()}`}
-        elevation={3}
-        p_min="5"
-        p_max="10"
-        sx={{ opacity: cardOpacity, minWidth: "100px" }}
-      >
-        <TooltipNoPointerEvents title={etiqueta}>
-          <Chip
-            label={<span className="metric-label">{clase}</span>}
-            size="small"
-            variant="filled"
-            style={{
-              position: "absolute",
-              top: "5px",
-              right: "5px",
-              transform: "scale(0.7)",
-              color: getThemeLuminance() === "dark" ? "white" : "black",
-              fontWeight: "bold",
-              backgroundColor: (() => {
-                return (
-                  {
-                    A: "green",
-                    B: "yellow",
-                    C: "orange",
-                    D: "red",
-                  }[clase] ?? "red"
-                );
-              })(),
-            }}
-          />
-        </TooltipNoPointerEvents>
-        <div className="d-flex flex-column gap-5px">
+
+    function ContentText() {
+      return (
+        <div className="d-flex flex-column jc-space-evenly gap-5px">
+          <LabelROI />
+          <div className="d-flex ai-center gap-5px">
+            <ValueROI />
+          </div>
+        </div>
+      );
+
+      function ValueROI() {
+        return (
+          <>
+            {valid && <CurrencyExchangeIcon fontSize="small" />}
+            <Typography variant="caption" color={computedColor}>
+              {displayText}
+            </Typography>
+          </>
+        );
+      }
+
+      function LabelROI() {
+        return (
           <Typography
             variant="caption"
             color="text.secondary"
             className="mb-5px nowrap"
           >
-            {label}
+            <small>
+              <small>{label}</small>
+            </small>
           </Typography>
-          <div className="d-flex ai-center gap-5px">
-            {valid && <CurrencyExchangeIcon />}
-            <span>{displayText}</span>
-          </div>
-        </div>
-      </PaperP>
-    </TooltipNoPointerEvents>
-  );
-}
+        );
+      }
+    }
 
-function getROIColor(roiReal, roiProy, hasReal) {
-  if (hasReal) return roiReal >= 0 ? "ok" : "error";
-  // proyección de ROI
-  return roiProy >= 0 ? "warning" : "error";
+    function ClaseROI() {
+      return (
+        <>
+          {!!clase && (
+            <TooltipNoPointerEvents title={etiqueta}>
+              <Chip
+                label={<span className="metric-label">{clase}</span>}
+                size="small"
+                variant="filled"
+                style={{
+                  position: "absolute",
+                  top: "5px",
+                  right: "5px",
+                  transform: "scale(0.5)",
+                  transformOrigin: "right center",
+                  color: getThemeLuminance() === "dark" ? "white" : "black",
+                  fontWeight: "bold",
+                  backgroundColor: (() => {
+                    return (
+                      {
+                        A: "green",
+                        B: "yellow",
+                        C: "orange",
+                        D: "red",
+                      }[clase] ?? "red"
+                    );
+                  })(),
+                }}
+              />
+            </TooltipNoPointerEvents>
+          )}
+        </>
+      );
+    }
+  }
 }

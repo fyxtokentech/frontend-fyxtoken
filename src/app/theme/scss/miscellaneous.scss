@@ -212,11 +212,15 @@
     purple
     pink,
     deeppink,
+    red,
     crimson,
     darkred,
     orange,
   )
 {
+  .b-#{$color}{
+    border: 1px solid $color;
+  }
   .bg-#{$color} {
     background-color: $color;
   }

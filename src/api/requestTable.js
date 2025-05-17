@@ -38,64 +38,86 @@ function table2obj(table) {
   );
 }
 
-export const getResponse = async ({
-  setError,
+const response_singleton = {};
+
+export const getResponse = ({
   checkErrors = () => null,
+  setError = () => {},
   setLoading = () => {},
   setApiData = () => {},
   buildEndpoint,
-  mock_default,
   service = "robot_backend",
+  mock_default,
 }) => {
-  let result;
-  const validationError = checkErrors();
-  setError(validationError);
-  if (validationError) return;
-  const { context } = global.configApp;
-  const requestUrl = resolveUrl(buildEndpoint, service);
-
-  if (context === "dev") {
-    console.log(`[getResponse] [DEV] Fetching URL: ${requestUrl}`);
+  const error = checkErrors();
+  if (error) {
+    setError(error);
+    return Promise.reject(error);
   }
-  const axiosConfig = {
-    headers: { Accept: "application/json", "Content-Type": "application/json" },
-    ...(context !== "dev" && { withCredentials: false }),
-  };
-  setLoading(true);
-  try {
-    const { data: rawData } = await axios.get(requestUrl, axiosConfig);
-    if (Array.isArray(rawData)) {
-      result = table2obj(rawData);
-      console.log("[getResponse] Result: ", requestUrl, result);
-      setApiData(result);
-      return result;
-    } else {
-      throw new Error("Formato de respuesta inesperado");
-    }
-  } catch (err) {
-    if (context === "dev") {
-      console.log("getResponse [DEV] - Error detected, using mock data");
-    }
-    console.error(err);
-    if (
-      context === "dev" &&
-      mock_default &&
-      Array.isArray(mock_default.content)
-    ) {
-      console.log("[getResponse] [DEV] - Using mock data after error");
-      result = table2obj(mock_default.content);
-      setApiData(result);
-      return result;
-    } else {
-      setError("Error al cargar las operaciones.");
-      result = [];
-      setApiData(result);
-      return result;
-    }
-  } finally {
-    setLoading(false);
-  }
+  const url = resolveUrl(buildEndpoint, service);
+  console.log(`[getResponse] resolved URL: ${url} service: ${service}`);
+  return getSingletonResponse({
+    url,
+    setLoading,
+    setApiData,
+    setError,
+    mock_default,
+  });
 };
+
+function getSingletonResponse({
+  url,
+  setLoading = () => {},
+  setApiData = () => {},
+  setError = () => {},
+  mock_default,
+}) {
+  if (!response_singleton[url]) {
+    console.log(`[getSingletonResponse] not is loaded, fetching URL: ${url}`);
+    setLoading(true);
+    response_singleton[url] = axios
+      .get(url, {
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        ...(global.configApp.context !== "dev" && { withCredentials: false }),
+      })
+      .then(({ data }) => {
+        console.log(`[getSingletonResponse]`, { data });
+        if (!Array.isArray(data)) throw new Error("Unexpected response format");
+        const result = table2obj(data);
+        setApiData(result);
+        return result;
+      })
+      .catch((err) => {
+        console.error(`[getSingletonResponse]`, { err });
+        if (
+          global.configApp.context === "dev" &&
+          mock_default &&
+          Array.isArray(mock_default.content)
+        ) {
+          const fallback = table2obj(mock_default.content);
+          setApiData(fallback);
+          return fallback;
+        }
+        setError(err.message || err);
+        return Promise.reject(err);
+      })
+      .finally(() => {
+        setLoading(false);
+        // Limpiar tras 20 segundos
+        setTimeout(() => {
+          delete response_singleton[url];
+        }, 20000);
+      });
+  } else {
+    console.log(
+      `[getSingletonResponse] singleton already exists for URL: ${url}`
+    );
+  }
+  return response_singleton[url];
+}
 
 export const request = async ({
   method = "post", // "post" o "put"
@@ -109,6 +131,7 @@ export const request = async ({
 }) => {
   setError(null);
   const requestUrl = resolveUrl(buildEndpoint, service);
+  console.log(service);
   console.log(
     `[request] Enviando ${method.toUpperCase()} a ${requestUrl} con data:`,
     payload

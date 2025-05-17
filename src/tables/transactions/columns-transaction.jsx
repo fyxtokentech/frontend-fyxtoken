@@ -74,7 +74,7 @@ const retorno = {
       field: "price",
       headerName: "Precio",
       description: "Precio por unidad.",
-      ...modelsFormat.currentBitcoin,
+      ...modelsFormat.currentCoin,
     },
     {
       field: "rsi",
@@ -86,13 +86,13 @@ const retorno = {
       field: "quantity",
       headerName: "Cantidad",
       description: "Cantidad de moneda comprada o vendida.",
-      ...modelsFormat.currentBitcoin,
+      ...modelsFormat.currentCoin,
     },
     {
       field: "total",
       headerName: "Total",
       description: "Total de la operación.",
-      ...modelsFormat.currentBitcoin,
+      ...modelsFormat.currentCoin,
     },
     {
       inTable: false,
@@ -118,13 +118,13 @@ const retorno = {
       field: "limit_to_buy",
       headerName: "Límite de compra",
       description: "Límite máximo para comprar en esta transacción.",
-      ...modelsFormat.currentBitcoin,
+      ...modelsFormat.currentCoin,
     },
     {
       field: "limit_to_sell",
       headerName: "Límite de venta",
       description: "Límite máximo para vender en esta transacción.",
-      ...modelsFormat.currentBitcoin,
+      ...modelsFormat.currentCoin,
     },
     {
       field: "start_date_transaction",

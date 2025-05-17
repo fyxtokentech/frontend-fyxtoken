@@ -5,46 +5,49 @@ import { generate_selects } from "@recurrent";
 import fluidCSS from "@jeff-aporta/fluidcss";
 import { Typography } from "@mui/material";
 
-export default function PanelCoinSelected({
-  currency,
-  coinsToOperate,
-  coinsToDelete,
-  loadingCoinToOperate,
-  errorCoinOperate,
-  setErrorCoinOperate,
-  user_id,
-  coinsOperatingList,
-  setUpdateAvailable,
-  viewTable,
-  setViewTable,
-  balanceUSDT,
-  balanceCoin,
-}) {
-  return (
-    <PaperP elevation={3} p_min="5" p_max="10">
-      <div className="gap-10px flex-column">
-        <CoinSelectionOperate
-          {...{
-            currency,
-            coinsToOperate,
-            coinsToDelete,
-            loadingCoinToOperate,
-            errorCoinOperate,
-            setErrorCoinOperate,
-            user_id,
-            coinsOperatingList,
-            setUpdateAvailable,
-            viewTable,
-            setViewTable,
-          }}
-        />
-        <div className="d-flex jc-space-evenly flex-row gap-10px">
-          <BalanceUSDTCard balance={balanceUSDT} />
-          <BalanceCoinCard balance={balanceCoin} currency={currency.current} />
+export default class PanelCoinSelected extends React.Component {
+  render() {
+    const {
+      currency,
+      coinsToOperate,
+      coinsToDelete,
+      loadingCoinToOperate,
+      errorCoinOperate,
+      setErrorCoinOperate,
+      user_id,
+      coinsOperatingList,
+      setUpdateAvailable,
+      viewTable,
+      setViewTable,
+      balanceUSDT,
+      balanceCoin,
+    } = this.props;
+    return (
+      <PaperP elevation={3}>
+        <div className="gap-10px flex-column">
+          <CoinSelectionOperate
+            {...{
+              currency,
+              coinsToOperate,
+              coinsToDelete,
+              loadingCoinToOperate,
+              errorCoinOperate,
+              setErrorCoinOperate,
+              user_id,
+              coinsOperatingList,
+              setUpdateAvailable,
+              viewTable,
+              setViewTable,
+            }}
+          />
+          <div className="d-flex jc-space-evenly flex-row gap-10px">
+            <BalanceUSDTCard balance={balanceUSDT} />
+            <BalanceCoinCard balance={balanceCoin} currency={currency.current} />
+          </div>
         </div>
-      </div>
-    </PaperP>
-  );
+      </PaperP>
+    );
+  }
 }
 
 function CoinSelectionOperate({
@@ -67,7 +70,7 @@ function CoinSelectionOperate({
   );
 
   return (
-    <PaperP className="d-center" p_min="5" p_max="10">
+    <PaperP className="d-center">
       <AutoSkeleton loading={loadingCoinToOperate} w="200px" h="48px">
         {generate_selects([
           {

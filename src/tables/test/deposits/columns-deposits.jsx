@@ -26,7 +26,7 @@ const columns_deposits = [
     field: "amount", // 2. Cuánto se depositó
     headerName: "Monto",
     description: "Cantidad de moneda depositada.",
-    ...modelsFormat.currentBitcoin, // Formato de moneda (usando el existente como referencia)
+    ...modelsFormat.currentCoin, // Formato de moneda (usando el existente como referencia)
   },
   {
     field: "deposit_date", // Nueva columna de fecha de depósito

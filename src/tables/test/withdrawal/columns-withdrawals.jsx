@@ -28,13 +28,13 @@ const columns_withdrawals = [
     field: "amount", // 2. Cuánto se retiró
     headerName: "Monto",
     description: "Cantidad de moneda retirada.",
-    ...modelsFormat.currentBitcoin, // Formato de moneda
+    ...modelsFormat.currentCoin, // Formato de moneda
   },
   {
     field: "fee", // 3. Comisión por el retiro
     headerName: "Comisión",
     description: "Comisión cobrada por el retiro.",
-    ...modelsFormat.currentBitcoin, // Formato de moneda
+    ...modelsFormat.currentCoin, // Formato de moneda
   },
   {
     field: "withdrawal_date", // 4. Fecha de procesamiento

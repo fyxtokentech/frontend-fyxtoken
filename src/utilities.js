@@ -23,7 +23,7 @@ function centrar_verticalmente_scroll(elemento){
   });
 }
 
-export {
+export default {
   isTouchDevice,
   isMobile,
   centrar_verticalmente_scroll
