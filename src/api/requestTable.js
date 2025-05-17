@@ -38,7 +38,9 @@ function table2obj(table) {
   );
 }
 
-const response_singleton = {};
+const responsePromises = {};
+const responseResults = {};
+const responseErrors = {};
 
 export const getResponse = ({
   checkErrors = () => null,
@@ -72,10 +74,10 @@ function getSingletonResponse({
   setError = () => {},
   mock_default,
 }) {
-  if (!response_singleton[url]) {
-    console.log(`[getSingletonResponse] not is loaded, fetching URL: ${url}`);
+  if (!responsePromises[url]) {
+    console.log(`[getSingletonResponse] fetching URL: ${url}`);
     setLoading(true);
-    response_singleton[url] = axios
+    responsePromises[url] = axios
       .get(url, {
         headers: {
           Accept: "application/json",
@@ -87,6 +89,7 @@ function getSingletonResponse({
         console.log(`[getSingletonResponse]`, { data });
         if (!Array.isArray(data)) throw new Error("Unexpected response format");
         const result = table2obj(data);
+        responseResults[url] = result;
         setApiData(result);
         return result;
       })
@@ -101,22 +104,31 @@ function getSingletonResponse({
           setApiData(fallback);
           return fallback;
         }
+        responseErrors[url] = err;
         setError(err.message || err);
-        return Promise.reject(err);
+        throw err;
       })
       .finally(() => {
         setLoading(false);
-        // Limpiar tras 20 segundos
         setTimeout(() => {
-          delete response_singleton[url];
+          delete responsePromises[url];
+          delete responseResults[url];
+          delete responseErrors[url];
         }, 20000);
       });
   } else {
-    console.log(
-      `[getSingletonResponse] singleton already exists for URL: ${url}`
-    );
+    console.log(`[getSingletonResponse] promise already exists for URL: ${url}`);
+    // Reaplicar datos previos para mantener flujo
+    if (responseResults[url]) {
+      console.log(`[getSingletonResponse] using cached result for URL: ${url}`);
+      setApiData(responseResults[url]);
+    } else if (responseErrors[url]) {
+      console.log(`[getSingletonResponse] using cached error for URL: ${url}`);
+      const err = responseErrors[url];
+      setError(err.message || err);
+    }
   }
-  return response_singleton[url];
+  return responsePromises[url];
 }
 
 export const request = async ({
