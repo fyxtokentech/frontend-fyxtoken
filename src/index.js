@@ -14,8 +14,18 @@ import { PaperP } from "@containers";
 
 init();
 
-const componentsContext = require.context("./views", true, /\.jsx$/);
+(() => {
+  try {
+    const themeName = localStorage.getItem("theme-name");
+    if (!themeName) {
+      localStorage.setItem("theme-name", "main");
+    }
+  } catch (error) {
+    console.error("Error al cargar el tema:", error);
+  }
+})();
 
+const componentsContext = require.context("./views", true, /\.jsx$/);
 
 // Cargar usuario automáticamente desde localStorage en window.currentUser
 const storedUser = JSON.parse(localStorage.getItem("user") || "null");

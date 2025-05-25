@@ -1,6 +1,5 @@
 import JS2CSS from "@jeff-aporta/js2css";
 
-
 const {
   verde_cielo,
   verde_lima,
@@ -39,7 +38,7 @@ JS2CSS.insertStyle({
 
 export const mapFilterTheme = {
   skygreen: (rotation) => rotation(verde_cielo),
-  blacknwhite: "grayscale(1)",
+  blacknwhite: () => "grayscale(1)",
   lemongreen: (rotation) => rotation(verde_lima),
   springgreen: (rotation) => rotation(springgreen),
 };

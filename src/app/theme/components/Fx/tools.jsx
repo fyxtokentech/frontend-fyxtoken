@@ -21,7 +21,10 @@ function discriminadorColor(
   const themeName = getThemeName();
   return {
     filter: (() => {
-      let r = mapFilterTheme[themeName](rotation) || "";
+      let r = mapFilterTheme[themeName] || "";
+      if (r) {
+        r = r(rotation);
+      }
       const extras = [];
       Object.entries(extra).forEach(([key, value]) => {
         if (key == "*") {
