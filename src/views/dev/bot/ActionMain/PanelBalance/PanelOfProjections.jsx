@@ -1,45 +1,57 @@
 import React, { Component } from "react";
-import { PaperP } from "@containers";
-import { getResponse } from "@api/requestTable";
+
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import TrendingDownIcon from "@mui/icons-material/TrendingDown";
 import TrendingFlatIcon from "@mui/icons-material/TrendingFlat";
-import Typography from "@mui/material/Typography";
-import { AutoSkeleton } from "@components/controls";
-import fluidCSS from "@jeff-aporta/fluidcss";
-import { Chip } from "@mui/material";
 import CurrencyExchangeIcon from "@mui/icons-material/CurrencyExchange";
+
+import { Chip } from "@mui/material";
+import Typography from "@mui/material/Typography";
+
+import { PaperP } from "@containers";
+import { AutoSkeleton } from "@components/controls";
+
+import fluidCSS from "@jeff-aporta/fluidcss";
+
 import { TooltipNoPointerEvents } from "@recurrent";
 import { getThemeLuminance } from "@jeff-aporta/theme-manager";
+
+const panelProjectionsState = {
+  coinMetric: {},
+  loadingMetrics: false,
+  errorMetrics: null,
+};
 
 export default class PanelOfProjections extends Component {
   constructor(props) {
     super(props);
-    this.state = {
-      coinMetric: {},
-      loadingMetrics: false,
-      errorMetrics: null,
-    };
+    this.state = panelProjectionsState;
+    this.isAlive = true;
   }
 
   // Propiedad de clase para obtener métricas con binding de setState
-  fetchMetrics = async (
-    props = this.props,
-    setState = (state) => this.setState(state)
-  ) => {
-    return window.fetchMetrics(props, setState);
+  fetchMetrics = async () => {
+    await window.fetchMetrics(this.props, (state) => {
+      Object.assign(panelProjectionsState, state);
+      this.setState(panelProjectionsState);
+      this.forceUpdate();
+    });
   };
 
   componentDidMount() {
+    this.recursiveUpdate();
+  }
+
+  recursiveUpdate() {
+    if (!this.isAlive) {
+      return;
+    }
     this.fetchMetrics();
-    this.metricsInterval = setInterval(
-      () => this.fetchMetrics(),
-      310000
-    );
+    setTimeout(this.recursiveUpdate, 310000);
   }
 
   componentWillUnmount() {
-    clearInterval(this.metricsInterval);
+    this.isAlive = false;
   }
 
   render() {

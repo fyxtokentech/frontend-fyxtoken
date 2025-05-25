@@ -13,28 +13,15 @@ const {
   springgreen,
 } = global.identity.colors;
 
-function discriminadorColor(extra = "") {
+function discriminadorColor(
+  extra = {},
+  mapFilterTheme = window["mapFilterTheme"] ?? {},
+  colorBase = morado_brillante
+) {
   const themeName = getThemeName();
   return {
     filter: (() => {
-      let r;
-      switch (themeName) {
-        case "skygreen":
-          r = rotación(verde_cielo);
-          break;
-          case "blacknwhite":
-            r = "grayscale(1)";
-            break;
-        case "lemongreen":
-          r = rotación(verde_lima);
-          break;
-        case "springgreen":
-          r = rotación(springgreen);
-          break;
-        default:
-          r = "";
-          break;
-      }
+      let r = mapFilterTheme[themeName](rotation) || "";
       const extras = [];
       Object.entries(extra).forEach(([key, value]) => {
         if (key == "*") {
@@ -49,9 +36,9 @@ function discriminadorColor(extra = "") {
     })(),
   };
 
-  function rotación(color) {
+  function rotation(color) {
     return `hue-rotate(${parseInt(
-      -morado_brillante.hue() + color.hue()
+      -colorBase.hue() + color.hue()
     )}deg) grayscale(0.5)`;
   }
 }

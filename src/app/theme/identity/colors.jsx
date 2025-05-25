@@ -1,6 +1,7 @@
 import { register_colors, JS2CSS, Color } from "@jeff-aporta/theme-manager";
 
 global.identity ??= { colors: {} };
+window.identity ??= { colors: {} };
 
 const identity = (() => {
   const primaries = {
@@ -36,6 +37,7 @@ const identity = (() => {
   };
 
   Object.assign(global.identity.colors, all);
+  Object.assign(window.identity.colors, all);
   register_colors(all);
 
   return {

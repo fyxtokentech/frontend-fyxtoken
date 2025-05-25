@@ -6,7 +6,7 @@ import { ThemeSwitcher } from "@templates";
 import { DivM, PaperP } from "@containers";
 import { DynTable, genAllColumns } from "@components/GUI/DynTable/DynTable";
 
-import { getResponse } from "@api/requestTable";
+import { http_get_coins } from "@api/mocks";
 
 import {
   Button,
@@ -40,8 +40,6 @@ export default function PanelRobot() {
   );
   const [view, setView] = useState(driverParams.get("action-id") || "main");
 
-  console.log("PanelRobot render:", { view, viewTable });
-
   const [operationTrigger, setOperationTrigger] = useState(null);
   const currency = useRef(driverParams.get("coin") || "");
 
@@ -61,8 +59,6 @@ export default function PanelRobot() {
 
   const { user_id } = window["currentUser"];
 
-  console.log(user_id)
-
   // Sync view and viewTable to URL params
   useEffect(() => {
     driverParams.set("action-id", view);
@@ -72,16 +68,14 @@ export default function PanelRobot() {
   useEffect(() => {
     if (coinsToOperate.current.length === 0) {
       setLoadingCoinToOperate(true);
-      getResponse({
+      http_get_coins({
         setError: setErrorCoinOperate,
-        checkErrors: () => null,
         setLoading: setLoadingCoinToOperate,
         setApiData: (data) => {
           coinsToOperate.current = data;
           const paramCoin = driverParams.get("coin");
           if (!paramCoin && coinsToOperate.current.length > 0) {
             const first = coinsToOperate.current[0];
-            console.log(first);
             const key = global.getCoinKey(first);
             currency.current = key;
             driverParams.set("coin", key);
@@ -92,14 +86,6 @@ export default function PanelRobot() {
           coinsOperatingList.current = data.filter(
             (coin) => coin.status === "A"
           );
-        },
-        buildEndpoint: ({ baseUrl }) => `${baseUrl}/coins/${user_id}`,
-        mock_default: {
-          content: [
-            ["symbol", "id"],
-            ["BTC", "1"],
-            ["ETH", "2"],
-          ],
         },
       });
     }

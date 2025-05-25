@@ -2,6 +2,8 @@ import React, { useEffect, useRef, useState } from "react";
 
 import JS2CSS from "@jeff-aporta/js2css";
 
+import fluidCSS from "@jeff-aporta/fluidcss";
+
 import {
   isDark,
   themized,
@@ -26,154 +28,35 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
-import fluidCSS from "@jeff-aporta/fluidcss";
+
+import {
+  DialogTrigger,
+  IconButtonWithTooltip,
+  GhostTooltip,
+  FormContainer,
+  TitleInfo,
+  CaptionWrapper,
+  InputList,
+  LabeledInput,
+  CustomSelectList,
+  CustomSelect,
+  PageTitle,
+  Info,
+  StyledChip,
+} from "@jeff-aporta/mui-custom-components";
 
 const PUBLIC_URL = process.env.PUBLIC_URL;
-
-function TooltipIconButton({ title, disabled, onClick, icon, ...rest_props }) {
-  return (
-    <div {...rest_props} className={rest_props.className ?? ""}>
-      <TooltipNoPointerEvents
-        title={typeof title === "string" ? title : title()}
-        placement="left"
-      >
-        <div className="d-inline-block">
-          <IconButton
-            disabled={
-              typeof disabled == "string"
-                ? disabled
-                : typeof disabled == "boolean"
-                ? disabled
-                : typeof disabled == "function"
-                ? disabled()
-                : false
-            }
-            onClick={onClick}
-          >
-            {icon}
-          </IconButton>
-        </div>
-      </TooltipNoPointerEvents>
-    </div>
-  );
-}
 
 function ImageLocal(props) {
   const { src, ...rest } = props;
   return <img {...{ alt: "", ...rest }} src={`${PUBLIC_URL}/${src}`} />;
 }
 
-function BoxForm(props) {
-  const refForm = useRef();
-  const { onSubmit, ...rest } = props;
-  const [alert, setAlert] = useState({});
-  const [open, setOpen] = React.useState(false);
-
-  function notify(response) {
-    setOpen(true);
-    setAlert(response);
-  }
-
+function TooltipNoPointerEvents({ children, ...props }) {
   return (
-    <Box
-      {...rest}
-      ref={refForm}
-      component="form"
-      onSubmit={async (e) => {
-        e.preventDefault();
-        const form = e.target;
-        const formData = new FormData(form);
-        const data = Object.fromEntries(formData.entries());
-        if (onSubmit) {
-          const response = await onSubmit(e, data, notify, () => form.reset());
-          if (response) {
-            notify(response);
-            setTimeout(() => {
-              setOpen(false);
-            }, 5000);
-          }
-        }
-      }}
-    >
-      <Collapse in={open}>
-        <Alert
-          variant={isDark() ? "outlined" : "filled"}
-          severity={alert.severity}
-          icon={alert.icon}
-        >
-          {alert.message}
-        </Alert>
-        <br />
-      </Collapse>
-      {props.children}
-    </Box>
-  );
-}
-
-function TitleInfo(props) {
-  const { title, information, variant } = props;
-  return (
-    <Typography variant={variant ?? "h6"}>
-      {title}
-      <Info
-        placement="right"
-        className="ml-20px"
-        title_text={
-          <>
-            <div style={{ opacity: 0.8, fontSize: "10px" }} className="mb-20px">
-              <Chip label="Información" variant="outlined" />
-            </div>
-            {title}
-          </>
-        }
-        title={information}
-      />
-    </Typography>
-  );
-}
-
-function TooltipNoPointerEvents(props) {
-  return <Tooltip {...props} PopperProps={{ sx: { pointerEvents: "none" } }} />;
-}
-
-function Info(props) {
-  const [, setWindowWidth] = useState(0);
-
-  useEffect(() => {
-    const handleResize = () => {
-      setWindowWidth(Math.random());
-    };
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
-  const { title, title_text, ...rest_props } = props;
-
-  return (
-    <FyxDialog
-      {...rest_props}
-      text={title}
-      title_text={title_text ?? "Información"}
-    >
-      <TooltipNoPointerEvents {...rest_props} title={title}>
-        <Typography color="secondary" className="d-inline-block c-pointer">
-          <i className="fa-solid fa-info-circle" />
-        </Typography>
-      </TooltipNoPointerEvents>
-    </FyxDialog>
-  );
-}
-
-function Captionize({ children, style = {}, className = "", label, ...rest }) {
-  return (
-    <div className={`d-flex-col jc-space-between ${className}`}>
-      <Typography variant="caption" color="secondary">
-        <small>{label}</small>
-      </Typography>
-      <FormControl variant="standard" style={style} {...rest}>
-        {children}
-      </FormControl>
-    </div>
+    <Tooltip {...props} PopperProps={{ sx: { pointerEvents: "none" } }}>
+      <div style={{ display: "inline-block" }}>{children}</div>
+    </Tooltip>
   );
 }
 
@@ -184,9 +67,9 @@ function generate_inputs(array) {
     structure.placeholder ??=
       `Ingresa ${structure.fem ? "la" : "el"} ` + structure.label.toLowerCase();
     return (
-      <Captionize key={i} label={structure.label}>
+      <CaptionWrapper key={i} label={structure.label}>
         <AnInput {...structure} />
-      </Captionize>
+      </CaptionWrapper>
     );
   });
 }
@@ -270,7 +153,7 @@ function AnSelect(props) {
   const inputlbl = `Selecciona ${fem ? "la" : "el"} ` + label.toLowerCase();
 
   return (
-    <Captionize
+    <CaptionWrapper
       id={captionizeID}
       label={label}
       color={enfasis_input}
@@ -310,7 +193,7 @@ function AnSelect(props) {
           ))}
         </Select>
       </div>
-    </Captionize>
+    </CaptionWrapper>
   );
 
   function newProps() {
@@ -389,9 +272,9 @@ export {
   generate_selects,
   TooltipNoPointerEvents,
   Info,
-  BoxForm,
+  FormContainer,
   TitleInfo,
-  TooltipIconButton,
+  IconButtonWithTooltip,
   Title,
   ChipSmall,
 };

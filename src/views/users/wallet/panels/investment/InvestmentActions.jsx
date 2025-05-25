@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import fluidCSS from "@jeff-aporta/fluidcss";
 
 import { PaperP } from "@containers";
-import { BoxForm } from "@recurrent";
+import { FormContainer } from "@recurrent";
 import {
   generate_inputs,
   generate_selects,
@@ -167,7 +167,7 @@ function InvestmentAction({
     >
       <Typography variant="h6">{title}</Typography>
       <br />
-      <BoxForm
+      <FormContainer
         component="form"
         style={{
           pointerEvents: process_transaction ? "none" : "auto",
@@ -221,7 +221,7 @@ function InvestmentAction({
             {button_action.text}
           </Button>
         </Tooltip>
-      </BoxForm>
+      </FormContainer>
     </PaperP>
   );
 }

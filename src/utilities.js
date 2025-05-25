@@ -1,4 +1,4 @@
-function isTouchDevice() {
+export function isTouchDevice() {
   return (
     "ontouchstart" in window ||
     navigator.maxTouchPoints > 0 ||
@@ -6,25 +6,30 @@ function isTouchDevice() {
   );
 }
 
-function isMobile() {
+export function isMobile() {
   return /Mobi|Android|android|iphone|ipad|ipod|opera mini|iemobile|blackberry/i.test(
     navigator.userAgent || navigator.vendor || window.opera
   );
 }
 
-function centrar_verticalmente_scroll(elemento){
+export function centrar_verticalmente_scroll(elemento) {
   const elementRect = elemento.getBoundingClientRect();
   const absoluteElementTop = elementRect.top + window.pageYOffset;
-  const middle = absoluteElementTop - (window.innerHeight / 2) + (elemento.offsetHeight / 2);
-  
+  const middle =
+    absoluteElementTop - window.innerHeight / 2 + elemento.offsetHeight / 2;
+
   window.scrollTo({
     top: middle,
-    behavior: "smooth" 
+    behavior: "smooth",
   });
 }
 
-export default {
-  isTouchDevice,
-  isMobile,
-  centrar_verticalmente_scroll
-};
+export function burn() {
+  Object.assign(window, {
+    utilities: {
+      isTouchDevice,
+      isMobile,
+      centrar_verticalmente_scroll,
+    },
+  });
+}

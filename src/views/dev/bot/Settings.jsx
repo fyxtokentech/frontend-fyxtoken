@@ -67,6 +67,8 @@ import Accordion from "@mui/material/Accordion";
 import AccordionSummary from "@mui/material/AccordionSummary";
 import AccordionDetails from "@mui/material/AccordionDetails";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import { useTheme } from "@mui/material/styles";
+import useMediaQuery from "@mui/material/useMediaQuery";
 
 const exchanges = ["Binance", "Bitget"];
 const exchanges_withdrawal = ["Kraken"];
@@ -175,6 +177,9 @@ export default function Settings({ setView }) {
     // setView("main");
   };
 
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+
   return (
     <>
       <Box sx={{ display: "flex", justifyContent: "flex-end", p: 1 }}>
@@ -189,30 +194,37 @@ export default function Settings({ setView }) {
         </Button>
       </Box>
       <Paper>
-        <Box sx={{ display: "flex" }} className="fullWidth ai-stretch">
-          <Box
-            component="nav"
-            sx={{
-              width: drawerWidth,
-              boxSizing: "border-box",
-              borderRight: 1,
-              borderColor: "divider",
-            }}
-          >
-            <List>
+        {isMobile && (
+          <AppBar position="static" color="default">
+            <Tabs
+              value={selectedViewSetting}
+              onChange={(e, v) => handleSelect(v)}
+              variant="scrollable"
+              scrollButtons="auto"
+            >
               {views.map((view) => (
-                <ListItem key={view.id} disablePadding>
-                  <ListItemButton
-                    selected={selectedViewSetting === view.id}
-                    onClick={() => handleSelect(view.id)}
-                  >
-                    <ListItemIcon>{view.icon}</ListItemIcon>
-                    <ListItemText primary={view.label} />
-                  </ListItemButton>
-                </ListItem>
+                <Tab key={view.id} label={view.label} icon={view.icon} value={view.id} />
               ))}
-            </List>
-          </Box>
+            </Tabs>
+          </AppBar>
+        )}
+        <Box sx={{ display: isMobile ? "block" : "flex" }} className="fullWidth ai-stretch">
+          {!isMobile && (
+            <Box sx={{ width: drawerWidth, boxSizing: 'border-box', borderRight: 1, borderColor: 'divider' }}>
+              <Tabs
+                orientation="vertical"
+                value={selectedViewSetting}
+                onChange={(e, v) => handleSelect(v)}
+                variant="scrollable"
+                scrollButtons="auto"
+                sx={{ height: '100%' }}
+              >
+                {views.map((view) => (
+                  <Tab key={view.id} label={view.label} icon={view.icon} value={view.id} />
+                ))}
+              </Tabs>
+            </Box>
+          )}
           <Box component="main" sx={{ flexGrow: 1 }}>
             {selectedViewSetting === "apis" && (
               <PaperP>

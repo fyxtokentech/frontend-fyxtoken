@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import { Button, Typography } from "@mui/material";
 import UpdateIcon from "@mui/icons-material/Cached";
-import { TooltipIconButton, TooltipNoPointerEvents } from "@recurrent";
-import { putRequest } from "@api/requestTable";
+import { IconButtonWithTooltip, TooltipNoPointerEvents } from "@recurrent";
 import PauseIcon from "@mui/icons-material/Pause";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import fluidCSS from "@jeff-aporta/fluidcss";
+import { http_put_coin_start, http_put_coin_stop } from "@api/mocks";
 
 export default function ActionButtons({
   update_available,
@@ -33,6 +33,12 @@ export default function ActionButtons({
   const monedaEnBorrado = coinsToDelete.current.some(
     (c) => getCoinKey(c) === currency.current
   );
+  const pauseDisabled = [
+    !hayMoneda,
+    !monedaYaOperando,
+    monedaEnBorrado,
+    actionInProcess,
+  ].reduce((a, b) => a || b, false);
 
   return (
     <div
@@ -116,9 +122,34 @@ export default function ActionButtons({
             <Button
               variant="contained"
               color={isPaused ? "success" : "warning"}
+              disabled={pauseDisabled}
               size="small"
               sx={{ width: 80 }}
-              onClick={() => setIsPaused(!isPaused)}
+              onClick={async () => {
+                console.log("isPaused", isPaused);
+                const coinObj = coinsToOperate.current.find(
+                  (c) => getCoinKey(c) === currency.current
+                );
+                if (!coinObj) {
+                  return;
+                }
+                setActionInProcess(true);
+                if (!isPaused) {
+                  await http_put_coin_stop({
+                    user_id,
+                    id_coin: coinObj.id,
+                    setError: setErrorCoinOperate,
+                  });
+                } else {
+                  await http_put_coin_start({
+                    user_id,
+                    id_coin: coinObj.id,
+                    setError: setErrorCoinOperate,
+                  });
+                }
+                setIsPaused(!isPaused);
+                setActionInProcess(false);
+              }}
             >
               {isPaused ? (
                 <PlayArrowIcon fontSize="small" />
@@ -153,10 +184,8 @@ export default function ActionButtons({
           setActionInProcess(true);
 
           try {
-            putRequest({
-              buildEndpoint: ({ baseUrl }) => {
-                return `${baseUrl}/coins/start/${user_id}/${coinObj.id}`;
-              },
+            const putResult = await http_put_coin_start({
+              id_coin: coinObj.id,
               setError: setErrorCoinOperate,
               willEnd,
             });
@@ -201,7 +230,7 @@ export default function ActionButtons({
 
 function UpdateButton({ update_available, setUpdateAvailable, ...rest_props }) {
   return (
-    <TooltipIconButton
+    <IconButtonWithTooltip
       {...rest_props}
       title={() =>
         update_available ? "Actualizar" : "Espera para volver a actualizar"

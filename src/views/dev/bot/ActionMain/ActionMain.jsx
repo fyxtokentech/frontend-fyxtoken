@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 
 import { PaperP } from "@containers";
-import { TooltipIconButton } from "@recurrent";
+import { IconButtonWithTooltip } from "@recurrent";
 import UpdateIcon from "@mui/icons-material/Cached";
 
 import TableOperations from "@tables/operations/TableOperations";
@@ -17,7 +17,7 @@ window["SECONDS_TO_UPDATE_AGAIN"] = 5;
 
 function UpdateButton({ update_available, setUpdateAvailable, ...rest_props }) {
   return (
-    <TooltipIconButton
+    <IconButtonWithTooltip
       {...rest_props}
       title={() =>
         update_available ? "Actualizar" : "Espera para volver a actualizar"

@@ -1,46 +1,14 @@
 import axios from "axios";
 
-const urlapi = {
-  local: {
-    robot_backend: "http://localhost:8000",
-    robot_prototype: "http://168.231.97.207:8001",
-  },
-  web: {
-    robot_backend: "http://168.231.97.207:8000",
-    robot_prototype: "http://168.231.97.207:8001",
-  },
-};
+import {
+  table2obj,
+  responseErrors,
+  responseResults,
+  responsePromises,
+  resolveUrl,
+} from "./utils";
 
-/**
- * Resolve full API URL by buildEndpoint using current context.
- */
-function resolveUrl(buildEndpoint, service = "robot_backend") {
-  const { context } = global.configApp;
-  const env =
-    global.IS_LOCAL && global.configApp.context === "dev" ? "local" : "web";
-  const base = urlapi[env][service];
-  return buildEndpoint({ baseUrl: base }).replace(/\s+/g, "");
-}
-
-/**
- * Convierte tabla (array de arrays) a array de objetos usando la primera fila como cabeceras.
- * @param {Array<Array<any>>} table
- * @returns {Array<Object>}
- */
-function table2obj(table) {
-  if (!Array.isArray(table) || table.length < 1) return [];
-  const [headers, ...rows] = table;
-  return rows.map((rowValues) =>
-    headers.reduce((obj, header, i) => {
-      obj[header] = rowValues[i];
-      return obj;
-    }, {})
-  );
-}
-
-const responsePromises = {};
-const responseResults = {};
-const responseErrors = {};
+const { CONTEXT } = window;
 
 export const getResponse = ({
   checkErrors = () => null,
@@ -49,7 +17,7 @@ export const getResponse = ({
   setApiData = () => {},
   buildEndpoint,
   service = "robot_backend",
-  mock_default,
+  mock_default = { content: [] },
 }) => {
   const error = checkErrors();
   if (error) {
@@ -83,7 +51,7 @@ function getSingletonResponse({
           Accept: "application/json",
           "Content-Type": "application/json",
         },
-        ...(global.configApp.context !== "dev" && { withCredentials: false }),
+        ...(CONTEXT !== "dev" && { withCredentials: false }),
       })
       .then(({ data }) => {
         console.log(`[getSingletonResponse]`, { data });
@@ -96,7 +64,7 @@ function getSingletonResponse({
       .catch((err) => {
         console.error(`[getSingletonResponse]`, { err });
         if (
-          global.configApp.context === "dev" &&
+          CONTEXT === "dev" &&
           mock_default &&
           Array.isArray(mock_default.content)
         ) {
@@ -117,7 +85,9 @@ function getSingletonResponse({
         }, 20000);
       });
   } else {
-    console.log(`[getSingletonResponse] promise already exists for URL: ${url}`);
+    console.log(
+      `[getSingletonResponse] promise already exists for URL: ${url}`
+    );
     // Reaplicar datos previos para mantener flujo
     if (responseResults[url]) {
       console.log(`[getSingletonResponse] using cached result for URL: ${url}`);
@@ -136,7 +106,8 @@ export const request = async ({
   buildEndpoint, // Función que construye la URL de la API.
   setError, // Función para manejar errores.
   payload = {}, // Payload para la petición.
-  willEnd = () => 0, // Callback tras éxito.
+  willStart = () => 0, // Callback antes de la petición.
+  willEnd = () => 0, // Callback al finalizar la petición.
   service = "robot_backend", // Servicio en urlapi.
   responseBodyReceived = () => {}, // Callback para recibir el body de la respuesta (success o error)
   isTable = false, // Si es true, transforma la respuesta con table2obj
@@ -150,8 +121,9 @@ export const request = async ({
   );
   const axiosConfig = {
     headers: { Accept: "application/json", "Content-Type": "application/json" },
-    ...(global.configApp.context !== "dev" && { withCredentials: false }),
+    ...(CONTEXT !== "dev" && { withCredentials: false }),
   };
+  willStart();
   try {
     const response = await axios[method.toLowerCase()](
       requestUrl,
@@ -162,7 +134,6 @@ export const request = async ({
     if (isTable) data = table2obj(data);
     console.log(`[request] Éxito respuesta de ${requestUrl}:`, data);
     responseBodyReceived(data);
-    willEnd();
     return data;
   } catch (err) {
     console.error(
@@ -172,8 +143,14 @@ export const request = async ({
     setError(err.message || `Error al ejecutar ${method.toUpperCase()}`);
     responseBodyReceived(err.response?.data || err);
     throw err;
+  } finally {
+    willEnd();
   }
 };
 
-export const postRequest = (params) => request({ ...params, method: "post" });
-export const putRequest = (params) => request({ ...params, method: "put" });
+export const postRequest = async (params) => {
+  return await request({ ...params, method: "post" });
+};
+export const putRequest = async (params) => {
+  return await request({ ...params, method: "put" });
+};

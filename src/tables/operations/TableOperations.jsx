@@ -22,30 +22,44 @@ import dayjs from "dayjs";
 
 import FilterAltIcon from "@mui/icons-material/FilterAlt";
 
+const tableOperationsState = {};
+
+const { driverParams, IS_GITHUB_IO } = global;
+
 export default class TableOperations extends Component {
   constructor(props) {
     super(props);
     this.delay = -1;
     this.loadingTableOperation = null;
-    const { driverParams, IS_GITHUB_IO } = global;
-    const [start, end] = driverParams.gets("start_date", "end_date");
-    this.state = {
-      dateRangeInit: start ? dayjs(start) : null,
-      dateRangeFin: end ? dayjs(end) : null,
-      error: null,
+    Object.assign(tableOperationsState, {
       tableData: [],
       filterApply: false,
-    };
-    // Method to update filterApply
-    this.setFilterApply = (apply) => this.setState({ filterApply: apply });
+    });
+    this.state = tableOperationsState;
   }
 
-  setError = (error) => this.setState({ error });
-  setTableData = (tableData) => this.setState({ tableData });
+  updateDatas = () => {
+    const [start, end] = driverParams.gets("start_date", "end_date");
+    this.updateState({
+      dateRangeInit: [null, dayjs(start)][+!!start],
+      dateRangeFin: [null, dayjs(end)][+!!end],
+    });
+  };
+
+  setFilterApply = (apply) => this.updateState({ filterApply: apply });
+
+  updateState(state) {
+    Object.assign(tableOperationsState, state);
+    this.setState(tableOperationsState);
+  }
+
+  setError = (error) => this.updateState({ error });
+  setTableData = (tableData) => this.updateState({ tableData });
   // Forzar re-render cuando no llegan datos
   setForceUpdate = () => this.forceUpdate();
 
   componentDidMount() {
+    this.updateDatas();
     this.invokeFetch();
   }
 
@@ -161,14 +175,14 @@ export default class TableOperations extends Component {
   }
 
   handleInitChange = (dateRangeInit) => {
-    this.setState({ dateRangeInit });
+    this.updateState({ dateRangeInit });
     if (dateRangeInit && typeof dateRangeInit.format === "function") {
       global.driverParams.set("start_date", dateRangeInit.format("YYYY-MM-DD"));
     }
   };
 
   handleFinChange = (dateRangeFin) => {
-    this.setState({ dateRangeFin });
+    this.updateState({ dateRangeFin });
     if (dateRangeFin && typeof dateRangeFin.format === "function") {
       global.driverParams.set("end_date", dateRangeFin.format("YYYY-MM-DD"));
     }

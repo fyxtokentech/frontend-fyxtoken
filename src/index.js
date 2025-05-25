@@ -12,9 +12,10 @@ import HomeIcon from "@mui/icons-material/Home";
 import { href } from "@jeff-aporta/theme-manager";
 import { PaperP } from "@containers";
 
+init();
+
 const componentsContext = require.context("./views", true, /\.jsx$/);
 
-init();
 
 // Cargar usuario automáticamente desde localStorage en window.currentUser
 const storedUser = JSON.parse(localStorage.getItem("user") || "null");

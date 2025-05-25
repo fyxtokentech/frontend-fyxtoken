@@ -9,6 +9,8 @@ import axios from "axios";
 import mock_withdrawals from "./mock-withdrawals.json";
 import columns_withdrawals from "./columns-withdrawals.jsx";
 
+const { CONTEXT } = window;
+
 export default function TableWithdrawals({
   user_id,
   showDateRangeControls = true,
@@ -46,12 +48,10 @@ export default function TableWithdrawals({
 
       // Usar la configuración global para determinar el entorno
       const baseUrl =
-        global.configApp.context === "dev" ? localApiUrl : apiBaseUrl;
+        CONTEXT === "dev" ? localApiUrl : apiBaseUrl;
 
       // Construir URL con parámetros
       const apiUrl = `${baseUrl}/withdrawals/${user_id}?start_date=${startDate}&end_date=${endDate}&page=0&limit=999999`;
-
-      console.log("Fetching withdrawals:", apiUrl);
 
       // Configuración para manejar CORS
       const config = {
@@ -60,7 +60,7 @@ export default function TableWithdrawals({
           "Content-Type": "application/json",
         },
         // Agregar configuración CORS solo para producción
-        ...(global.configApp.context !== "dev" && { withCredentials: false }),
+        ...(CONTEXT !== "dev" && { withCredentials: false }),
       };
 
       // Realizar la petición con manejo de errores
@@ -79,7 +79,7 @@ export default function TableWithdrawals({
         console.error("Error al obtener datos de retiros:", error);
         
         // En desarrollo, usar datos mock
-        if (global.configApp.context === "dev") {
+        if (CONTEXT === "dev") {
           console.log("Usando datos mock debido al error");
           setApiData(mock_withdrawals);
         } else {

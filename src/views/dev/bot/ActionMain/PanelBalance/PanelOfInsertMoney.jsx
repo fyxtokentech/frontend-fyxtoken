@@ -1,6 +1,10 @@
-import React from "react";
-import { Typography, TextField, Slider } from "@mui/material";
+import React, { useState } from "react";
+import { Typography, TextField, Slider, Button } from "@mui/material";
+import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
+import { http_put_update_investment } from "@api/mocks";
+import { toast } from "react-hot-toast";
 import { PaperP } from "@components/containers";
+import { TooltipNoPointerEvents } from "@recurrent";
 
 export default function PanelOfInsertMoney({
   inputValue,
@@ -10,6 +14,9 @@ export default function PanelOfInsertMoney({
   valuetext,
   marks,
 }) {
+  const [updating, setUpdating] = useState(false);
+  const { driverParams } = global;
+
   return (
     <PaperP
       className="d-center"
@@ -65,6 +72,37 @@ export default function PanelOfInsertMoney({
               "& .MuiSlider-markLabel": { fontSize: "0.65rem" },
             }}
           />
+        </div>
+        <div style={{ marginTop: 8, textAlign: "right" }}>
+          <TooltipNoPointerEvents title="Invertir">
+            <Button
+              variant="contained"
+              size="small"
+              startIcon={<AttachMoneyIcon />}
+              disabled={updating || !inputValue}
+              onClick={() => {
+                const coin_id = driverParams.get("id_coin");
+                http_put_update_investment({
+                  coin_id,
+                  new_value: inputValue,
+                  failure: (error) => {
+                    toast.error("Error al invertir");
+                  },
+                  successful: (data) => {
+                    toast.success("Inversión exitosa");
+                  },
+                  willStart: () => {
+                    setUpdating(true);
+                  },
+                  willEnd: () => {
+                    setUpdating(false);
+                  },
+                });
+              }}
+            >
+              Invertir
+            </Button>
+          </TooltipNoPointerEvents>
         </div>
       </div>
     </PaperP>

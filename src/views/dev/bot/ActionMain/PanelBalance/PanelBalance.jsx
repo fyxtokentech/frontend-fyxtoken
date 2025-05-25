@@ -1,23 +1,27 @@
 import React, { Component } from "react";
-import { Typography, Grid, Chip, TextField, Slider } from "@mui/material";
 import SettingsIcon from "@mui/icons-material/Settings";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import TrendingDownIcon from "@mui/icons-material/TrendingDown";
 import TrendingFlatIcon from "@mui/icons-material/TrendingFlat";
 import CurrencyExchangeIcon from "@mui/icons-material/CurrencyExchange";
+
+import { Typography, Grid, Chip, TextField, Slider } from "@mui/material";
+
 import fluidCSS from "@jeff-aporta/fluidcss";
+import { getThemeLuminance } from "@jeff-aporta/theme-manager";
+
 import {
-  TooltipIconButton,
+  IconButtonWithTooltip,
   TooltipNoPointerEvents,
   generate_selects,
 } from "@recurrent";
-import ActionButtons from "./ActionButtons";
+
 import { PaperP } from "@components/containers";
 import { AutoSkeleton } from "@components/controls";
-import CoinsOperating from "./CoinsOperating";
-import { getResponse } from "@api/requestTable";
-import { getThemeLuminance } from "@jeff-aporta/theme-manager";
+import { http_get_coin_metrics } from "@api/mocks";
 
+import ActionButtons from "./ActionButtons";
+import CoinsOperating from "./CoinsOperating";
 import PanelCoinSelected from "./PanelCoinSelected";
 import PanelOfInsertMoney from "./PanelOfInsertMoney";
 import PanelOfProjections from "./PanelOfProjections";
@@ -67,7 +71,7 @@ export default class PanelBalance extends Component {
   }
 
   settingIcon = () => (
-    <TooltipIconButton
+    <IconButtonWithTooltip
       title="Configurar"
       onClick={() => this.props.setView("settings")}
       icon={
@@ -128,84 +132,82 @@ export default class PanelBalance extends Component {
           <div>
             <div>
               <div className={`d-flex ai-center jc-space-between`}>
-                {hayMoneda && (
+                <Grid
+                  container
+                  direction="row"
+                  spacing={1}
+                  alignItems="stretch"
+                  justifyContent="space-between"
+                  wrap="wrap"
+                >
                   <Grid
-                    container
-                    direction="row"
-                    spacing={1}
-                    alignItems="stretch"
-                    justifyContent="space-between"
-                    wrap="wrap"
+                    item
+                    xs={12}
+                    sm={12}
+                    md={2.6}
+                    className="d-flex ai-stretch"
                   >
-                    <Grid
-                      item
-                      xs={12}
-                      sm={12}
-                      md={2.6}
-                      className="d-flex ai-stretch"
-                    >
-                      <PanelCoinSelected
-                        {...{
-                          currency,
-                          coinsToOperate,
-                          coinsToDelete,
-                          loadingCoinToOperate,
-                          errorCoinOperate,
-                          setErrorCoinOperate,
-                          user_id,
-                          coinsOperatingList,
-                          setUpdateAvailable,
-                          viewTable,
-                          setViewTable,
-                          balanceUSDT,
-                          balanceCoin,
-                        }}
-                      />
-                    </Grid>
-                    <Grid item xs={12} sm={6} md={4}>
-                      <PanelOfProjections
-                        {...{
-                          user_id,
-                          flatNumber,
-                        }}
-                      />
-                    </Grid>
-                    <Grid item xs={12} sm={6} md={3}>
-                      <PanelOfInsertMoney
-                        {...{
-                          inputValue,
-                          setInputValue: (value) =>
-                            this.setState({ inputValue: value }),
-                          setSliderExp: (exp) =>
-                            this.setState({ sliderExp: exp }),
-                          sliderExp,
-                          valuetext: this.valuetext,
-                          marks,
-                        }}
-                      />
-                    </Grid>
-                    <Grid item xs={12} sm={12} md={2}>
-                      <ActionButtons
-                        {...{
-                          update_available,
-                          setUpdateAvailable,
-                          setView,
-                          settingIcon: this.settingIcon,
-                          currency,
-                          coinsOperatingList,
-                          coinsToOperate,
-                          onSellCoin,
-                          coinsToDelete,
-                          setErrorCoinOperate,
-                          user_id,
-                          actionInProcess,
-                          setActionInProcess: (value) =>
-                            this.setState({ actionInProcess: value }),
-                        }}
-                      />
-                    </Grid>
+                    <PanelCoinSelected
+                      {...{
+                        currency,
+                        coinsToOperate,
+                        coinsToDelete,
+                        loadingCoinToOperate,
+                        errorCoinOperate,
+                        setErrorCoinOperate,
+                        user_id,
+                        coinsOperatingList,
+                        setUpdateAvailable,
+                        viewTable,
+                        setViewTable,
+                        balanceUSDT,
+                        balanceCoin,
+                      }}
+                    />
                   </Grid>
-                )}
+                  <Grid item xs={12} sm={6} md={4}>
+                    <PanelOfProjections
+                      {...{
+                        user_id,
+                        flatNumber,
+                      }}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={3}>
+                    <PanelOfInsertMoney
+                      {...{
+                        inputValue,
+                        setInputValue: (value) =>
+                          this.setState({ inputValue: value }),
+                        setSliderExp: (exp) =>
+                          this.setState({ sliderExp: exp }),
+                        sliderExp,
+                        valuetext: this.valuetext,
+                        marks,
+                      }}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={12} md={2}>
+                    <ActionButtons
+                      {...{
+                        update_available,
+                        setUpdateAvailable,
+                        setView,
+                        settingIcon: this.settingIcon,
+                        currency,
+                        coinsOperatingList,
+                        coinsToOperate,
+                        onSellCoin,
+                        coinsToDelete,
+                        setErrorCoinOperate,
+                        user_id,
+                        actionInProcess,
+                        setActionInProcess: (value) =>
+                          this.setState({ actionInProcess: value }),
+                      }}
+                    />
+                  </Grid>
+                </Grid>
               </div>
             </div>
           </div>
@@ -240,30 +242,18 @@ window.fetchMetrics = async function (props, setState = () => 0) {
   const { driverParams } = global;
   const id_coin = driverParams.get("id_coin");
   if (!id_coin) return;
-  setState({ loadingMetrics: true });
-  try {
-    await getResponse({
-      setError: (err) => setState({ errorMetrics: err }),
-      setLoading: (loading) => {
-        setState({ loadingMetrics: loading });
-      },
-      setApiData: ([data]) => {
-        if (!data) {
-          console.log("No data received");
-          return;
-        }
-        console.log(data);
-        setState({ coinMetric: data });
-      },
-      buildEndpoint: ({ baseUrl }) => {
-        return `${baseUrl}/coins/metrics/${user_id}/${id_coin}`;
-      },
-    });
-  } catch (err) {
-    setState({ errorMetrics: err.message });
-  } finally {
-    setState({ loadingMetrics: false });
-  }
+  await http_get_coin_metrics({
+    id_coin,
+    setLoading: (loading) => setState({ loadingMetrics: loading }),
+    setError: (err) => setState({ errorMetrics: err }),
+    setApiData: ([data]) => {
+      if (!data) {
+        console.log("[fetchMetrics]: No se recibio datos", id_coin);
+        return;
+      }
+      setState({ coinMetric: data });
+    },
+  });
 };
 
 window.calculateTimeToUpdate = function () {
