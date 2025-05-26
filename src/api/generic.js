@@ -1,9 +1,17 @@
 import { getResponse, postRequest, putRequest, request } from "./requestTable";
 
 export function processReturn(data) {
+  const thereIsData = !!data;
+  const thereIsDataUpdated = data && data.updated && data.updated > 0;
+  const thereIsDataStatusOK = data && data.status && data.status < 400;
+  const someSignalOk = thereIsDataUpdated || thereIsDataStatusOK;
   return {
     result: data,
-    all_ok: data && data.updated == 1 && data.status >= 400,
+    thereIsData,
+    someSignalOk,
+    thereIsDataUpdated,
+    thereIsDataStatusOK,
+    all_ok: someSignalOk && thereIsData,
   };
 }
 

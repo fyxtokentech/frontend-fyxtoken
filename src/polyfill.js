@@ -14,7 +14,7 @@ export function setContext(nc) {
 
 export function init() {
   // --- Sección 1: Entorno ---
-  const context = localStorage.getItem("context") || "dev";
+  const context = localStorage.getItem("context") || "test";
 
   // --- Sección 2: Configuración global y flags ---
   global.configApp ??= { context };

@@ -13,16 +13,17 @@ const {
   springgreen,
 } = global.identity.colors;
 
+
 function discriminadorColor(
   extra = {},
   mapFilterTheme = window["mapFilterTheme"] ?? {},
   colorBase = morado_brillante
 ) {
-  const themeName = getThemeName();
+  const themeName = getThemeName() ?? "main";
   return {
     filter: (() => {
       let r = mapFilterTheme[themeName] || "";
-      if (r) {
+      if (typeof r == "function") {
         r = r(rotation);
       }
       const extras = [];

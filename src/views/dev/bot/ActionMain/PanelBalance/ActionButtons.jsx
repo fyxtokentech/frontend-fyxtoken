@@ -6,6 +6,7 @@ import PauseIcon from "@mui/icons-material/Pause";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import fluidCSS from "@jeff-aporta/fluidcss";
 import { http_put_coin_start, http_put_coin_stop } from "@api/mocks";
+import { showSuccess, showWarning } from "@templates";
 
 export default function ActionButtons({
   update_available,
@@ -139,12 +140,24 @@ export default function ActionButtons({
                     user_id,
                     id_coin: coinObj.id,
                     setError: setErrorCoinOperate,
+                    successful: () => {
+                      showSuccess(`Se detuvo (${coinObj.symbol})`);
+                    },
+                    failure: () => {
+                      showWarning(`Algo salió mal al detener en ${coinObj.symbol}`);
+                    },
                   });
                 } else {
                   await http_put_coin_start({
                     user_id,
                     id_coin: coinObj.id,
                     setError: setErrorCoinOperate,
+                    successful: () => {
+                      showSuccess(`Se reanudo (${coinObj.symbol})`);
+                    },
+                    failure: () => {
+                      showWarning(`Algo salió mal al reanudar en ${coinObj.symbol}`);
+                    },
                   });
                 }
                 setIsPaused(!isPaused);
@@ -187,6 +200,12 @@ export default function ActionButtons({
             const putResult = await http_put_coin_start({
               id_coin: coinObj.id,
               setError: setErrorCoinOperate,
+              successful: () => {
+                showSuccess(`Se empieza a operar (${coinObj.symbol})`);
+              },
+              failure: () => {
+                showWarning(`Algo salió mal al operar en ${coinObj.symbol}`);
+              },
               willEnd,
             });
             // refresh operating coins list and UI

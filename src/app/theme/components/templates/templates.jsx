@@ -7,13 +7,15 @@ import fluidCSS from "@jeff-aporta/fluidcss";
 
 import { assignedPath } from "@jeff-aporta/router";
 import { routeCheck } from "@app/routeCheck";
-import { Toaster } from "react-hot-toast";
+import { Toaster, toast } from "react-hot-toast";
 import Alert from "@mui/material/Alert";
+import IconButton from "@mui/material/IconButton";
+import CloseIcon from "@mui/icons-material/Close";
 
 import {} from "@identity/loader";
 import { bgdefault, portal } from "./back-texture";
 
-import { CssBaseline } from "@mui/material";
+import { CssBaseline, Typography } from "@mui/material";
 import { ThemeProvider } from "@mui/material/styles";
 
 import CursorLight from "@components/Fx/cursor-light";
@@ -27,38 +29,129 @@ import {
   getThemeLuminance,
   setThemeLuminance,
   isDark,
+  paletteSelected,
 } from "@jeff-aporta/theme-manager";
-
-import { ThreeBackground } from "@components/templates/mesh";
 
 const minH = "min-h-80vh";
 
 const themeSwitch_listener = [];
 
-function Notifier({ children }) {
-  return (
-    <Themized>
-      {children}
-      <Toaster
-        position="bottom-right"
-        toastOptions={{
-          style: { animation: "fadeIn 1s ease, fadeOut 0.3s ease 4.7s" },
-        }}
-      />{" "}
-    </Themized>
-  );
+export function addThemeSwitchListener(fn) {
+  themeSwitch_listener.push(fn);
+}
 
-  function Themized({ children }) {
+export function removeThemeSwitchListener(fn, index) {
+  if (index === undefined) {
+    const idx = themeSwitch_listener.indexOf(fn);
+    if (idx > -1) themeSwitch_listener.splice(idx, 1);
+  } else {
+    themeSwitch_listener.splice(index, 1);
+  }
+}
+
+export function showSuccess(txt) {
+  toast(
+    (t) => (
+      <div className="d-flex ai-center jc-between gap-10px">
+        <Typography variant="caption">{txt}</Typography>
+        <IconButton
+          color="secondary"
+          size="small"
+          onClick={() => toast.dismiss(t.id)}
+        >
+          <CloseIcon fontSize="small" />
+        </IconButton>
+      </div>
+    ),
     {
-      /* Keyframes CSS para fade */
+      icon: "✅",
+      duration: 10000,
     }
+  );
+}
+
+export function showWarning(txt, details) {
+  console.warn(txt, details);
+  toast(
+    (t) => (
+      <div className="d-flex ai-center jc-between gap-10px">
+        <Typography variant="caption" color="warning">{txt}</Typography>
+        <IconButton size="small" onClick={() => toast.dismiss(t.id)}>
+          <CloseIcon fontSize="small" />
+        </IconButton>
+      </div>
+    ),
+    {
+      icon: "⚠️",
+      duration: 10000,
+    }
+  );
+}
+
+export function showError(txt, details) {
+  console.error(txt, details);
+  toast(
+    (t) => (
+      <div className="d-flex ai-center jc-between gap-10px">
+        <Typography variant="caption" color="error">{txt}</Typography>
+        <IconButton size="small" onClick={() => toast.dismiss(t.id)}>
+          <CloseIcon fontSize="small" />
+        </IconButton>
+      </div>
+    ),
+    {
+      icon: "⛔",
+      duration: 10000,
+    }
+  );
+}
+
+class Notifier extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {};
+    this.listener = () => this.setState({ theme: paletteSelected() });
+    addThemeSwitchListener(this.listener);
+  }
+
+  componentWillUnmount() {
+    removeThemeSwitchListener(this.listener);
+  }
+
+  render() {
+    const { children } = this.props;
+    const { theme = {} } = this.state;
+    const { palette } = theme;
     return (
-      <ThemeProvider theme={getTheme()}>
-        <CssBaseline />
+      <Themized>
+        <Toaster
+          position="bottom-right"
+          toastOptions={{
+            style: {
+              borderRadius: "5px",
+              background: palette?.background?.default,
+              color: palette?.text?.primary,
+              border:
+                "1px solid " +
+                (palette?.divider ?? "gray"),
+              boxShadow: "5px 5px 5px 0px rgba(0, 0, 0, 0.1)",
+              animation: "fadeIn 1s ease, fadeOut 0.3s ease 9.7s forwards",
+            },
+          }}
+        />
         {children}
-      </ThemeProvider>
+      </Themized>
     );
   }
+}
+
+function Themized({ children }) {
+  return (
+    <ThemeProvider theme={getTheme()}>
+      <CssBaseline />
+      {children}
+    </ThemeProvider>
+  );
 }
 
 function ThemeSwitcher({

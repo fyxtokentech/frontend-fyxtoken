@@ -13,11 +13,9 @@ const { CONTEXT } = window;
 export const getResponse = ({
   checkErrors = () => null,
   setError = () => {},
-  setLoading = () => {},
-  setApiData = () => {},
   buildEndpoint,
   service = "robot_backend",
-  mock_default = { content: [] },
+  ...rest
 }) => {
   const error = checkErrors();
   if (error) {
@@ -28,10 +26,8 @@ export const getResponse = ({
   console.log(`[getResponse] resolved URL: ${url} service: ${service}`);
   return getSingletonResponse({
     url,
-    setLoading,
-    setApiData,
     setError,
-    mock_default,
+    ...rest,
   });
 };
 
@@ -54,7 +50,7 @@ function getSingletonResponse({
         ...(CONTEXT !== "dev" && { withCredentials: false }),
       })
       .then(({ data }) => {
-        console.log(`[getSingletonResponse]`, { data });
+        console.log(`[getSingletonResponse]: ${url} success:`, { data });
         if (!Array.isArray(data)) throw new Error("Unexpected response format");
         const result = table2obj(data);
         responseResults[url] = result;
@@ -62,7 +58,7 @@ function getSingletonResponse({
         return result;
       })
       .catch((err) => {
-        console.error(`[getSingletonResponse]`, { err });
+        console.error(`[getSingletonResponse] error (catch): ${url}`, { err });
         if (
           CONTEXT === "dev" &&
           mock_default &&
@@ -74,7 +70,6 @@ function getSingletonResponse({
         }
         responseErrors[url] = err;
         setError(err.message || err);
-        throw err;
       })
       .finally(() => {
         setLoading(false);
@@ -142,7 +137,6 @@ export const request = async ({
     );
     setError(err.message || `Error al ejecutar ${method.toUpperCase()}`);
     responseBodyReceived(err.response?.data || err);
-    throw err;
   } finally {
     willEnd();
   }

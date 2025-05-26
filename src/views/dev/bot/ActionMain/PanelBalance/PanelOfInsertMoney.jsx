@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Typography, TextField, Slider, Button } from "@mui/material";
 import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
 import { http_put_update_investment } from "@api/mocks";
-import { toast } from "react-hot-toast";
+import { showSuccess, showWarning } from "@templates";
 import { PaperP } from "@components/containers";
 import { TooltipNoPointerEvents } from "@recurrent";
 
@@ -86,10 +86,10 @@ export default function PanelOfInsertMoney({
                   coin_id,
                   new_value: inputValue,
                   failure: (error) => {
-                    toast.error("Error al invertir");
+                    showWarning("Error al invertir");
                   },
                   successful: (data) => {
-                    toast.success("Inversión exitosa");
+                    showSuccess("Inversión exitosa");
                   },
                   willStart: () => {
                     setUpdating(true);

@@ -18,7 +18,7 @@ export const urlapi = {
  */
 export function resolveUrl(buildEndpoint, service = "robot_backend") {
   const { IS_LOCAL, CONTEXT } = window;
-  
+
   const env = IS_LOCAL && CONTEXT === "dev" ? "local" : "web";
   const base = urlapi[env][service];
   return buildEndpoint({ baseUrl: base }).replace(/\s+/g, "");
@@ -30,7 +30,12 @@ export function resolveUrl(buildEndpoint, service = "robot_backend") {
  * @returns {Array<Object>}
  */
 export function table2obj(table) {
-  if (!Array.isArray(table) || table.length < 1) return [];
+  if (!table) {
+    return [];
+  }
+  if (!Array.isArray(table)) {
+    return table;
+  }
   const [headers, ...rows] = table;
   return rows.map((rowValues) =>
     headers.reduce((obj, header, i) => {

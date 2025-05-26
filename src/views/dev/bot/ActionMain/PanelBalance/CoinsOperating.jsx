@@ -12,6 +12,8 @@ import {
   http_put_coin_stop,
 } from "@api/mocks";
 
+import { showSuccess, showWarning, showError } from "@templates";
+
 export default class CoinsOperating extends Component {
   constructor(props) {
     super(props);
@@ -63,51 +65,59 @@ export default class CoinsOperating extends Component {
       await coinSell();
 
       async function coinSell() {
-        let operationOpen = {};
+        const operationOpen = {};
         await http_get_operation_open({
           id_coin: coin.id,
-          setApiData: (data) => {
-            // Se recupera la primer fila de la consulta
-            operationOpen = data[0];
+          setApiData: ([data]) => {
+            if (!data) {
+              return;
+            }
+            Object.assign(operationOpen, data);
           },
-          setLoading: () => {},
           setError: setErrorCoinOperate,
         });
         const { id_operation } = operationOpen;
         if (!id_operation) {
-          throw new Error("No se encontro la operacion");
+          showWarning(`No se encontro la operacion abierta en ${coin.symbol}`, {
+            operationOpen,
+            id_coin: coin.id,
+          });
+          return;
         }
-        const { all_ok: all_okSell } = await http_post_exchange_operation_sell({
+        const {
+          //
+          all_ok: all_okSell,
+          ...rest
+        } = await http_post_exchange_operation_sell({
           id_operation,
           setError: setErrorCoinOperate,
           willEnd,
         });
         if (all_okSell) {
+          showSuccess(`Se vendio (${coin.symbol})`);
           coinsOperatingList.current = coinsOperatingList.current.filter(
             (c) => c.id !== coin.id
           );
           coinsToDelete.current = coinsToDelete.current.filter(
             (c) => c.id !== coin.id
           );
+        } else {
+          showWarning(`Algo salió mal al vender en ${coin.symbol}`, rest);
         }
       }
 
       async function coinStop() {
-        const { all_ok: all_okStop } = await http_put_coin_stop({
+        const { all_ok: all_okStop, ...rest } = await http_put_coin_stop({
           id_coin: coin.id,
           setError: setErrorCoinOperate,
           willEnd,
         });
-        // Verificar éxito de stop: { updated: 1 }
         if (!all_okStop) {
-          throw new Error("Error deteniendo moneda");
+          showWarning(`Algo salió mal al detener en ${coin.symbol}`, rest);
         }
       }
     } catch (err) {
-      console.error("Error deteniendo moneda:", err);
-      /*coinsToDelete.current = coinsToDelete.current.filter(
-        (c) => c.id !== coin.id
-      ); */
+      showError(`Error deteniendo ${coin.symbol}`, err);
       willEnd();
     }
 
