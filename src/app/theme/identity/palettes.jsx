@@ -5,6 +5,7 @@ import { hrefManagement } from "@app/hrefManagement";
 const {
   verde_cielo,
   verde_lima,
+  morado,
   morado_enfasis,
   morado_brillante,
   verde_lima_brillante,
@@ -44,8 +45,8 @@ class Main extends Fyxbase {
   constructor(props) {
     super({
       isMain: true,
-      main_color: morado_enfasis,
-      name_color: "morado_enfasis",
+      main_color: morado,
+      name_color: "morado",
       scrollname: "morado",
       constrast_color: verde_lima,
       name_contrast: "verde_lima",

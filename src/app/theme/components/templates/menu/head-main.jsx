@@ -150,7 +150,7 @@ function BotonInicio() {
       className="d-center bright-hover-1-5 gap-10px c-pointer"
     >
       <ImageLocal
-        src={`img/logo-fyxtoken-${getThemeName()}-color.svg`}
+        src={`img/metadata/logo-${getThemeName()}.svg`}
         width="40"
         className={fluidCSS()
           .lerpX([450, 1000], { width: [30, 40] })

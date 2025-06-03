@@ -31,7 +31,7 @@ import FyxDialog from "@components/GUI/dialog";
 import { generate_inputs, Info, Title } from "@recurrent";
 
 import ActionMain from "./ActionMain/ActionMain";
-import Settings from "./Settings";
+import Settings from "./Settings/Settings";
 
 export default function PanelRobot() {
   const { driverParams } = global;

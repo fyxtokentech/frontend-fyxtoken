@@ -95,7 +95,7 @@ function FooterNavSection() {
           <Grid item xs={12} md={6}>
             <Box sx={{ textAlign: "right" }}>
               <ImageLocal
-                src="img/logo-fyxtoken-main-color.svg"
+                src="img/metadata/logo-main.svg"
                 alt="Fyxtoken Logo"
                 style={{
                   width: "120px",

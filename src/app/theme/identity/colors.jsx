@@ -8,7 +8,7 @@ const identity = (() => {
     verde_cielo: Color("#1e9cde"),
     verde_lima: Color("#c6e50e"),
     azul_agua: Color("#21ebef"),
-    morado: Color("#1b053d"),
+    morado: Color("hsl(264, 100%, 60%)"),
     springgreen: Color("rgb(0, 255, 127)"),
     blanco: Color("white"),
     negro: Color("black"),
@@ -19,7 +19,7 @@ const identity = (() => {
   };
 
   const secundaries = {
-    morado_enfasis: Color(`hsl(${primaries.morado.hue()}, 45%, 53%)`),
+    morado_enfasis: Color(`hsl(${primaries.morado.hue()}, 100%, 60%)`),
     morado_brillante: Color(`hsl(${primaries.morado.hue()}, 100%, 80%)`),
     verde_cielo_brillante: Color(
       `hsl(${primaries.verde_cielo.hue()}, 100%, 80%)`
