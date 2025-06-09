@@ -14,15 +14,18 @@ import { DynTable } from "@components/GUI/DynTable/DynTable";
 import mock_operation from "./mock-operation.json";
 import columns_operation from "./columns-operation.jsx";
 
-import { getResponse } from "@api/requestTable";
+import { HTTPGET_USEROPERATION_PERIOD } from "@api";
 
 import { AutoSkeleton, DateRangeControls } from "@components/controls";
 import React, { Component } from "react";
 import dayjs from "dayjs";
 
 import FilterAltIcon from "@mui/icons-material/FilterAlt";
+import { showError } from "@templates";
 
-const tableOperationsState = {};
+const tableOperationsState = {
+  tableData: []
+};
 
 const { driverParams, IS_GITHUB_IO } = global;
 
@@ -32,7 +35,6 @@ export default class TableOperations extends Component {
     this.delay = -1;
     this.loadingTableOperation = null;
     Object.assign(tableOperationsState, {
-      tableData: [],
       filterApply: false,
     });
     this.state = tableOperationsState;
@@ -53,10 +55,17 @@ export default class TableOperations extends Component {
     this.setState(tableOperationsState);
   }
 
-  setError = (error) => this.updateState({ error });
-  setTableData = (tableData) => this.updateState({ tableData });
-  // Forzar re-render cuando no llegan datos
-  setForceUpdate = () => this.forceUpdate();
+  setError = (error) => {
+    this.updateState({ error });
+    showError(error);
+  };
+  setTableData = (tableData) => {
+    this.updateState({ tableData });
+    setTimeout(() => {
+      this.forceUpdate();
+      console.log(this.state);
+    });
+  };
 
   componentDidMount() {
     this.updateDatas();
@@ -64,8 +73,8 @@ export default class TableOperations extends Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    const { user_id, viewTable } = this.props;
-    if (prevProps.user_id !== user_id || prevProps.viewTable !== viewTable) {
+    const { viewTable } = this.props;
+    if (prevProps.viewTable !== viewTable) {
       this.invokeFetch();
     }
     // enable filterApply when date range changes, safely handle null dates
@@ -88,15 +97,8 @@ export default class TableOperations extends Component {
     }
   }
 
-  async fetchData({
-    setError,
-    setTableData,
-    user_id,
-    dateRangeInit,
-    dateRangeFin,
-    setForceUpdate,
-    tableData,
-  }) {
+  async fetchData({ dateRangeInit, dateRangeFin }) {
+    const { user_id } = window["currentUser"];
     if (Date.now() - this.delay < 1000) {
       console.log(
         "Fetch cancelado, tiempo de espera",
@@ -116,14 +118,19 @@ export default class TableOperations extends Component {
       return;
     }
     try {
-      await getResponse({
-        setError,
+      await HTTPGET_USEROPERATION_PERIOD({
+        start_date: dateRangeInit.format("YYYY-MM-DD"),
+        end_date: dateRangeFin.format("YYYY-MM-DD"),
+        // ---------------------
+        setError: this.setError,
         setLoading: (value) => {
           this.loadingTableOperation = value;
         },
         setApiData: (data) => {
-          const parsed = Array.isArray(data) ? [...data] : data;
-          setTableData(parsed);
+          const parsed = data;
+          console.log(parsed);
+          tableOperationsState.tableData = parsed;
+          this.setTableData(tableOperationsState.tableData);
         },
         mock_default: IS_GITHUB_IO ? mock_operation : [],
         checkErrors: () => {
@@ -134,43 +141,24 @@ export default class TableOperations extends Component {
             return "No se ha seleccionado un rango de fechas";
           }
         },
-        buildEndpoint: ({ baseUrl }) => {
-          const period = driverParams.get("period");
-          const coinid = driverParams.get("id_coin");
-          if (period === "most_recent") {
-            return `${baseUrl}/operations/most_recent/${user_id}?coinid=${coinid}`;
-          }
-          return `
-            ${baseUrl}/operations/${user_id}?
-              coinid=${coinid}&
-              start_date=${dateRangeInit.format("YYYY-MM-DD")}&
-              end_date=${dateRangeFin.format("YYYY-MM-DD")}&
-              page=0&limit=1000
-          `;
-        },
       });
     } catch (e) {
       console.error(e);
-      setError(e.message || e);
-      setTableData([]);
+      this.setError(e.message || e);
+      showError(e.message || e);
+      this.setTableData([]);
     } finally {
       this.loadingTableOperation = false;
       this.delay = Date.now();
-      if (tableData.length === 0) setForceUpdate();
+      this.forceUpdate();
     }
   }
 
   invokeFetch() {
-    const { user_id } = this.props;
-    const { dateRangeInit, dateRangeFin, tableData } = this.state;
+    const { dateRangeInit, dateRangeFin } = this.state;
     this.fetchData({
-      setError: this.setError,
-      setTableData: this.setTableData,
-      user_id,
       dateRangeInit,
       dateRangeFin,
-      setForceUpdate: this.setForceUpdate,
-      tableData,
     });
   }
 
@@ -194,13 +182,16 @@ export default class TableOperations extends Component {
       setOperationTrigger,
       data,
       columns_config,
-      user_id,
       setViewTable,
       ...rest
     } = this.props;
-    const { dateRangeInit, dateRangeFin, error, tableData, filterApply } =
+    const { user_id } = window["currentUser"];
+    const { dateRangeInit, dateRangeFin, error, filterApply } =
       this.state;
+    const { tableData } = tableOperationsState;
     const loading = this.loadingTableOperation;
+
+    console.log(tableData);
 
     const base = user_id ? tableData : data?.content ?? [];
     const processedContent = Array.isArray(base)
@@ -300,7 +291,6 @@ export default class TableOperations extends Component {
                 Aplicar filtros
               </Button>
             </div>
-            {error && <Typography color="error">{error}</Typography>}
             <AutoSkeleton loading={loading} h="auto">
               <div style={{ width: "100%", overflowX: "auto" }}>
                 <DynTable

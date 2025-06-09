@@ -1,8 +1,4 @@
-export const responsePromises = {};
-export const responseResults = {};
-export const responseErrors = {};
-
-export const urlapi = {
+export const urlMapApi = {
   local: {
     robot_backend: "http://localhost:8000",
     robot_prototype: "http://168.231.97.207:8001",
@@ -16,12 +12,21 @@ export const urlapi = {
 /**
  * Resolve full API URL by buildEndpoint using current context.
  */
-export function resolveUrl(buildEndpoint, service = "robot_backend") {
+export function buildUrlFromService(buildEndpoint, service = "robot_backend") {
   const { IS_LOCAL, CONTEXT } = window;
 
   const env = IS_LOCAL && CONTEXT === "dev" ? "local" : "web";
-  const base = urlapi[env][service];
-  return buildEndpoint({ baseUrl: base }).replace(/\s+/g, "");
+  const base = urlMapApi[env][service];
+  return buildEndpoint({ baseUrl: base, genpath, env });
+
+  function genpath(path, params = {}) {
+    return [
+      [base, ...path].join("/"),
+      Object.entries(params)
+        .map(([k, v]) => `${k}=${v}`)
+        .join("&"),
+    ].join("?");
+  }
 }
 
 /**
@@ -29,7 +34,7 @@ export function resolveUrl(buildEndpoint, service = "robot_backend") {
  * @param {Array<Array<any>>} table
  * @returns {Array<Object>}
  */
-export function table2obj(table) {
+export function unpackTable(table) {
   if (!table) {
     return [];
   }

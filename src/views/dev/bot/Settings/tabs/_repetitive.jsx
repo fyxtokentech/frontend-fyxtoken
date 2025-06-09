@@ -19,6 +19,7 @@ export function TitleTab({
           </>
         )}
       </Box>
+      {_br && <br />}
       <hr />
     </>
   );

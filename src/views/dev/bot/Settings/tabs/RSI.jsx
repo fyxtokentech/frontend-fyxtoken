@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Typography,
@@ -17,6 +17,7 @@ import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import TuneIcon from "@mui/icons-material/Tune";
 import { TitleTab } from "./_repetitive";
 import { ImageLocal } from "@recurrent";
+import { HTTPGET_USEROPERATION_STRATEGY, HTTPPATCH_USEROPERATION_STRATEGY } from "@api";
 
 export function RSIView() {
   // Estado agrupado para la configuración RSI
@@ -26,8 +27,68 @@ export function RSIView() {
     oversold: 30,
     overbought: 70,
   });
+
+  const [saving, setSaving] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
+
+  // Utilidades para conversión periodo texto <-> objeto
+  const periodTextToObj = (txt) => {
+    // "5 minutos" → {unit: 'm', value: 5}
+    if (!txt) {
+      return { unit: "m", value: 5 };
+    }
+    if (txt.includes("minuto")) {
+      return { unit: "m", value: parseInt(txt) };
+    }
+    if (txt.includes("hora")) {
+      return { unit: "h", value: parseInt(txt) };
+    }
+    if (txt.includes("día")) {
+      return { unit: "d", value: parseInt(txt) };
+    }
+    if (txt.includes("semana")) {
+      return { unit: "s", value: parseInt(txt) };
+    }
+    if (txt.includes("mes")) {
+      return { unit: "M", value: parseInt(txt) };
+    }
+    return { unit: "m", value: 5 };
+  };
+  const periodObjToText = ({ unit, value }) => {
+    if (!unit || !value) return "5 minutos";
+    switch (unit) {
+      case "m": return `${value} minutos`;
+      case "h": return `${value} hora${value > 1 ? 's' : ''}`;
+      case "d": return `${value} día${value > 1 ? 's' : ''}`;
+      case "s": return `${value} semana${value > 1 ? 's' : ''}`;
+      case "M": return `${value} mes${value > 1 ? 'es' : ''}`;
+      default: return "5 minutos";
+    }
+  };
+
+  // Cargar configuración inicial
+  useEffect(() => {
+    const user_id = window.currentUser?.user_id;
+    const id_coin = window.driverParams?.get("id_coin");
+    if (!user_id || !id_coin) return;
+    HTTPGET_USEROPERATION_STRATEGY({
+      user_id,
+      id_coin,
+      strategy: "rsi",
+      setApiData: (data) => {
+        console.log(data)
+        // data.config debe ser el modelo backend: {delta, period, oversold, overbought}
+        let loaded = data || {};
+        setConfig({
+          delta: loaded.delta || { negative: 1, positive: 3 },
+          period: periodObjToText(loaded.period || { unit: "m", value: 5 }),
+          oversold: loaded.oversold ?? 30,
+          overbought: loaded.overbought ?? 70,
+        });
+      },
+    });
+  }, []);
 
   // Permite actualizar cualquier campo anidado o simple
   const handleInputChange = (path, value) => {
@@ -47,8 +108,24 @@ export function RSIView() {
     });
   };
 
-  const handleSave = () => {
-    // Aquí puedes enviar config a backend si lo necesitas
+  const handleSave = async () => {
+    const user_id = window.currentUser?.user_id;
+    const id_coin = window.driverParams?.get("id_coin");
+    if (!user_id || !id_coin) return;
+    setSaving(true);
+    // Prepara config para backend (period como objeto)
+    const backendConfig = {
+      ...config,
+      period: periodTextToObj(config.period),
+    };
+    const result = await HTTPPATCH_USEROPERATION_STRATEGY({
+      user_id,
+      id_coin,
+      strategy: "rsi",
+      new_config: JSON.stringify(backendConfig),
+    });
+    console.log(result)
+    setSaving(false);
     setSnackbarOpen(true);
     setDialogOpen(false);
   };

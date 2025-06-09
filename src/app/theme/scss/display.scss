@@ -52,6 +52,18 @@
   flex-wrap: wrap;
 }
 
+.flex {
+  display: flex;
+}
+
+.inline-flex {
+  display: inline-flex;
+}
+
+.col-direction {
+  flex-direction: column;
+}
+
 .d-inline-block {
   display: inline-block;
 }

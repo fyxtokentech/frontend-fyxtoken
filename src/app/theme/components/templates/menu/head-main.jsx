@@ -12,6 +12,7 @@ import {
   FormControl,
   Select,
   InputLabel,
+  Box,
 } from "@mui/material";
 
 import { ImageLocal } from "@recurrent";
@@ -150,7 +151,7 @@ function BotonInicio() {
       className="d-center bright-hover-1-5 gap-10px c-pointer"
     >
       <ImageLocal
-        src={`img/metadata/logo-${getThemeName()}.svg`}
+        src={`/img/metadata/logo-${getThemeName()}.svg`}
         width="40"
         className={fluidCSS()
           .lerpX([450, 1000], { width: [30, 40] })

@@ -51,14 +51,11 @@ export default function ActionMain({
   setLoadingCoinToOperate,
   errorCoinOperate,
   setErrorCoinOperate,
-  user_id,
 }) {
   // driverParams reemplazado por viewTable prop
 
   // Estado para la selección de monedas
   const [deletionTimers, setDeletionTimers] = useState([]);
-
-  console.log(user_id, currency);
 
   return (
     <PaperP className="d-flex flex-column gap-20px">
@@ -76,7 +73,6 @@ export default function ActionMain({
           setLoadingCoinToOperate,
           errorCoinOperate,
           setErrorCoinOperate,
-          user_id,
           viewTable,
           setViewTable,
           deletionTimers,
@@ -101,7 +97,6 @@ export default function ActionMain({
         {...{
           viewTable,
           setViewTable,
-          user_id,
           operationTrigger,
           setOperationTrigger,
         }}
@@ -113,7 +108,6 @@ export default function ActionMain({
 function ViewTable({
   viewTable,
   setViewTable,
-  user_id,
   operationTrigger,
   setOperationTrigger,
 }) {
@@ -123,15 +117,12 @@ function ViewTable({
   const coinidStr = driverParams.get("id_coin");
   const coinidFromUrl = coinidStr ? parseInt(coinidStr, 10) : undefined;
 
-  console.log(user_id);
-
   switch (viewTable) {
     case "transactions":
       return (
         <TableTransactions
           {...{
             setViewTable,
-            user_id,
             operationTrigger,
           }}
           pretable={
@@ -149,7 +140,6 @@ function ViewTable({
           {...{
             setOperationTrigger,
             setViewTable,
-            user_id,
             coinid: coinidFromUrl,
             useForUser: true,
           }}

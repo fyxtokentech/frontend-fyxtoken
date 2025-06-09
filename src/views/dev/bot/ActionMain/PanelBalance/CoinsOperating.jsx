@@ -7,10 +7,10 @@ import CircularProgress from "@mui/material/CircularProgress";
 import { Tooltip, Chip, Autocomplete, TextField } from "@mui/material";
 import { PaperP } from "@containers";
 import {
-  http_get_operation_open,
-  http_post_exchange_operation_sell,
-  http_put_coin_stop,
-} from "@api/mocks";
+  HTTPGET_USEROPERATION_OPEN,
+  HTTPPOST_EXCHANGE_SELL,
+  HTTPPUT_COINS_STOP,
+} from "@api";
 
 import { showSuccess, showWarning, showError } from "@templates";
 
@@ -53,7 +53,6 @@ export default class CoinsOperating extends Component {
   // Function to stop coin
   async deleteCoinFromAPI(coin) {
     const {
-      user_id,
       setErrorCoinOperate,
       coinsOperatingList,
       coinsToDelete,
@@ -66,7 +65,7 @@ export default class CoinsOperating extends Component {
 
       async function coinSell() {
         const operationOpen = {};
-        await http_get_operation_open({
+        await HTTPGET_USEROPERATION_OPEN({
           id_coin: coin.id,
           setApiData: ([data]) => {
             if (!data) {
@@ -88,7 +87,7 @@ export default class CoinsOperating extends Component {
           //
           all_ok: all_okSell,
           ...rest
-        } = await http_post_exchange_operation_sell({
+        } = await HTTPPOST_EXCHANGE_SELL({
           id_operation,
           setError: setErrorCoinOperate,
           willEnd,
@@ -107,7 +106,7 @@ export default class CoinsOperating extends Component {
       }
 
       async function coinStop() {
-        const { all_ok: all_okStop, ...rest } = await http_put_coin_stop({
+        const { all_ok: all_okStop, ...rest } = await HTTPPUT_COINS_STOP({
           id_coin: coin.id,
           setError: setErrorCoinOperate,
           willEnd,

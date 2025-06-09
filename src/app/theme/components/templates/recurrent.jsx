@@ -49,7 +49,16 @@ const PUBLIC_URL = process.env.PUBLIC_URL;
 
 function ImageLocal(props) {
   const { src, ...rest } = props;
-  return <img {...{ alt: "", ...rest }} src={`${PUBLIC_URL}/${src}`} />;
+  const base = process.env.PUBLIC_URL || '';
+  const path = src.startsWith('/') ? src : `/${src}`;
+  return (
+    <Box
+      component="img"
+      {...rest}
+      alt=""
+      src={`${base}${path}`}  
+    />
+  );
 }
 
 function TooltipNoPointerEvents({ children, ...props }) {
@@ -277,4 +286,5 @@ export {
   IconButtonWithTooltip,
   Title,
   ChipSmall,
+  GhostTooltip
 };

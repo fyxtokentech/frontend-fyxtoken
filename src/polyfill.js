@@ -1,5 +1,5 @@
 // Polyfills and environment adjustments
-import { postRequest } from "@api/requestTable";
+import { HTTP_POST } from "@src/api/base.js";
 import { href as routerHref } from "@jeff-aporta/theme-manager";
 
 import { burn } from "./utilities";
@@ -14,7 +14,7 @@ export function setContext(nc) {
 
 export function init() {
   // --- Sección 1: Entorno ---
-  const context = localStorage.getItem("context") || "test";
+  const context = localStorage.getItem("context") || "dev";
 
   // --- Sección 2: Configuración global y flags ---
   global.configApp ??= { context };
@@ -61,6 +61,7 @@ export function init() {
       );
     },
   };
+  window.driverParams = global.driverParams;
 
   // --- Sección 4: Helpers globales ---
   // Clave de moneda
@@ -70,7 +71,7 @@ export function init() {
   // Carga de usuario
   window["loadUser"] = async (username, password) => {
     try {
-      let user = await postRequest({
+      let user = await HTTP_POST({
         buildEndpoint: ({ baseUrl }) =>
           `${baseUrl}/login/?username=${encodeURIComponent(
             username

@@ -1,98 +1,183 @@
-import { getGeneric, postGeneric, putGeneric } from "./generic";
+import { MAKE_GET, MAKE_POST, MAKE_PUT, MAKE_PATCH, AUTO_PARAMS } from "./generic";
 
-const { currentUser = {} } = window;
-
-export async function http_get_coins({
-  user_id = currentUser.user_id,
-  ...rest
-}) {
-  return await getGeneric({
+export async function HTTPGET_COINS_BY_USER({ user_id, ...rest }) {
+  ({ user_id } = AUTO_PARAMS({ user_id }));
+  return await MAKE_GET({
     ...rest,
-    buildEndpoint: ({ baseUrl }) => `${baseUrl}/coins/${user_id}`,
+    buildEndpoint: ({ genpath }) => genpath(["coins", user_id]),
     mock_default: {
       content: [
         ["symbol", "id"],
-        ["BTC", "1"],
-        ["ETH", "2"],
+        ["_BTC_", "1"],
+        ["_ETH_", "2"],
       ],
     },
   });
 }
 
-export async function http_put_coin_start({
-  user_id = currentUser.user_id,
+export async function HTTPPUT_COINS_START({ user_id, id_coin, ...rest }) {
+  ({ user_id, id_coin } = AUTO_PARAMS({ user_id, id_coin }));
+  return await MAKE_PUT({
+    ...rest,
+    buildEndpoint: ({ genpath }) =>
+      genpath(["coins", "start", user_id, id_coin]),
+  });
+}
+
+export async function HTTPPUT_COINS_STOP({ user_id, id_coin, ...rest }) {
+  ({ user_id, id_coin } = AUTO_PARAMS({ user_id, id_coin }));
+  return await MAKE_PUT({
+    ...rest,
+    buildEndpoint: ({ genpath }) =>
+      genpath(["coins", "stop", user_id, id_coin]),
+  });
+}
+
+export async function HTTPGET_COINS_METRICS({ user_id, id_coin, ...rest }) {
+  ({ user_id, id_coin } = AUTO_PARAMS({ user_id, id_coin }));
+  return await MAKE_GET({
+    ...rest,
+    buildEndpoint: ({ genpath }) =>
+      genpath(["coins", "metrics", user_id, id_coin]),
+  });
+}
+
+export async function HTTPGET_USEROPERATION_PERIOD({
+  user_id,
   id_coin,
+  period,
+  start_date,
+  end_date,
+  limit = 1000,
   ...rest
 }) {
-  return await putGeneric({
+  ({ user_id, id_coin, period, start_date, end_date } = AUTO_PARAMS({
+    user_id,
+    id_coin,
+    period,
+    start_date,
+    end_date,
+  }));
+  return await MAKE_GET({
     ...rest,
-    buildEndpoint: ({ baseUrl }) => {
-      return `${baseUrl}/coins/start/${user_id}/${id_coin}`;
+    buildEndpoint: ({ genpath }) => {
+      if (period === "most_recent") {
+        return genpath(["operations", "most_recent", user_id]);
+      }
+      return genpath(["operations", user_id], {
+        coinid: id_coin,
+        start_date,
+        end_date,
+        limit,
+      });
     },
   });
 }
 
-export async function http_put_coin_stop({
-  user_id = currentUser.user_id,
+export async function HTTPGET_USEROPERATION_STRATEGY({
+  user_id,
   id_coin,
+  strategy, // rsi | candle | roi
   ...rest
 }) {
-  return await putGeneric({
+  ({ user_id, id_coin } = AUTO_PARAMS({ user_id, id_coin }));
+  return await MAKE_GET({
     ...rest,
-    buildEndpoint: ({ baseUrl }) => {
-      return `${baseUrl}/coins/stop/${user_id}/${id_coin}`;
-    },
+    buildEndpoint: ({ genpath }) =>
+      genpath(["operations", "user", user_id, "coin", id_coin, "strategy", strategy]),
   });
 }
 
-export async function http_get_coin_metrics({
-  user_id = currentUser.user_id,
+export async function HTTPGET_USEROPERATION_OPEN({
+  user_id,
   id_coin,
   ...rest
 }) {
-  return await getGeneric({
+  ({ user_id, id_coin } = AUTO_PARAMS({ user_id, id_coin }));
+  return await MAKE_GET({
     ...rest,
-    buildEndpoint: ({ baseUrl }) => {
-      return `${baseUrl}/coins/metrics/${user_id}/${id_coin}`;
-    },
+    buildEndpoint: ({ genpath }) =>
+      genpath(["operations", "open", user_id, id_coin]),
   });
 }
 
-export async function http_get_operation_open({
-  user_id = currentUser.user_id,
-  id_coin,
-  ...rest
-}) {
-  return await getGeneric({
+export async function HTTPPOST_EXCHANGE_SELL({ id_operation, ...rest }) {
+  return await MAKE_POST({
     ...rest,
-    buildEndpoint: ({ baseUrl }) => {
-      return `${baseUrl}/operations/open/${user_id}/${id_coin}`;
-    },
-  });
-}
-
-export async function http_post_exchange_operation_sell({
-  id_operation,
-  ...rest
-}) {
-  return await postGeneric({
-    ...rest,
-    buildEndpoint: ({ baseUrl }) => {
-      return `${baseUrl}/exchange/operation/${id_operation}/side/sell?forced=true`;
-    },
+    buildEndpoint: ({ genpath }) =>
+      genpath(["exchange", "operation", id_operation, "side", "sell"], {
+        forced: true,
+      }),
     service: "robot_prototype",
   });
 }
 
-export async function http_put_update_investment({
-  user_id = currentUser.user_id,
+export async function HTTPPUT_USEROPERATION_INVESTMEN({
+  user_id,
   coin_id,
   new_value,
   ...rest
 }) {
-  return await putGeneric({
+  ({ user_id, coin_id } = AUTO_PARAMS({ user_id, coin_id }));
+  return await MAKE_PUT({
     ...rest,
-    buildEndpoint: ({ baseUrl }) =>
-      `${baseUrl}/operations/update/investment/${user_id}/coin/${coin_id}?new_value=${new_value}`,
+    buildEndpoint: ({ genpath }) =>
+      genpath(
+        ["operations", "update", "investment", user_id, "coin", coin_id],
+        {
+          new_value,
+        }
+      ),
   });
 }
+
+// GET /api/user/{user_id}
+export async function HTTPGET_USER_API({ user_id, ...rest }) {
+  ({ user_id } = AUTO_PARAMS({ user_id }));
+  return await MAKE_GET({
+    ...rest,
+    buildEndpoint: ({ genpath }) => genpath(["api", "third", "user", user_id]),
+  });
+}
+
+// PATCH /api/id/{id_api_user}
+export async function HTTPPATCH_USER_API({ id_api_user, enabled, new_attributes, ...rest }) {
+  return await MAKE_PATCH({
+    ...rest,
+    buildEndpoint: ({ genpath }) => genpath(["api", "third", "id", id_api_user]),
+    params: { new_attributes },
+  });
+}
+
+// PATCH /operations/user/{user_id}/coin/{id_coin}/strategy/{strategy}
+export async function HTTPPATCH_USEROPERATION_STRATEGY({ user_id, id_coin, strategy, new_config, ...rest }) {
+  ({ user_id, id_coin } = AUTO_PARAMS({ user_id, id_coin }));
+  return await MAKE_PATCH({
+    ...rest,
+    buildEndpoint: ({ genpath }) =>
+      genpath(["operations", "user", user_id, "coin", id_coin, "strategy", strategy], {
+        new_config: (()=>{
+          if(typeof new_config == "string"){
+            return new_config;
+          }
+          // TOdos los json se pasan como cadenas
+          return JSON.stringify(new_config);
+        })(),
+      }),
+  });
+}
+
+export async function HTTPPOST_TRY_LOGIN({ username, password, ...rest }) {
+  let user = await MAKE_POST({
+    ...rest,
+    buildEndpoint: ({ genpath }) =>
+      genpath(["login"], {
+        username,
+        password,
+      }),
+    isTable: true,
+  });
+  return user;
+}
+
+

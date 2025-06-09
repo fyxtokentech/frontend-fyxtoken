@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Typography, TextField, Slider, Button } from "@mui/material";
 import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
-import { http_put_update_investment } from "@api/mocks";
+import { HTTPPUT_USEROPERATION_INVESTMEN } from "@api";
 import { showSuccess, showWarning } from "@templates";
 import { PaperP } from "@components/containers";
 import { TooltipNoPointerEvents } from "@recurrent";
@@ -82,7 +82,7 @@ export default function PanelOfInsertMoney({
               disabled={updating || !inputValue}
               onClick={() => {
                 const coin_id = driverParams.get("id_coin");
-                http_put_update_investment({
+                HTTPPUT_USEROPERATION_INVESTMEN({
                   coin_id,
                   new_value: inputValue,
                   failure: (error) => {

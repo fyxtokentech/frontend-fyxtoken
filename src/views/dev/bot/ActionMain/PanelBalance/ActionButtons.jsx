@@ -5,7 +5,7 @@ import { IconButtonWithTooltip, TooltipNoPointerEvents } from "@recurrent";
 import PauseIcon from "@mui/icons-material/Pause";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import fluidCSS from "@jeff-aporta/fluidcss";
-import { http_put_coin_start, http_put_coin_stop } from "@api/mocks";
+import { HTTPPUT_COINS_START, HTTPPUT_COINS_STOP } from "@api";
 import { showSuccess, showWarning } from "@templates";
 
 export default function ActionButtons({
@@ -19,10 +19,10 @@ export default function ActionButtons({
   onSellCoin,
   coinsToDelete,
   setErrorCoinOperate,
-  user_id,
   actionInProcess,
   setActionInProcess,
 }) {
+  const { user_id } = window["currentUser"];
   const { getCoinKey } = global;
   const [autoOpEnabled, setAutoOpEnabled] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
@@ -136,7 +136,7 @@ export default function ActionButtons({
                 }
                 setActionInProcess(true);
                 if (!isPaused) {
-                  await http_put_coin_stop({
+                  await HTTPPUT_COINS_STOP({
                     user_id,
                     id_coin: coinObj.id,
                     setError: setErrorCoinOperate,
@@ -144,11 +144,13 @@ export default function ActionButtons({
                       showSuccess(`Se detuvo (${coinObj.symbol})`);
                     },
                     failure: () => {
-                      showWarning(`Algo salió mal al detener en ${coinObj.symbol}`);
+                      showWarning(
+                        `Algo salió mal al detener en ${coinObj.symbol}`
+                      );
                     },
                   });
                 } else {
-                  await http_put_coin_start({
+                  await HTTPPUT_COINS_START({
                     user_id,
                     id_coin: coinObj.id,
                     setError: setErrorCoinOperate,
@@ -156,7 +158,9 @@ export default function ActionButtons({
                       showSuccess(`Se reanudo (${coinObj.symbol})`);
                     },
                     failure: () => {
-                      showWarning(`Algo salió mal al reanudar en ${coinObj.symbol}`);
+                      showWarning(
+                        `Algo salió mal al reanudar en ${coinObj.symbol}`
+                      );
                     },
                   });
                 }
@@ -197,7 +201,7 @@ export default function ActionButtons({
           setActionInProcess(true);
 
           try {
-            const putResult = await http_put_coin_start({
+            const putResult = await HTTPPUT_COINS_START({
               id_coin: coinObj.id,
               setError: setErrorCoinOperate,
               successful: () => {

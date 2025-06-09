@@ -40,7 +40,7 @@ import columns_transaction from "./columns-transaction.jsx";
 import mock_operation from "@tables/operations/mock-operation.json";
 import columns_operation from "@tables/operations/columns-operation.jsx";
 import dayjs from "dayjs";
-import { getResponse } from "@api/requestTable";
+import { HTTP_GET } from "@src/api/base";
 import { DriverParams } from "@jeff-aporta/router";
 
 export default TableTransactions;
@@ -53,22 +53,21 @@ function TableTransactions({
   pretable,
   data,
   columns_config,
-  user_id,
   ...rest
 }) {
+  const { user_id } = window["currentUser"] ?? {};
+  const { operationID = driverParams.get("operation-id") } =
+    window["operation-row"] ?? {};
   const { IS_GITHUB_IO } = global;
 
   const driverParams = DriverParams();
 
   const [loading, setLoading] = useState(true);
 
-  const operationID =
-    window["operation-row"]?.id_operation ?? driverParams.get("operation-id");
-
   // Si no existe rowData, obtenerla desde el endpoint
   useEffect(() => {
     if (!window["operation-row"] && operationID) {
-      getResponse({
+      HTTP_GET({
         setLoading: () => {},
         // Recibe el objeto ya procesado
         setApiData: (data) => {
@@ -97,7 +96,7 @@ function TableTransactions({
       return;
     }
 
-    getResponse({
+    HTTP_GET({
       setLoading,
       setApiData,
       setError,

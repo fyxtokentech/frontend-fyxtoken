@@ -31,7 +31,7 @@ export default class PanelOfProjections extends Component {
 
   // Propiedad de clase para obtener métricas con binding de setState
   fetchMetrics = async () => {
-    await window.fetchMetrics(this.props, (state) => {
+    await window.fetchMetrics((state) => {
       Object.assign(panelProjectionsState, state);
       this.setState(panelProjectionsState);
       this.forceUpdate();

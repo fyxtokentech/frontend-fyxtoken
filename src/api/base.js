@@ -1,37 +1,19 @@
 import axios from "axios";
 
 import {
-  table2obj,
-  responseErrors,
-  responseResults,
-  responsePromises,
-  resolveUrl,
+  unpackTable,
+  buildUrlFromService,
 } from "./utils";
+
+import { showSuccess, showWarning, showError } from "@templates";
+
+export const responsePromises = {};
+export const responseResults = {};
+export const responseErrors = {};
 
 const { CONTEXT } = window;
 
-export const getResponse = ({
-  checkErrors = () => null,
-  setError = () => {},
-  buildEndpoint,
-  service = "robot_backend",
-  ...rest
-}) => {
-  const error = checkErrors();
-  if (error) {
-    setError(error);
-    return Promise.reject(error);
-  }
-  const url = resolveUrl(buildEndpoint, service);
-  console.log(`[getResponse] resolved URL: ${url} service: ${service}`);
-  return getSingletonResponse({
-    url,
-    setError,
-    ...rest,
-  });
-};
-
-function getSingletonResponse({
+function SINGLETON_EFFECT({
   url,
   setLoading = () => {},
   setApiData = () => {},
@@ -52,7 +34,7 @@ function getSingletonResponse({
       .then(({ data }) => {
         console.log(`[getSingletonResponse]: ${url} success:`, { data });
         if (!Array.isArray(data)) throw new Error("Unexpected response format");
-        const result = table2obj(data);
+        const result = unpackTable(data);
         responseResults[url] = result;
         setApiData(result);
         return result;
@@ -64,11 +46,12 @@ function getSingletonResponse({
           mock_default &&
           Array.isArray(mock_default.content)
         ) {
-          const fallback = table2obj(mock_default.content);
+          const fallback = unpackTable(mock_default.content);
           setApiData(fallback);
           return fallback;
         }
         responseErrors[url] = err;
+        showError(err.message || err);
         setError(err.message || err);
       })
       .finally(() => {
@@ -96,8 +79,8 @@ function getSingletonResponse({
   return responsePromises[url];
 }
 
-export const request = async ({
-  method = "post", // "post" o "put"
+export const HTTP_REQUEST = async ({
+  method = "post", // post | put | path
   buildEndpoint, // Función que construye la URL de la API.
   setError, // Función para manejar errores.
   payload = {}, // Payload para la petición.
@@ -108,7 +91,7 @@ export const request = async ({
   isTable = false, // Si es true, transforma la respuesta con table2obj
 }) => {
   setError(null);
-  const requestUrl = resolveUrl(buildEndpoint, service);
+  const requestUrl = buildUrlFromService(buildEndpoint, service);
   console.log(service);
   console.log(
     `[request] Enviando ${method.toUpperCase()} a ${requestUrl} con data:`,
@@ -126,7 +109,7 @@ export const request = async ({
       axiosConfig
     );
     let data = response.data;
-    if (isTable) data = table2obj(data);
+    if (isTable) data = unpackTable(data);
     console.log(`[request] Éxito respuesta de ${requestUrl}:`, data);
     responseBodyReceived(data);
     return data;
@@ -142,9 +125,40 @@ export const request = async ({
   }
 };
 
-export const postRequest = async (params) => {
-  return await request({ ...params, method: "post" });
+export const HTTP_GET = ({
+  checkErrors = () => null,
+  setError = () => {},
+  buildEndpoint,
+  service = "robot_backend",
+  ...rest
+}) => {
+  const error = checkErrors();
+  if (error) {
+    setError(error);
+    return Promise.reject(error);
+  }
+  const url = buildUrlFromService(buildEndpoint, service);
+  console.log(`[HTTP_GET] resolved URL: ${url} service: ${service}`);
+  return SINGLETON_EFFECT({
+    url,
+    setError,
+    ...rest,
+  });
 };
-export const putRequest = async (params) => {
-  return await request({ ...params, method: "put" });
+
+
+export const HTTP_POST = async (params) => {
+  return await HTTP_REQUEST({ ...params, method: "post" });
+};
+
+export const HTTP_PUT = async (params) => {
+  return await HTTP_REQUEST({ ...params, method: "put" });
+};
+
+export const HTTP_PATH = async (params) => {
+  return await HTTP_REQUEST({ ...params, method: "path" });
+};
+
+export const HTTP_PATCH = async (params) => {
+  return await HTTP_REQUEST({ ...params, method: "patch" });
 };

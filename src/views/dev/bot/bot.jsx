@@ -1,39 +1,18 @@
 import React, { useRef, useState, useEffect } from "react";
 
-import fluidCSS from "@jeff-aporta/fluidcss";
-
 import { ThemeSwitcher } from "@templates";
-import { DivM, PaperP } from "@containers";
-import { DynTable, genAllColumns } from "@components/GUI/DynTable/DynTable";
+import { DivM } from "@containers";
 
-import { http_get_coins } from "@api/mocks";
+import { HTTPGET_COINS_BY_USER } from "@api";
 
-import {
-  Button,
-  Chip,
-  IconButton,
-  Paper,
-  Skeleton,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Tooltip,
-  Typography,
-} from "@mui/material";
-import InfoIcon from "@mui/icons-material/Info";
-import TransactionsIcon from "@mui/icons-material/PriceChange";
-
-import FyxDialog from "@components/GUI/dialog";
-
-import { generate_inputs, Info, Title } from "@recurrent";
+import { Title } from "@recurrent";
 
 import ActionMain from "./ActionMain/ActionMain";
 import Settings from "./Settings/Settings";
 
 export default function PanelRobot() {
+  const { user_id } = window["currentUser"];
+
   const { driverParams } = global;
   const [viewTable, setViewTable] = useState(
     driverParams.get("view-table") || "operations"
@@ -57,8 +36,6 @@ export default function PanelRobot() {
   // Error al cargar monedas disponibles
   const [errorCoinOperate, setErrorCoinOperate] = useState(null);
 
-  const { user_id } = window["currentUser"];
-
   // Sync view and viewTable to URL params
   useEffect(() => {
     driverParams.set("action-id", view);
@@ -68,7 +45,7 @@ export default function PanelRobot() {
   useEffect(() => {
     if (coinsToOperate.current.length === 0) {
       setLoadingCoinToOperate(true);
-      http_get_coins({
+      HTTPGET_COINS_BY_USER({
         setError: setErrorCoinOperate,
         setLoading: setLoadingCoinToOperate,
         setApiData: (data) => {

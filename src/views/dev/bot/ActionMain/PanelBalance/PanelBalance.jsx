@@ -18,7 +18,7 @@ import {
 
 import { PaperP } from "@components/containers";
 import { AutoSkeleton } from "@components/controls";
-import { http_get_coin_metrics } from "@api/mocks";
+import { HTTPGET_COINS_METRICS } from "@api";
 
 import ActionButtons from "./ActionButtons";
 import CoinsOperating from "./CoinsOperating";
@@ -29,6 +29,7 @@ import PanelOfProjections from "./PanelOfProjections";
 export default class PanelBalance extends Component {
   constructor(props) {
     super(props);
+
     this.state = {
       actionInProcess: false,
       priceProjectionValue: -3,
@@ -94,7 +95,6 @@ export default class PanelBalance extends Component {
   render() {
     const {
       currency,
-      user_id,
       update_available,
       setUpdateAvailable,
       setView,
@@ -155,7 +155,6 @@ export default class PanelBalance extends Component {
                         loadingCoinToOperate,
                         errorCoinOperate,
                         setErrorCoinOperate,
-                        user_id,
                         coinsOperatingList,
                         setUpdateAvailable,
                         viewTable,
@@ -167,10 +166,7 @@ export default class PanelBalance extends Component {
                   </Grid>
                   <Grid item xs={12} sm={6} md={4}>
                     <PanelOfProjections
-                      {...{
-                        user_id,
-                        flatNumber,
-                      }}
+                      flatNumber={flatNumber}
                     />
                   </Grid>
                   <Grid item xs={12} sm={6} md={3}>
@@ -200,7 +196,6 @@ export default class PanelBalance extends Component {
                         onSellCoin,
                         coinsToDelete,
                         setErrorCoinOperate,
-                        user_id,
                         actionInProcess,
                         setActionInProcess: (value) =>
                           this.setState({ actionInProcess: value }),
@@ -221,7 +216,6 @@ export default class PanelBalance extends Component {
                   deletionTimers,
                   setDeletionTimers,
                   onExternalDeleteRef: window.onSellCoinRef,
-                  user_id,
                   setErrorCoinOperate,
                   setUpdateAvailable,
                   actionInProcess,
@@ -237,12 +231,11 @@ export default class PanelBalance extends Component {
   }
 }
 
-window.fetchMetrics = async function (props, setState = () => 0) {
-  const { user_id } = props;
+window.fetchMetrics = async function (setState = () => 0) {
   const { driverParams } = global;
   const id_coin = driverParams.get("id_coin");
   if (!id_coin) return;
-  await http_get_coin_metrics({
+  await HTTPGET_COINS_METRICS({
     id_coin,
     setLoading: (loading) => setState({ loadingMetrics: loading }),
     setError: (err) => setState({ errorMetrics: err }),

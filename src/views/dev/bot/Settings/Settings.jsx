@@ -18,7 +18,7 @@ import CandlestickChartIcon from "@mui/icons-material/CandlestickChart";
 import AutoFixHighIcon from "@mui/icons-material/AutoFixHigh";
 
 import { PaperP } from "@containers";
-import { APIKeyView, exchanges, exchanges_withdrawal } from "./tabs/APIKey";
+import { APIKeyView, exchanges_withdrawal } from "./tabs/APIKey";
 import { RSIView } from "./tabs/RSI";
 import { CriptomonedasView } from "./tabs/Cripto";
 import { AutoView } from "./tabs/Auto";
@@ -59,41 +59,6 @@ export default function Settings({ setView }) {
     setSelectedViewSetting(id);
   };
   const drawerWidth = 240;
-
-  const [apiKeys, setApiKeys] = useState(() => {
-    const init = prepareToInit(exchanges, false);
-    Object.assign(init, prepareToInit(exchanges_withdrawal, true));
-    return init;
-  });
-
-  function prepareToInit(array, withdrawal) {
-    return array.reduce((acc, ex) => {
-      acc[ex.toLowerCase()] = {
-        apiKey: "",
-        secretKey: "",
-        withdrawal,
-        enabled: true,
-      };
-      return acc;
-    }, {});
-  }
-
-  const handleInputChange = (exchange, field, value) => {
-    setApiKeys((prev) => ({
-      ...prev,
-      [exchange.toLowerCase()]: {
-        ...prev[exchange.toLowerCase()],
-        [field]: value,
-      },
-    }));
-  };
-
-  const handleSave = () => {
-    // Add logic to save settings (e.g., send to backend or local storage)
-    console.log("Guardando configuraciones:", apiKeys);
-    // Optionally close after saving
-    // setView("main");
-  };
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
@@ -138,17 +103,15 @@ export default function Settings({ setView }) {
               <br />
               {selectedViewSetting === "apis" && (
                 <>
-                  <APIKeyView
-                    apiKeys={apiKeys}
-                    handleInputChange={handleInputChange}
-                    handleSave={handleSave}
-                  />
+                  <APIKeyView />
                 </>
               )}
               {selectedViewSetting === "criptomonedas" && <CriptomonedasView />}
               {selectedViewSetting === "rsi" && <RSIView />}
               {selectedViewSetting === "candlestick" && <CandlestickView />}
-              {selectedViewSetting === "automatizacion" && <AutomatizacionView />}
+              {selectedViewSetting === "automatizacion" && (
+                <AutomatizacionView />
+              )}
             </PaperP>
           </Box>
         </Box>
