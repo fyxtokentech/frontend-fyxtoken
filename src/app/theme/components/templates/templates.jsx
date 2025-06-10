@@ -30,6 +30,7 @@ import {
   setThemeLuminance,
   isDark,
   paletteSelected,
+  Color,
 } from "@jeff-aporta/theme-manager";
 
 const minH = "min-h-80vh";
@@ -146,8 +147,26 @@ class Notifier extends React.Component {
 }
 
 function Themized({ children }) {
+  const theme = getTheme();
+  switch(getThemeName()){
+    case "main":
+      theme.palette.primary.main = Color("rebeccapurple").hex()
+      break;
+    case "lemongreen":
+      theme.palette.primary.main = Color("yellowgreen").hex()
+      break;
+    case "skygreen":
+      theme.palette.primary.main = Color("dodgerblue").hex()
+      break;
+    case "springgreen":
+      theme.palette.primary.main = Color("springgreen").hex()
+      break;
+    case "blacknwhite":
+      theme.palette.primary.main = Color("gray").hex()
+      break;
+  }
   return (
-    <ThemeProvider theme={getTheme()}>
+    <ThemeProvider theme={theme}>
       <CssBaseline />
       {children}
     </ThemeProvider>

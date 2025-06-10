@@ -54,6 +54,7 @@ class Main extends Fyxbase {
       name_bright_color: "morado_brillante",
       ...props,
     });
+    console.log(morado)
   }
 }
 

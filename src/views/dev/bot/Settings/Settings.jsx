@@ -35,11 +35,6 @@ export default function Settings({ setView }) {
     },
     { id: "rsi", label: "RSI", icon: <ShowChartIcon /> },
     { id: "candlestick", label: "Candlestick", icon: <CandlestickChartIcon /> },
-    {
-      id: "automatizacion",
-      label: "Automatización",
-      icon: <AutoFixHighIcon />,
-    },
   ];
   const { driverParams } = global;
   const initialView = driverParams.get("view-setting") || "apis";
@@ -76,6 +71,12 @@ export default function Settings({ setView }) {
           Cerrar
         </Button>
       </Box>
+
+      <PaperP>
+        <AutomatizacionView />
+      </PaperP>
+      <br />
+
       <Paper>
         <AppBar position="static" color="default">
           <Tabs
@@ -109,9 +110,6 @@ export default function Settings({ setView }) {
               {selectedViewSetting === "criptomonedas" && <CriptomonedasView />}
               {selectedViewSetting === "rsi" && <RSIView />}
               {selectedViewSetting === "candlestick" && <CandlestickView />}
-              {selectedViewSetting === "automatizacion" && (
-                <AutomatizacionView />
-              )}
             </PaperP>
           </Box>
         </Box>

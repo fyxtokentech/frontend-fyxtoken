@@ -152,11 +152,12 @@ function BotonInicio() {
     >
       <ImageLocal
         src={`/img/metadata/logo-${getThemeName()}.svg`}
-        width="40"
         className={fluidCSS()
           .lerpX([450, 1000], { width: [30, 40] })
           .end()}
         style={{
+          width: "40px",
+          height: "40px",
           filter: (() => {
             const themename = getThemeName();
             const themeluminance = getThemeLuminance();

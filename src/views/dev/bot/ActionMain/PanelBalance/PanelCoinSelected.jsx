@@ -4,8 +4,9 @@ import { AutoSkeleton } from "@components/controls";
 import { generate_selects } from "@recurrent";
 import fluidCSS from "@jeff-aporta/fluidcss";
 import { Typography } from "@mui/material";
+import { getCoinMetric } from "./PanelOfProjections";
 
-export default class PanelCoinSelected extends React.Component {
+export default class extends React.Component {
   render() {
     const {
       currency,
@@ -21,9 +22,114 @@ export default class PanelCoinSelected extends React.Component {
       balanceUSDT,
       balanceCoin,
     } = this.props;
+
+    class Balance extends React.Component {
+      constructor(props) {
+        super(props);
+        this.state = {};
+        this.coinSelected = getCoinSelected();
+        const { total_tokens, current_price } = getCoinMetric();
+        this.total_tokens = total_tokens;
+        this.current_price = current_price;
+        this.isAlive = true;
+      }
+
+      componentDidMount() {
+        this.updateRecursive();
+      }
+
+      componentWillUnmount() {
+        this.isAlive = false;
+      }
+
+      updateRecursive() {
+        if (!this.isAlive) {
+          return;
+        }
+        const { total_tokens, current_price } = getCoinMetric();
+        const coinSelected = getCoinSelected();
+        const propsUpdate = {
+          total_tokens,
+          current_price,
+          coinSelected,
+        };
+        const someChange = Object.entries(propsUpdate).some(
+          ([key, value]) => this[key] != value
+        );
+
+        if (someChange) {
+          Object.entries(propsUpdate).forEach(([key, value]) => {
+            this[key] = value;
+          });
+          this.forceUpdate();
+        }
+
+        setTimeout(() => this.updateRecursive(), 500);
+      }
+    }
+
+    class BalanceUSDTCard extends Balance {
+      render() {
+        const { total_tokens = 0, current_price = 0 } = getCoinMetric();
+        const balance = total_tokens * current_price;
+        return (
+          <PaperP
+            className={`d-center ${fluidCSS()
+              .ltX(480, { width: "calc(33% - 5px)" })
+              .end()}`}
+            elevation={3}
+            p_min="5"
+            p_max="10"
+          >
+            <div className="flex col-direction gap-5px">
+              <div className="nowrap">
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  className="mb-5px"
+                >
+                  Balance USDC
+                </Typography>
+              </div>
+
+              <Typography>{balance.toLocaleString()}</Typography>
+            </div>
+          </PaperP>
+        );
+      }
+    }
+
+    class BalanceCoinCard extends Balance {
+      render() {
+        const { currency } = this.props;
+        const { total_tokens = 0 } = getCoinMetric();
+        return (
+          <PaperP
+            className={`d-center ${fluidCSS()
+              .ltX(480, { width: "calc(33% - 5px)" })
+              .end()}`}
+            elevation={3}
+            p_min="5"
+            p_max="10"
+          >
+            <div className="flex col-direction gap-5px">
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                className="nowrap"
+              >
+                Balance {currency}
+              </Typography>
+              <Typography>{total_tokens.toLocaleString()}</Typography>
+            </div>
+          </PaperP>
+        );
+      }
+    }
+
     return (
       <PaperP elevation={3}>
-        <div className="gap-10px flex-column">
+        <div className="gap-10px flex col-direction jc-space-between">
           <CoinSelectionOperate
             {...{
               currency,
@@ -40,12 +146,27 @@ export default class PanelCoinSelected extends React.Component {
           />
           <div className="d-flex jc-space-evenly flex-row gap-10px">
             <BalanceUSDTCard balance={balanceUSDT} />
-            <BalanceCoinCard balance={balanceCoin} currency={currency.current} />
+            <BalanceCoinCard
+              balance={balanceCoin}
+              currency={currency.current}
+            />
           </div>
         </div>
       </PaperP>
     );
   }
+}
+
+const vars_PanelCoinSelected = {
+  coinSelected: null,
+};
+
+function updateCoinSelected(currency) {
+  vars_PanelCoinSelected.coinSelected = currency.current;
+}
+
+function getCoinSelected() {
+  return vars_PanelCoinSelected.coinSelected;
 }
 
 function CoinSelectionOperate({
@@ -65,6 +186,7 @@ function CoinSelectionOperate({
   const opns = coinsToOperate.current.map(
     (coin) => coin.symbol || coin.name || coin.id || "-"
   );
+  updateCoinSelected(currency);
 
   return (
     <PaperP className="d-center">
@@ -74,6 +196,7 @@ function CoinSelectionOperate({
             value: currency.current,
             setter: (value) => {
               currency.current = value;
+              updateCoinSelected(currency);
               driverParams.set("view-table", "operations");
               driverParams.set("coin", value);
               setViewTable("operations");
@@ -98,52 +221,6 @@ function CoinSelectionOperate({
           Error: {errorCoinOperate}
         </span>
       )}
-    </PaperP>
-  );
-}
-
-function BalanceUSDTCard({ balance }) {
-  return (
-    <PaperP
-      className={`d-center ${fluidCSS()
-        .ltX(480, { width: "calc(33% - 5px)" })
-        .end()}`}
-      elevation={3}
-      p_min="5"
-      p_max="10"
-    >
-      <div className="d-flex flex-column gap-5px">
-        <Typography variant="caption" color="text.secondary" className="mb-5px">
-          Balance USDC
-        </Typography>
-        <Typography>${balance.toLocaleString()}</Typography>
-      </div>
-    </PaperP>
-  );
-}
-
-function BalanceCoinCard({ balance, currency }) {
-  return (
-    <PaperP
-      className={`d-center ${fluidCSS()
-        .ltX(480, { width: "calc(33% - 5px)" })
-        .end()}`}
-      elevation={3}
-      p_min="5"
-      p_max="10"
-    >
-      <div className="d-flex flex-column gap-5px">
-        <Typography
-          variant="caption"
-          color="text.secondary"
-          className="mb-5px nowrap"
-        >
-          Balance {currency}
-        </Typography>
-        <Typography>
-          {balance.toLocaleString()} {currency}
-        </Typography>
-      </div>
     </PaperP>
   );
 }

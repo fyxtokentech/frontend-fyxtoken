@@ -41,7 +41,6 @@ import mock_operation from "@tables/operations/mock-operation.json";
 import columns_operation from "@tables/operations/columns-operation.jsx";
 import dayjs from "dayjs";
 import { HTTP_GET } from "@src/api/base";
-import { DriverParams } from "@jeff-aporta/router";
 
 export default TableTransactions;
 
@@ -56,11 +55,12 @@ function TableTransactions({
   ...rest
 }) {
   const { user_id } = window["currentUser"] ?? {};
+  const { driverParams } = window;
   const { operationID = driverParams.get("operation-id") } =
     window["operation-row"] ?? {};
   const { IS_GITHUB_IO } = global;
 
-  const driverParams = DriverParams();
+  
 
   const [loading, setLoading] = useState(true);
 

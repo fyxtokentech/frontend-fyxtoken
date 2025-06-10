@@ -17,7 +17,10 @@ import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import TuneIcon from "@mui/icons-material/Tune";
 import { TitleTab } from "./_repetitive";
 import { ImageLocal } from "@recurrent";
-import { HTTPGET_USEROPERATION_STRATEGY, HTTPPATCH_USEROPERATION_STRATEGY } from "@api";
+import {
+  HTTPGET_USEROPERATION_STRATEGY,
+  HTTPPATCH_USEROPERATION_STRATEGY,
+} from "@api";
 
 export function RSIView() {
   // Estado agrupado para la configuración RSI
@@ -55,15 +58,22 @@ export function RSIView() {
     }
     return { unit: "m", value: 5 };
   };
+
   const periodObjToText = ({ unit, value }) => {
     if (!unit || !value) return "5 minutos";
     switch (unit) {
-      case "m": return `${value} minutos`;
-      case "h": return `${value} hora${value > 1 ? 's' : ''}`;
-      case "d": return `${value} día${value > 1 ? 's' : ''}`;
-      case "s": return `${value} semana${value > 1 ? 's' : ''}`;
-      case "M": return `${value} mes${value > 1 ? 'es' : ''}`;
-      default: return "5 minutos";
+      case "m":
+        return `${value} minutos`;
+      case "h":
+        return `${value} hora${value > 1 ? "s" : ""}`;
+      case "d":
+        return `${value} día${value > 1 ? "s" : ""}`;
+      case "s":
+        return `${value} semana${value > 1 ? "s" : ""}`;
+      case "M":
+        return `${value} mes${value > 1 ? "es" : ""}`;
+      default:
+        return "5 minutos";
     }
   };
 
@@ -76,15 +86,14 @@ export function RSIView() {
       user_id,
       id_coin,
       strategy: "rsi",
-      setApiData: (data) => {
-        console.log(data)
+      setApiData: ([data]) => {
         // data.config debe ser el modelo backend: {delta, period, oversold, overbought}
-        let loaded = data || {};
+        let loaded = data;
         setConfig({
-          delta: loaded.delta || { negative: 1, positive: 3 },
+          delta: loaded.delta || { negative: -1, positive: -1 },
           period: periodObjToText(loaded.period || { unit: "m", value: 5 }),
-          oversold: loaded.oversold ?? 30,
-          overbought: loaded.overbought ?? 70,
+          oversold: loaded.oversold ?? -1,
+          overbought: loaded.overbought ?? -1,
         });
       },
     });
@@ -124,7 +133,6 @@ export function RSIView() {
       strategy: "rsi",
       new_config: JSON.stringify(backendConfig),
     });
-    console.log(result)
     setSaving(false);
     setSnackbarOpen(true);
     setDialogOpen(false);
@@ -215,6 +223,30 @@ export function RSIView() {
                 <option value="2 semanas">2 semanas</option>
                 <option value="1 mes">1 mes</option>
               </TextField>
+            </Grid>
+            {/* Slider gráfico para Sobreventa/Sobrecompra */}
+            <Grid item xs={12}>
+              <Box sx={{ width: "100%", px: 2 }}>
+                <br />
+                <br />
+                <Slider
+                  getAriaLabel={() => "Sobreventa y Sobrecompra"}
+                  value={[config.oversold, config.overbought]}
+                  onChange={(e, newValue) => {
+                    handleInputChange(["oversold"], newValue[0]);
+                    handleInputChange(["overbought"], newValue[1]);
+                  }}
+                  valueLabelDisplay="on"
+                  valueLabelFormat={(value, index) =>
+                    index === 0
+                      ? `Sobreventa: ${value}`
+                      : `Sobrecompra: ${value}`
+                  }
+                  getAriaValueText={(val) => `${val}`}
+                  min={0}
+                  max={100}
+                />
+              </Box>
             </Grid>
             <Grid item xs={12} sm={6}>
               <TextField

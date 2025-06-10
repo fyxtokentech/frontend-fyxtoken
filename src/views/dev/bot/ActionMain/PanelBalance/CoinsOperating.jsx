@@ -14,6 +14,10 @@ import {
 
 import { showSuccess, showWarning, showError } from "@templates";
 
+export const vars_CoinsOperating = {
+  actionInProcess: false,
+}
+
 export default class CoinsOperating extends Component {
   constructor(props) {
     super(props);
@@ -40,10 +44,9 @@ export default class CoinsOperating extends Component {
       //
       coinsToDelete,
       setUpdateAvailable,
-      setActionInProcess,
     } = this.props;
     coinsToDelete.current = [...coinsToDelete.current, coin];
-    setActionInProcess(true);
+    vars_CoinsOperating.actionInProcess = true;
     setUpdateAvailable((prev) => !prev);
     setTimeout(() => {
       this.deleteCoinFromAPI(coin);
@@ -74,6 +77,14 @@ export default class CoinsOperating extends Component {
             Object.assign(operationOpen, data);
           },
           setError: setErrorCoinOperate,
+          successful: (json, info) => {
+            console.log(json, info)
+            showSuccess(`Se empezó a operar (${coin.symbol})`);
+          },
+          failure: (json, info) => {
+            console.log(json, info)
+            showWarning(`Algo salió mal al empezar a operar en ${coin.symbol}`);
+          },
         });
         const { id_operation } = operationOpen;
         if (!id_operation) {
@@ -91,6 +102,14 @@ export default class CoinsOperating extends Component {
           id_operation,
           setError: setErrorCoinOperate,
           willEnd,
+          successful: (json, info) => {
+            console.log(json, info)
+            showSuccess(`Se vendio (${coin.symbol})`);
+          },
+          failure: (json, info) => {
+            console.log(json, info)
+            showWarning(`Algo salió mal al vender en ${coin.symbol}`);
+          },
         });
         if (all_okSell) {
           showSuccess(`Se vendio (${coin.symbol})`);
@@ -110,6 +129,14 @@ export default class CoinsOperating extends Component {
           id_coin: coin.id,
           setError: setErrorCoinOperate,
           willEnd,
+          successful: (json, info) => {
+            console.log(json, info)
+            showSuccess(`Se detuvo (${coin.symbol})`);
+          },
+          failure: (json, info) => {
+            console.log(json, info)
+            showWarning(`Algo salió mal al detener en ${coin.symbol}`);
+          },
         });
         if (!all_okStop) {
           showWarning(`Algo salió mal al detener en ${coin.symbol}`, rest);

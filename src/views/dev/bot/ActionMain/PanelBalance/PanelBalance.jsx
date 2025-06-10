@@ -26,49 +26,14 @@ import PanelCoinSelected from "./PanelCoinSelected";
 import PanelOfInsertMoney from "./PanelOfInsertMoney";
 import PanelOfProjections from "./PanelOfProjections";
 
+import { vars_PanelOfInsertMoney } from "./PanelOfInsertMoney";
+import { panelProjectionsState } from "./PanelOfProjections";
+
 export default class PanelBalance extends Component {
   constructor(props) {
     super(props);
 
-    this.state = {
-      actionInProcess: false,
-      priceProjectionValue: -3,
-      inputValue: 10,
-      sliderExp: Math.log10(10),
-    };
-  }
-
-  componentDidMount() {
-    this.interval = setInterval(() => {
-      this.setState((prev) => ({
-        priceProjectionValue:
-          prev.priceProjectionValue + 1 > 3
-            ? -3
-            : prev.priceProjectionValue + 1,
-      }));
-    }, 10000);
-  }
-
-  componentWillUnmount() {
-    clearInterval(this.interval);
-  }
-
-  valuetext(exp) {
-    return `${Math.round(10 ** exp)} USD`;
-  }
-
-  getPriceProjectionColor() {
-    const { priceProjectionValue } = this.state;
-    if (priceProjectionValue > 0) return "ok";
-    if (priceProjectionValue < 0) return "error";
-    return "warning";
-  }
-
-  getPriceProjectionIcon() {
-    const { priceProjectionValue } = this.state;
-    if (priceProjectionValue > 0) return <TrendingUpIcon />;
-    if (priceProjectionValue < 0) return <TrendingDownIcon />;
-    return <TrendingFlatIcon />;
+    this.state = {};
   }
 
   settingIcon = () => (
@@ -110,101 +75,63 @@ export default class PanelBalance extends Component {
       viewTable,
       setViewTable,
     } = this.props;
-    const { actionInProcess, priceProjectionValue, inputValue, sliderExp } =
-      this.state;
+    // Usar los estados globales en vez del state local
+    const { actionInProcess } = vars_PanelOfInsertMoney;
     const flatNumber = 12345;
     const roi = 0;
     const balanceUSDT = 10000; // Example USDT balance
     const balanceCoin = 2.5; // Example coin balance
-    const marks = [
-      { value: 1, label: "10" },
-      { value: 2, label: "100" },
-      { value: 3, label: "1.000" },
-      { value: 4, label: "10.000" },
-      { value: 5, label: "100.000" },
-    ];
 
     const hayMoneda = currency.current.trim() && !loadingCoinToOperate;
 
     return (
       <div key={currency.current}>
         <PaperP elevation={0}>
-          <div>
-            <div>
-              <div className={`d-flex ai-center jc-space-between`}>
-                <Grid
-                  container
-                  direction="row"
-                  spacing={1}
-                  alignItems="stretch"
-                  justifyContent="space-between"
-                  wrap="wrap"
-                >
-                  <Grid
-                    item
-                    xs={12}
-                    sm={12}
-                    md={2.6}
-                    className="d-flex ai-stretch"
-                  >
-                    <PanelCoinSelected
-                      {...{
-                        currency,
-                        coinsToOperate,
-                        coinsToDelete,
-                        loadingCoinToOperate,
-                        errorCoinOperate,
-                        setErrorCoinOperate,
-                        coinsOperatingList,
-                        setUpdateAvailable,
-                        viewTable,
-                        setViewTable,
-                        balanceUSDT,
-                        balanceCoin,
-                      }}
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6} md={4}>
-                    <PanelOfProjections
-                      flatNumber={flatNumber}
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6} md={3}>
-                    <PanelOfInsertMoney
-                      {...{
-                        inputValue,
-                        setInputValue: (value) =>
-                          this.setState({ inputValue: value }),
-                        setSliderExp: (exp) =>
-                          this.setState({ sliderExp: exp }),
-                        sliderExp,
-                        valuetext: this.valuetext,
-                        marks,
-                      }}
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={12} md={2}>
-                    <ActionButtons
-                      {...{
-                        update_available,
-                        setUpdateAvailable,
-                        setView,
-                        settingIcon: this.settingIcon,
-                        currency,
-                        coinsOperatingList,
-                        coinsToOperate,
-                        onSellCoin,
-                        coinsToDelete,
-                        setErrorCoinOperate,
-                        actionInProcess,
-                        setActionInProcess: (value) =>
-                          this.setState({ actionInProcess: value }),
-                      }}
-                    />
-                  </Grid>
-                </Grid>
-              </div>
-            </div>
+          <div className={`flex wrap stretch space-between gap-10px`}>
+            <PanelCoinSelected
+              {...{
+                currency,
+                coinsToOperate,
+                coinsToDelete,
+                loadingCoinToOperate,
+                errorCoinOperate,
+                setErrorCoinOperate,
+                coinsOperatingList,
+                setUpdateAvailable,
+                viewTable,
+                setViewTable,
+                balanceUSDT,
+                balanceCoin,
+              }}
+            />
+            <PanelOfProjections flatNumber={flatNumber} />
+            <PanelOfInsertMoney
+              setInputValue={(value) => {
+                vars_PanelOfInsertMoney.inputValue = value;
+                this.forceUpdate();
+              }}
+              setSliderExp={(exp) => {
+                vars_PanelOfInsertMoney.sliderExp = exp;
+                this.forceUpdate();
+              }}
+            />
+            <ActionButtons
+              {...{
+                update_available,
+                setUpdateAvailable,
+                setView,
+                settingIcon: this.settingIcon,
+                currency,
+                coinsOperatingList,
+                coinsToOperate,
+                onSellCoin,
+                coinsToDelete,
+                setErrorCoinOperate,
+                actionInProcess,
+                setActionInProcess: (value) =>
+                  this.setState({ actionInProcess: value }),
+              }}
+            />
           </div>
           {hayMoneda && (
             <>

@@ -6,7 +6,7 @@ import PauseIcon from "@mui/icons-material/Pause";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import fluidCSS from "@jeff-aporta/fluidcss";
 import { HTTPPUT_COINS_START, HTTPPUT_COINS_STOP } from "@api";
-import { showSuccess, showWarning } from "@templates";
+import { showSuccess, showWarning, showError } from "@templates";
 
 export default function ActionButtons({
   update_available,
@@ -42,195 +42,216 @@ export default function ActionButtons({
   ].reduce((a, b) => a || b, false);
 
   return (
-    <div
-      className={`d-flex ai-center jc-end fullWidth flex-wrap gap-10px ${fluidCSS()
-        .ltX(768, {
-          justifyContent: "flex-end",
-          marginTop: "10px",
-        })
-        .end()}`}
-    >
-      <UpdateButton {...{ update_available, setUpdateAvailable }} />
-      {settingIcon()}
-      <div className="d-flex wrap jc-end gap-10px">
-        <TooltipNoPointerEvents
-          title={(() => {
-            if (!hayMoneda) {
-              return "Seleccione una moneda";
-            }
-            if (monedaYaOperando) {
-              return "Moneda ya operando";
-            }
-            if (actionInProcess) {
-              return "Espere...";
-            }
-            return "Operar";
-          })()}
-        >
-          <div>
-            <Operar
-              disabled={!hayMoneda || monedaYaOperando || actionInProcess}
-            />
-          </div>
-        </TooltipNoPointerEvents>
-        <TooltipNoPointerEvents
-          title={(() => {
-            if (!hayMoneda) {
-              return "Seleccione una moneda";
-            }
-            if (monedasDisponibles) {
-              return "No hay monedas operando";
-            }
-            if (!monedaYaOperando) {
-              return "Moneda no operando";
-            }
-            if (monedaEnBorrado) {
-              return "Moneda en proceso de borrado";
-            }
-            if (actionInProcess) {
-              return "Espere...";
-            }
-            return "Detener";
-          })()}
-        >
-          <div>
-            <Detener
-              disabled={
-                !hayMoneda ||
-                monedasDisponibles ||
-                !monedaYaOperando ||
-                monedaEnBorrado ||
-                actionInProcess
-              }
-            />
-          </div>
-        </TooltipNoPointerEvents>
-        <hr />
-        <TooltipNoPointerEvents title="Auto-op">
-          <div>
-            <Button
-              variant="contained"
-              color="primary"
-              size="small"
-              onClick={() => setAutoOpEnabled(!autoOpEnabled)}
-            >
-              <small>Auto-op</small>
-            </Button>
-          </div>
-        </TooltipNoPointerEvents>
-        <TooltipNoPointerEvents title={isPaused ? "Reanudar" : "Pausar"}>
-          <div>
-            <Button
-              variant="contained"
-              color={isPaused ? "success" : "warning"}
-              disabled={pauseDisabled}
-              size="small"
-              sx={{ width: 80 }}
-              onClick={async () => {
-                console.log("isPaused", isPaused);
-                const coinObj = coinsToOperate.current.find(
-                  (c) => getCoinKey(c) === currency.current
-                );
-                if (!coinObj) {
-                  return;
-                }
-                setActionInProcess(true);
-                if (!isPaused) {
-                  await HTTPPUT_COINS_STOP({
-                    user_id,
-                    id_coin: coinObj.id,
-                    setError: setErrorCoinOperate,
-                    successful: () => {
-                      showSuccess(`Se detuvo (${coinObj.symbol})`);
-                    },
-                    failure: () => {
-                      showWarning(
-                        `Algo salió mal al detener en ${coinObj.symbol}`
-                      );
-                    },
-                  });
-                } else {
-                  await HTTPPUT_COINS_START({
-                    user_id,
-                    id_coin: coinObj.id,
-                    setError: setErrorCoinOperate,
-                    successful: () => {
-                      showSuccess(`Se reanudo (${coinObj.symbol})`);
-                    },
-                    failure: () => {
-                      showWarning(
-                        `Algo salió mal al reanudar en ${coinObj.symbol}`
-                      );
-                    },
-                  });
-                }
-                setIsPaused(!isPaused);
-                setActionInProcess(false);
-              }}
-            >
-              {isPaused ? (
-                <PlayArrowIcon fontSize="small" />
-              ) : (
-                <PauseIcon fontSize="small" />
-              )}
-              <small>{isPaused ? "Reanudar" : "Pausar"}</small>
-            </Button>
-          </div>
-        </TooltipNoPointerEvents>
+    <div className="inline-flex ai-end col-direction gap-10px">
+      <div className="flex">
+        <UpdateButton {...{ update_available, setUpdateAvailable }} />
+        {settingIcon()}
+      </div>
+      <div>
+        <ButtonOperate />
+        <ButtonStop />
+      </div>
+      <hr />
+      <div>
+      <ButtonAutoOp />
+      <ButtonPauseResume />
       </div>
     </div>
   );
 
-  function Operar(props) {
+  function ButtonPauseResume() {
     return (
-      <Button
-        {...props}
-        variant="contained"
-        color="ok"
-        size="small"
-        onClick={async () => {
-          if (!currency.current.trim()) {
-            return;
-          }
-          const coinObj = coinsToOperate.current.find(
-            (c) => getCoinKey(c) === currency.current
-          );
-          if (!coinObj) {
-            return;
-          }
-          setActionInProcess(true);
-
-          try {
-            const putResult = await HTTPPUT_COINS_START({
-              id_coin: coinObj.id,
-              setError: setErrorCoinOperate,
-              successful: () => {
-                showSuccess(`Se empieza a operar (${coinObj.symbol})`);
-              },
-              failure: () => {
-                showWarning(`Algo salió mal al operar en ${coinObj.symbol}`);
-              },
-              willEnd,
-            });
-            // refresh operating coins list and UI
-            coinsOperatingList.current = [
-              ...coinsOperatingList.current,
-              coinObj,
-            ];
-          } catch (err) {
-            console.error("Error operando moneda:", err);
-            willEnd();
-          }
-
-          function willEnd() {
-            setActionInProcess(false);
-            setUpdateAvailable((prev) => !prev);
-          }
-        }}
-      >
-        <small>Operar</small>
-      </Button>
+      <TooltipNoPointerEvents title={isPaused ? "Reanudar" : "Pausar"}>
+        <div>
+          <Button
+            variant="contained"
+            color={isPaused ? "success" : "warning"}
+            disabled={pauseDisabled}
+            size="small"
+            sx={{ width: 80 }}
+            onClick={async () => {
+              console.log("isPaused", isPaused);
+              const coinObj = coinsToOperate.current.find(
+                (c) => getCoinKey(c) === currency.current
+              );
+              if (!coinObj) {
+                return;
+              }
+              setActionInProcess(true);
+              if (!isPaused) {
+                await HTTPPUT_COINS_STOP({
+                  user_id,
+                  id_coin: coinObj.id,
+                  setError: setErrorCoinOperate,
+                  successful: () => {
+                    showSuccess(`Se detuvo (${coinObj.symbol})`);
+                  },
+                  failure: () => {
+                    showWarning(
+                      `Algo salió mal al detener en ${coinObj.symbol}`
+                    );
+                  },
+                });
+              } else {
+                await HTTPPUT_COINS_START({
+                  user_id,
+                  id_coin: coinObj.id,
+                  setError: setErrorCoinOperate,
+                  successful: () => {
+                    showSuccess(`Se reanudo (${coinObj.symbol})`);
+                  },
+                  failure: () => {
+                    showWarning(
+                      `Algo salió mal al reanudar en ${coinObj.symbol}`
+                    );
+                  },
+                });
+              }
+              setIsPaused(!isPaused);
+              setActionInProcess(false);
+            }}
+          >
+            {isPaused ? (
+              <PlayArrowIcon fontSize="small" />
+            ) : (
+              <PauseIcon fontSize="small" />
+            )}
+            <small>{isPaused ? "Reanudar" : "Pausar"}</small>
+          </Button>
+        </div>
+      </TooltipNoPointerEvents>
     );
+  }
+
+  function ButtonAutoOp() {
+    return (
+      <TooltipNoPointerEvents title="Auto-op">
+        <div>
+          <Button
+            variant="contained"
+            color="primary"
+            size="small"
+            onClick={() => setAutoOpEnabled(!autoOpEnabled)}
+          >
+            <small>Auto-op</small>
+          </Button>
+        </div>
+      </TooltipNoPointerEvents>
+    );
+  }
+
+  function ButtonStop() {
+    return (
+      <TooltipNoPointerEvents
+        title={(() => {
+          if (!hayMoneda) {
+            return "Seleccione una moneda";
+          }
+          if (monedasDisponibles) {
+            return "No hay monedas operando";
+          }
+          if (!monedaYaOperando) {
+            return "Moneda no operando";
+          }
+          if (monedaEnBorrado) {
+            return "Moneda en proceso de borrado";
+          }
+          if (actionInProcess) {
+            return "Espere...";
+          }
+          return "Detener";
+        })()}
+      >
+        <div>
+          <Detener
+            disabled={
+              !hayMoneda ||
+              monedasDisponibles ||
+              !monedaYaOperando ||
+              monedaEnBorrado ||
+              actionInProcess
+            }
+          />
+        </div>
+      </TooltipNoPointerEvents>
+    );
+  }
+
+  function ButtonOperate() {
+    return (
+      <TooltipNoPointerEvents
+        title={(() => {
+          if (!hayMoneda) {
+            return "Seleccione una moneda";
+          }
+          if (monedaYaOperando) {
+            return "Moneda ya operando";
+          }
+          if (actionInProcess) {
+            return "Espere...";
+          }
+          return "Operar";
+        })()}
+      >
+        <div>
+          <Operar
+            disabled={!hayMoneda || monedaYaOperando || actionInProcess}
+          />
+        </div>
+      </TooltipNoPointerEvents>
+    );
+
+    function Operar(props) {
+      return (
+        <Button
+          {...props}
+          variant="contained"
+          color="ok"
+          size="small"
+          onClick={async () => {
+            if (!currency.current.trim()) {
+              return;
+            }
+            const coinObj = coinsToOperate.current.find(
+              (c) => getCoinKey(c) === currency.current
+            );
+            if (!coinObj) {
+              return;
+            }
+            setActionInProcess(true);
+
+            try {
+              const putResult = await HTTPPUT_COINS_START({
+                id_coin: coinObj.id,
+                setError: setErrorCoinOperate,
+                successful: () => {
+                  showSuccess(`Se empieza a operar (${coinObj.symbol})`);
+                },
+                failure: () => {
+                  showWarning(`Algo salió mal al operar en ${coinObj.symbol}`);
+                },
+                willEnd,
+              });
+              // refresh operating coins list and UI
+              coinsOperatingList.current = [
+                ...coinsOperatingList.current,
+                coinObj,
+              ];
+            } catch (err) {
+              showError(`Error al iniciar operaración en: ${coinObj.symbol}`);
+              willEnd();
+            }
+
+            function willEnd() {
+              setActionInProcess(false);
+              setUpdateAvailable((prev) => !prev);
+            }
+          }}
+        >
+          <small>Operar</small>
+        </Button>
+      );
+    }
   }
 
   function Detener(props) {

@@ -13,6 +13,12 @@
   }
 }
 
+.d-inline-center {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+}
+
 .d-center {
   display: flex;
   justify-content: center;
@@ -55,8 +61,7 @@
 .flex {
   display: flex;
 }
-
-.inline-flex {
+.inline-flex{
   display: inline-flex;
 }
 
@@ -101,8 +106,24 @@
   }
 }
 
+.space-between {
+  justify-content: space-between;
+}
+
+.space-evenly {
+  justify-content: space-evenly;
+}
+
+.space-around {
+  justify-content: space-around;
+}
+
 @each $value in (center, end, start, stretch) {
   .ai-#{$value} {
     align-items: $value;
   }
+}
+
+.stretch {
+  align-items: stretch;
 }

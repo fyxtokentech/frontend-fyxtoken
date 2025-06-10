@@ -57,6 +57,9 @@ export function CriptomonedasView() {
         >
           <Tab label="Ruta Venta" />
           <Tab label="Ruta Recompra" />
+          <Tab label="Ruta Compra" />
+          <Tab label="Ruta Retiro" />
+          <Tab label="Ruta Pago" />
         </Tabs>
       </AppBar>
       <PaperP elevation={8}>
@@ -182,6 +185,106 @@ export function CriptomonedasView() {
               startIcon={<AddIcon />}
             >
               Agregar Ruta de Recompra
+            </Button>
+          </>
+        )}
+        {tab === 2 && (
+          <>
+            <br />
+            <Box>
+              <TitleTab
+                title="Ruta de Compra"
+                subtitle="Define la ruta de intercambio para compras."
+                variant="h6"
+              />
+            </Box>
+            <FormControl variant="outlined" sx={{ minWidth: 200, mb: 2 }} size="small">
+              <InputLabel>Par de Compra</InputLabel>
+              <Select defaultValue="USDT/BTC" label="Par de Compra">
+                <MenuItem value="USDT/BTC">USDT/BTC</MenuItem>
+                <MenuItem value="USDT/ETH">USDT/ETH</MenuItem>
+                <MenuItem value="USDT/LTC">USDT/LTC</MenuItem>
+              </Select>
+            </FormControl>
+            <TextField
+              size="small"
+              type="number"
+              label="Cantidad de Compra"
+              defaultValue={100}
+              InputProps={{ endAdornment: <InputAdornment position="end">USDT</InputAdornment> }}
+              helperText="Cantidad en USDT"
+              sx={{ mb: 2, ml: 2 }}
+            />
+            <Typography variant="subtitle2" sx={{ mb: 2 }}>
+              Ruta: USDT → BTC
+            </Typography>
+            <Button size="small" variant="contained" color="primary" startIcon={<AddIcon />}>
+              Agregar Ruta de Compra
+            </Button>
+          </>
+        )}
+        {tab === 3 && (
+          <>
+            <br />
+            <Box>
+              <TitleTab
+                title="Ruta de Retiro"
+                subtitle="Define la ruta para retiros."
+                variant="h6"
+              />
+            </Box>
+            <FormControl variant="outlined" sx={{ minWidth: 200, mb: 2 }} size="small">
+              <InputLabel>Par de Retiro</InputLabel>
+              <Select defaultValue="BTC/USDT" label="Par de Retiro">
+                <MenuItem value="BTC/USDT">BTC/USDT</MenuItem>
+                <MenuItem value="ETH/USDT">ETH/USDT</MenuItem>
+              </Select>
+            </FormControl>
+            <TextField
+              size="small"
+              type="number"
+              label="Cantidad a Retirar"
+              defaultValue={0.01}
+              InputProps={{ endAdornment: <InputAdornment position="end">BTC</InputAdornment> }}
+              helperText="Cantidad mínima: 0.0001 BTC"
+              sx={{ mb: 2, ml: 2 }}
+            />
+            <Typography variant="subtitle2" sx={{ mb: 2 }}>
+              Ruta: BTC → USDT
+            </Typography>
+            <Button size="small" variant="contained" color="primary" startIcon={<AddIcon />}>
+              Agregar Ruta de Retiro
+            </Button>
+          </>
+        )}
+        {tab === 4 && (
+          <>
+            <br />
+            <Box>
+              <TitleTab
+                title="Ruta de Pago"
+                subtitle="Define la ruta de pago."
+                variant="h6"
+              />
+            </Box>
+            <FormControl variant="outlined" sx={{ minWidth: 200, mb: 2 }} size="small">
+              <InputLabel>Método de Pago</InputLabel>
+              <Select defaultValue="Tarjeta" label="Método de Pago">
+                <MenuItem value="Tarjeta">Tarjeta</MenuItem>
+                <MenuItem value="Transferencia">Transferencia</MenuItem>
+              </Select>
+            </FormControl>
+            <TextField
+              size="small"
+              type="number"
+              label="Monto"
+              defaultValue={50}
+              InputProps={{ endAdornment: <InputAdornment position="end">USD</InputAdornment> }}
+              helperText="Monto a pagar"
+              sx={{ mb: 2, ml: 2 }}
+            />
+            <Button size="small" variant="contained" color="primary" startIcon={<AddIcon />}>
+              Agregar Ruta de Pago
             </Button>
           </>
         )}

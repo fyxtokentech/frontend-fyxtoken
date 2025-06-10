@@ -111,7 +111,11 @@ export const HTTP_REQUEST = async ({
     let data = response.data;
     if (isTable) data = unpackTable(data);
     console.log(`[request] Éxito respuesta de ${requestUrl}:`, data);
-    responseBodyReceived(data);
+    responseBodyReceived(data, {
+      data,
+      requestUrl,
+      response,
+    });
     return data;
   } catch (err) {
     console.error(

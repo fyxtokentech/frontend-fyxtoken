@@ -11,7 +11,6 @@ import {
   AccordionSummary,
   AccordionDetails,
   Slider,
-  Tooltip,
   FormControl,
   InputLabel,
   Select,
@@ -20,12 +19,12 @@ import {
   TextField,
   InputAdornment,
   Fab,
-  Snackbar,
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import SaveIcon from "@mui/icons-material/Save";
 import { TitleTab } from "./_repetitive";
+import AutoFixHighIcon from "@mui/icons-material/AutoFixHigh";
+import { showSuccess, showError } from "@templates";
 
 export function AutomatizacionView() {
   const [autoOp, setAutoOp] = useState(true);
@@ -37,17 +36,24 @@ export function AutomatizacionView() {
   const [targetSale, setTargetSale] = useState("10%");
   const [targetBuy, setTargetBuy] = useState("40000");
   const [expanded, setExpanded] = useState("intermediate");
-  const [snack, setSnack] = useState(false);
   const handleChangeAcc = () =>
     setExpanded(expanded === "intermediate" ? "retro" : "intermediate");
   const handleSwitch = () => setAutoOp(!autoOp);
   const handleAccordion = (panel) => () =>
     setExpanded(expanded === panel ? false : panel);
-  const handleSave = () => setSnack(true);
+  const handleSave = () => showSuccess("🚧 Automatización actualizada exitosamente");
 
   return (
     <Box sx={{ p: 2 }}>
-      <TitleTab title="Configuración de Automatización" />
+      <TitleTab
+        variant="h5"
+        title={
+          <>
+            Configuración de Automatización <AutoFixHighIcon />
+          </>
+        }
+      />
+      <br />
       <FormControlLabel
         control={
           <Switch checked={autoOp} onChange={handleSwitch} size="small" />
@@ -60,9 +66,6 @@ export function AutomatizacionView() {
       >
         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
           <Typography>Compras Intermedias ({intermediateBuy}%)</Typography>
-          <Tooltip title="Define qué porcentaje de tu saldo se usará en compras parciales.">
-            <InfoOutlinedIcon fontSize="small" />
-          </Tooltip>
         </AccordionSummary>
         <AccordionDetails>
           <Slider
@@ -81,9 +84,6 @@ export function AutomatizacionView() {
       >
         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
           <Typography>Recompras Automáticas ({retroBuy}%)</Typography>
-          <Tooltip title="Porcentaje de caída que dispara la recompra.">
-            <InfoOutlinedIcon fontSize="small" />
-          </Tooltip>
         </AccordionSummary>
         <AccordionDetails>
           <Slider
@@ -104,9 +104,6 @@ export function AutomatizacionView() {
           <Typography>
             Acumulación Progresiva ({progressivePercent}%)
           </Typography>
-          <Tooltip title="Porcentaje de tu compra que se reinvierte automáticamente.">
-            <InfoOutlinedIcon fontSize="small" />
-          </Tooltip>
         </AccordionSummary>
         <AccordionDetails>
           <FormControlLabel
@@ -169,20 +166,6 @@ export function AutomatizacionView() {
           />
         </Grid>
       </Grid>
-      <Fab
-        size="small"
-        color="primary"
-        sx={{ position: "fixed", bottom: 16, right: 16 }}
-        onClick={handleSave}
-      >
-        <SaveIcon />
-      </Fab>
-      <Snackbar
-        open={snack}
-        autoHideDuration={3000}
-        onClose={() => setSnack(false)}
-        message="Automatización actualizada exitosamente"
-      />
     </Box>
   );
 }

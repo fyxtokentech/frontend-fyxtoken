@@ -15,17 +15,43 @@ import fluidCSS from "@jeff-aporta/fluidcss";
 
 import { TooltipNoPointerEvents } from "@recurrent";
 import { getThemeLuminance } from "@jeff-aporta/theme-manager";
+import { getBalance } from "./PanelOfInsertMoney";
 
-const panelProjectionsState = {
+export const panelProjectionsState = {
   coinMetric: {},
   loadingMetrics: false,
   errorMetrics: null,
+  priceProjectionValue: 0,
 };
+
+export const getCoinMetric = () => {
+  return panelProjectionsState.coinMetric;
+}
+
+export function getPriceProjectionColor() {
+  const { priceProjectionValue } = panelProjectionsState;
+  if (priceProjectionValue > 0) {
+    return "ok";
+  }
+  if (priceProjectionValue < 0) {
+    return "error";
+  }
+  return "warning";
+}
+
+export function getPriceProjectionIcon(diff) {
+  if (diff > 0) {
+    return <TrendingUpIcon />;
+  }
+  if (diff < 0) {
+    return <TrendingDownIcon />;
+  }
+  return <TrendingFlatIcon />;
+}
 
 export default class PanelOfProjections extends Component {
   constructor(props) {
     super(props);
-    this.state = panelProjectionsState;
     this.isAlive = true;
   }
 
@@ -33,7 +59,7 @@ export default class PanelOfProjections extends Component {
   fetchMetrics = async () => {
     await window.fetchMetrics((state) => {
       Object.assign(panelProjectionsState, state);
-      this.setState(panelProjectionsState);
+      console.log({ panelProjectionsState });
       this.forceUpdate();
     });
   };
@@ -56,7 +82,9 @@ export default class PanelOfProjections extends Component {
 
   render() {
     const { flatNumber } = this.props;
-    const { coinMetric, loadingMetrics, errorMetrics } = this.state;
+
+    const { coinMetric, loadingMetrics, errorMetrics } = panelProjectionsState;
+
     const {
       price_buy: priceBuy,
       current_price: currentPrice,
@@ -96,30 +124,17 @@ export default class PanelOfProjections extends Component {
 
     return (
       <PaperP
-        className="d-center"
-        p_min="5"
-        p_max="10"
-        sx={{ width: "100%", height: "100%" }}
+        className="d-inline-center"
       >
-        <div className="d-flex flex-column gap-10px" style={{ width: "100%" }}>
+        <div className="flex col-direction gap-10px">
           <div
-            className="d-flex ai-stretch jc-space-between gap-10px"
-            style={{ width: "100%" }}
+            className="flex ai-center space-between gap-10px"
           >
             <PriceProjectionCard
               priceProjection={projectedPrice}
               currentPrice={currentPrice}
               projectionColor={color}
               actualColor={color}
-              getPriceProjectionIcon={() =>
-                diffPrice > 0 ? (
-                  <TrendingUpIcon fontSize="small" />
-                ) : diffPrice < 0 ? (
-                  <TrendingDownIcon fontSize="small" />
-                ) : (
-                  <TrendingFlatIcon fontSize="small" />
-                )
-              }
               loading={loadingMetrics}
             />
             <ROICard
@@ -156,7 +171,6 @@ class PriceProjectionCard extends Component {
       currentPrice,
       projectionColor,
       actualColor,
-      getPriceProjectionIcon,
       loading,
     } = this.props;
     if (loading) {
@@ -218,7 +232,7 @@ class PriceProjectionCard extends Component {
                   title="Proyectado USD"
                   value={priceProjection}
                   value2={currentPrice}
-                  icon={priceProjection && getPriceProjectionIcon()}
+                  icon={getPriceProjectionIcon(priceProjection- currentPrice)}
                   color={projectionColor}
                   loading={loading}
                 />
@@ -260,12 +274,39 @@ class PriceCard extends Component {
 }
 
 class ProfitProjCard extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {};
+    this.balance = 0;
+    this.isAlive = true;
+  }
+
+  componentDidMount() {
+    this.updateRecursively();
+  }
+
+  componentWillUnmount() {
+    this.isAlive = false;
+  }
+
+  updateRecursively() {
+    if (!this.isAlive) {
+      return;
+    }
+    const balance = getBalance();
+    if (this.balance != balance) {
+      this.balance = balance;
+      this.forceUpdate();
+    }
+    setTimeout(() => this.updateRecursively(), 1000);
+  }
+
   render() {
     const { currentPrice, projectedPrice, loading, color } = this.props;
     if (loading) {
       return (
         <PaperP
-          className={`d-flex ${fluidCSS()
+          className={`flex ${fluidCSS()
             .ltX(480, { width: "calc(33% - 5px)" })
             .end()}`}
           elevation={3}
@@ -275,7 +316,7 @@ class ProfitProjCard extends Component {
       );
     }
     const projectedGainUSD = this.calculateProjectedGain(
-      100,
+      this.balance,
       currentPrice,
       projectedPrice
     );
@@ -284,18 +325,16 @@ class ProfitProjCard extends Component {
 
     return (
       <PaperP
-        className={`d-flex ${fluidCSS()
+        className={`flex ${fluidCSS()
           .ltX(480, { width: "calc(33% - 5px)" })
           .end()}`}
         elevation={3}
-        p_min="5"
-        p_max="10"
       >
-        <div className="d-flex flex-column gap-5px">
+        <div className="flex col-direction gap-10px">
           <TooltipNoPointerEvents
             title={
               !!projectedGainUSD &&
-              `${labelTitle}: ${valueProfitProjected} USD por cada 100 USD`
+              `${labelTitle}: ${valueProfitProjected} USD por cada ${this.balance} USD`
             }
           >
             <Typography
@@ -303,7 +342,7 @@ class ProfitProjCard extends Component {
               color="text.secondary"
               className="mb-5px nowrap"
             >
-              {labelTitle} (100 USD)
+              {labelTitle} ({this.balance} USD)
             </Typography>
             <Typography color={color}>
               {["---", `${valueProfitProjected} USD`][+!!projectedGainUSD]}
