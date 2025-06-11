@@ -62,7 +62,9 @@ export async function HTTPGET_USEROPERATION_PERIOD({
     ...rest,
     buildEndpoint: ({ genpath }) => {
       if (period === "most_recent") {
-        return genpath(["operations", "most_recent", user_id]);
+        return genpath(["operations", "most_recent", user_id], {
+          coinid: id_coin,
+        });
       }
       return genpath(["operations", user_id], {
         coinid: id_coin,

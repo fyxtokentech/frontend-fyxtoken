@@ -76,7 +76,9 @@ export function showWarning(txt, details) {
   toast(
     (t) => (
       <div className="d-flex ai-center jc-between gap-10px">
-        <Typography variant="caption" color="warning">{txt}</Typography>
+        <Typography variant="caption" color="warning">
+          {txt}
+        </Typography>
         <IconButton size="small" onClick={() => toast.dismiss(t.id)}>
           <CloseIcon fontSize="small" />
         </IconButton>
@@ -94,7 +96,9 @@ export function showError(txt, details) {
   toast(
     (t) => (
       <div className="d-flex ai-center jc-between gap-10px">
-        <Typography variant="caption" color="error">{txt}</Typography>
+        <Typography variant="caption" color="error">
+          {txt}
+        </Typography>
         <IconButton size="small" onClick={() => toast.dismiss(t.id)}>
           <CloseIcon fontSize="small" />
         </IconButton>
@@ -132,9 +136,7 @@ class Notifier extends React.Component {
               borderRadius: "5px",
               background: palette?.background?.default,
               color: palette?.text?.primary,
-              border:
-                "1px solid " +
-                (palette?.divider ?? "gray"),
+              border: "1px solid " + (palette?.divider ?? "gray"),
               boxShadow: "5px 5px 5px 0px rgba(0, 0, 0, 0.1)",
               animation: "fadeIn 1s ease, fadeOut 0.3s ease 9.7s forwards",
             },
@@ -148,21 +150,22 @@ class Notifier extends React.Component {
 
 function Themized({ children }) {
   const theme = getTheme();
-  switch(getThemeName()){
+  switch (getThemeName()) {
     case "main":
-      theme.palette.primary.main = Color("rebeccapurple").hex()
+    default:
+      theme.palette.primary.main = Color("rebeccapurple").hex();
       break;
     case "lemongreen":
-      theme.palette.primary.main = Color("yellowgreen").hex()
+      theme.palette.primary.main = Color("yellowgreen").hex();
       break;
     case "skygreen":
-      theme.palette.primary.main = Color("dodgerblue").hex()
+      theme.palette.primary.main = Color("dodgerblue").hex();
       break;
     case "springgreen":
-      theme.palette.primary.main = Color("springgreen").hex()
+      theme.palette.primary.main = Color("springgreen").hex();
       break;
     case "blacknwhite":
-      theme.palette.primary.main = Color("gray").hex()
+      theme.palette.primary.main = Color("gray").hex();
       break;
   }
   return (
