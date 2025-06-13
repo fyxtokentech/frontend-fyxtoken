@@ -1,0 +1,15 @@
+/* Tipografía personalizada */
+@font-face {
+  font-family: "goodtimes-rg";
+  src: url("../typography/goodtimes-rg.otf") format("opentype");
+}
+@font-face {
+  font-family: "lemonmilk-rg";
+  src: url("../typography/lemonmilk-rg.otf") format("opentype");
+}
+.lemonmilk-rg {
+  font-family: "lemonmilk-rg" !important;
+}
+.goodtimes-rg {
+  font-family: "goodtimes-rg" !important;
+}

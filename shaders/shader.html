@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Shader único en Three.js</title>
+    <style>
+      body {
+        margin: 0;
+        background: #123;
+      }
+      canvas {
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <script src="https://unpkg.com/three@0.150.0/build/three.min.js"></script>
+    <script>
+      // Función para cargar el archivo de shader único
+      async function loadShaderFile(url) {
+        const response = await fetch(url);
+        return await response.text();
+      }
+
+      // Función para separar los shaders del archivo único
+      function parseShader(source) {
+        // Buscar la sección del vertex shader
+        const [vertexShader, fragmentShader] = source
+          .replace("// --- VERTEX SHADER ---", "")
+          .split("// --- FRAGMENT SHADER ---");
+
+        return { vertexShader, fragmentShader };
+      }
+
+      async function init() {
+        // Cargar el archivo de shader único
+        let shaderSource = await loadShaderFile("22.1.glsl");
+        const { vertexShader, fragmentShader } = parseShader(shaderSource);
+
+        // Crear la escena, cámara y renderizador
+        const scene = new THREE.Scene();
+        const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+        const renderer = new THREE.WebGLRenderer();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        const uniforms = {
+          iTime: { value: 0.0 },
+          iResolution: {
+            value: new THREE.Vector2(window.innerWidth, window.innerHeight),
+          },
+          iMouse: { value: new THREE.Vector4(0.0, 0.0, 0.0, 0.0) },
+          /* iChannel0: { value: new THREE.TextureLoader().load('noise.png') } */
+        };
+
+        // Crear un ShaderMaterial con los shaders extraídos
+        const material = new THREE.ShaderMaterial({
+          uniforms,
+          vertexShader: vertexShader,
+          fragmentShader: fragmentShader,
+        });
+
+        // Crear un plano para renderizar el shader
+        const geometry = new THREE.PlaneGeometry(2, 2);
+        const mesh = new THREE.Mesh(geometry, material);
+        scene.add(mesh);
+
+        window.addEventListener('resize', () => {
+          const m = Math.max(window.innerWidth, window.innerHeight);
+          renderer.setSize(window.innerWidth, window.innerHeight);
+          material.uniforms.iResolution.value.set(m, m*9/16);
+        });
+
+        // Capturar posición del mouse y si está presionado
+        window.addEventListener("mousemove", (event) => {
+          uniforms.iMouse.value.x = event.clientX;
+          uniforms.iMouse.value.y = event.clientY;
+        });
+
+        window.addEventListener("mousedown", () => {
+          uniforms.iMouse.value.z = 1.0;
+        });
+
+        window.addEventListener("mouseup", () => {
+          uniforms.iMouse.value.z = 0.0;
+        });
+
+        // Animar
+        function animate() {
+          requestAnimationFrame(animate);
+          uniforms.iTime.value = performance.now() / 1000; // Pasar el tiempo en segundos
+          renderer.render(scene, camera);
+        }
+        animate();
+      }
+
+      init();
+    </script>
+  </body>
+</html>
