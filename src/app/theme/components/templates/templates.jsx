@@ -71,8 +71,27 @@ export function showSuccess(txt) {
   );
 }
 
-export function showWarning(txt, details) {
-  console.warn(txt, details);
+export function showInfo(txt, ...extraInfo) {
+  toast(
+    (t) => (
+      <div className="d-flex ai-center jc-between gap-10px">
+        <Typography variant="caption">
+          {txt}
+        </Typography>
+        <IconButton size="small" onClick={() => toast.dismiss(t.id)}>
+          <CloseIcon fontSize="small" />
+        </IconButton>
+      </div>
+    ),
+    {
+      icon: "ℹ️",
+      duration: 10000,
+    }
+  );
+}
+
+export function showWarning(txt, ...extraInfo) {
+  console.warn(txt, ...extraInfo);
   toast(
     (t) => (
       <div className="d-flex ai-center jc-between gap-10px">
@@ -91,8 +110,8 @@ export function showWarning(txt, details) {
   );
 }
 
-export function showError(txt, details) {
-  console.error(txt, details);
+export function showError(txt, ...extraInfo) {
+  console.error(txt, ...extraInfo);
   toast(
     (t) => (
       <div className="d-flex ai-center jc-between gap-10px">

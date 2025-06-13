@@ -43,29 +43,30 @@ export default function PanelRobot() {
   }, [view, viewTable]);
 
   useEffect(() => {
-    if (coinsToOperate.current.length === 0) {
-      setLoadingCoinToOperate(true);
-      HTTPGET_COINS_BY_USER({
-        setError: setErrorCoinOperate,
-        setLoading: setLoadingCoinToOperate,
-        setApiData: (data) => {
-          coinsToOperate.current = data;
-          const paramCoin = driverParams.get("coin");
-          if (!paramCoin && coinsToOperate.current.length > 0) {
-            const first = coinsToOperate.current[0];
-            const key = global.getCoinKey(first);
-            currency.current = key;
-            driverParams.set("coin", key);
-            driverParams.set("id_coin", first.id);
-          } else {
-            currency.current = paramCoin;
-          }
-          coinsOperatingList.current = data.filter(
-            (coin) => coin.status === "A"
-          );
-        },
-      });
-    }
+    (async () => {
+      if (coinsToOperate.current.length === 0) {
+        await HTTPGET_COINS_BY_USER({
+          setError: setErrorCoinOperate,
+          setApiData: (data) => {
+            coinsToOperate.current = data;
+            const paramCoin = driverParams.get("coin");
+            if (!paramCoin && coinsToOperate.current.length > 0) {
+              const first = coinsToOperate.current[0];
+              const key = global.getCoinKey(first);
+              currency.current = key;
+              driverParams.set("coin", key);
+              driverParams.set("id_coin", first.id);
+            } else {
+              currency.current = paramCoin;
+            }
+            coinsOperatingList.current = data.filter(
+              (coin) => coin.status === "A"
+            );
+          },
+        });
+        setLoadingCoinToOperate(false);
+      }
+    })();
   }, []);
 
   return (

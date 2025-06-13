@@ -29,6 +29,18 @@ export const valueText = () => {
   return vars_PanelOfInsertMoney.inputValue + " USD";
 };
 
+let _PanelOfInsertMoney_;
+
+export const changeValueInsertMoney = (value) => {
+  if (!value) {
+    return;
+  }
+  value = +Math.max(10, value);
+  vars_PanelOfInsertMoney.inputValue = value;
+  vars_PanelOfInsertMoney.sliderExp = Math.log10(value);
+  _PanelOfInsertMoney_.forceUpdate();
+};
+
 export default class PanelOfInsertMoney extends React.Component {
   constructor(props) {
     super(props);
@@ -36,6 +48,7 @@ export default class PanelOfInsertMoney extends React.Component {
     this.handleInputChange = this.handleInputChange.bind(this);
     this.handleSliderChange = this.handleSliderChange.bind(this);
     this.handleInvest = this.handleInvest.bind(this);
+    _PanelOfInsertMoney_ = this;
   }
 
   componentDidMount() {

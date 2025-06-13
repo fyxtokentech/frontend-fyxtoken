@@ -3,6 +3,9 @@ import axios from "axios";
 import {
   unpackTable,
   buildUrlFromService,
+  failureDefault,
+  reEnvolve,
+  getMessageError,
 } from "./utils";
 
 import { showSuccess, showWarning, showError } from "@templates";
@@ -11,145 +14,169 @@ export const responsePromises = {};
 export const responseResults = {};
 export const responseErrors = {};
 
-const { CONTEXT } = window;
-
 function SINGLETON_EFFECT({
   url,
-  setLoading = () => {},
-  setApiData = () => {},
-  setError = () => {},
+  successful,
+  failure = failureDefault,
   mock_default,
+  ...rest
 }) {
+  successful = reEnvolve(successful, (json) => {
+    responseResults[url] = json;
+  });
+  failure = reEnvolve(failure, (err) => {
+    responseErrors[url] = err;
+  });
   if (!responsePromises[url]) {
-    console.log(`[getSingletonResponse] fetching URL: ${url}`);
-    setLoading(true);
-    responsePromises[url] = axios
-      .get(url, {
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-        ...(CONTEXT !== "dev" && { withCredentials: false }),
-      })
-      .then(({ data }) => {
-        console.log(`[getSingletonResponse]: ${url} success:`, { data });
-        if (!Array.isArray(data)) throw new Error("Unexpected response format");
-        const result = unpackTable(data);
-        responseResults[url] = result;
-        setApiData(result);
-        return result;
-      })
-      .catch((err) => {
-        console.error(`[getSingletonResponse] error (catch): ${url}`, { err });
-        if (
-          CONTEXT === "dev" &&
-          mock_default &&
-          Array.isArray(mock_default.content)
-        ) {
-          const fallback = unpackTable(mock_default.content);
-          setApiData(fallback);
-          return fallback;
-        }
-        responseErrors[url] = err;
-        showError(err.message || err);
-        setError(err.message || err);
-      })
-      .finally(() => {
-        setLoading(false);
-        setTimeout(() => {
-          delete responsePromises[url];
-          delete responseResults[url];
-          delete responseErrors[url];
-        }, 20000);
-      });
+    console.log(`NEW fetching URL: ${url}`);
+    responsePromises[url] = new Promise(async (resolve, reject) => {
+      try {
+        const respuesta = await HTTP_REQUEST({
+          method: "get",
+          isTable: true,
+          buildEndpoint: () => url,
+          successful,
+          failure,
+          ...rest,
+        });
+        resolve(respuesta);
+      } catch (err) {
+        reject(err);
+      }
+    });
   } else {
-    console.log(
-      `[getSingletonResponse] promise already exists for URL: ${url}`
-    );
-    // Reaplicar datos previos para mantener flujo
+    console.log(`CACHED URL: ${url}`);
     if (responseResults[url]) {
-      console.log(`[getSingletonResponse] using cached result for URL: ${url}`);
-      setApiData(responseResults[url]);
+      console.log(`CACHED result for URL: ${url}`);
+      successful(responseResults[url], {
+        status: "success",
+        message: "",
+        url,
+      });
     } else if (responseErrors[url]) {
-      console.log(`[getSingletonResponse] using cached error for URL: ${url}`);
+      console.log(`CACHED error for URL: ${url}`);
       const err = responseErrors[url];
-      setError(err.message || err);
+      failure(err.message || `Hubo un error en ${url}`, {
+        url,
+        err,
+      });
     }
   }
   return responsePromises[url];
 }
 
 export const HTTP_REQUEST = async ({
-  method = "post", // post | put | path
+  method, // post | put | path
   buildEndpoint, // Función que construye la URL de la API.
-  setError, // Función para manejar errores.
   payload = {}, // Payload para la petición.
   willStart = () => 0, // Callback antes de la petición.
   willEnd = () => 0, // Callback al finalizar la petición.
   service = "robot_backend", // Servicio en urlapi.
-  responseBodyReceived = () => {}, // Callback para recibir el body de la respuesta (success o error)
+  successful = () => 0, // Callback para recibir el body de la respuesta (success o error)
+  failure = failureDefault,
   isTable = false, // Si es true, transforma la respuesta con table2obj
+  mock_default,
 }) => {
-  setError(null);
-  const requestUrl = buildUrlFromService(buildEndpoint, service);
-  console.log(service);
-  console.log(
-    `[request] Enviando ${method.toUpperCase()} a ${requestUrl} con data:`,
-    payload
-  );
+  if (!method) {
+    const msg = "Method is required";
+    throw new Error(msg);
+  }
+  const { CONTEXT } = window;
+  method = method.toLowerCase();
+  const METHOD = method.toUpperCase();
+  const IS_GET = method == "get";
+
+  const url = buildUrlFromService(buildEndpoint, service);
+
+  console.log(`[request] Enviando:`, {
+    service,
+    payload,
+    method,
+    url,
+  });
   const axiosConfig = {
     headers: { Accept: "application/json", "Content-Type": "application/json" },
     ...(CONTEXT !== "dev" && { withCredentials: false }),
   };
   willStart();
   try {
-    const response = await axios[method.toLowerCase()](
-      requestUrl,
-      payload,
-      axiosConfig
-    );
-    let data = response.data;
-    if (isTable) data = unpackTable(data);
-    console.log(`[request] Éxito respuesta de ${requestUrl}:`, data);
-    responseBodyReceived(data, {
+    const response = await axios[method](url, payload, axiosConfig);
+    let { data } = response;
+    if (isTable && data) {
+      data = unpackTable(data);
+    }
+    console.log(`[request] Éxito respuesta de ${url}:`, data);
+    successful(data, {
       data,
-      requestUrl,
+      requestUrl: url,
       response,
     });
     return data;
   } catch (err) {
-    console.error(
-      `[request] Error en ${method.toUpperCase()} a ${requestUrl}:`,
-      err
-    );
-    setError(err.message || `Error al ejecutar ${method.toUpperCase()}`);
-    responseBodyReceived(err.response?.data || err);
+    console.error(`[request] Error en ${METHOD} a ${url}:`, err);
+    const { content } = mock_default ?? {};
+    failure(err.response?.data, err, content);
   } finally {
     willEnd();
   }
 };
 
 export const HTTP_GET = ({
-  checkErrors = () => null,
-  setError = () => {},
   buildEndpoint,
+  setLoading,
+  setApiData,
   service = "robot_backend",
+  checkErrors = () => 0,
+  willStart,
+  willEnd,
+  successful,
+  failure,
   ...rest
 }) => {
+  successful = reEnvolve(successful, setApiData);
+  failure = reEnvolve(failure, (...args) => {
+    {
+      // PROCEDIMIENTO DE MOCKS
+      const { CONTEXT } = window;
+      const [data, info, contentMockup] = args;
+      const use_mockup = (() => {
+        const esArray = Array.isArray(contentMockup);
+        return esArray && CONTEXT === "dev";
+      })();
+      if (use_mockup) {
+        showWarning("Mockup en uso", url);
+        const fallback = unpackTable(contentMockup);
+        successful(fallback, {
+          status: "simulated",
+          message: "Mockup en uso",
+          url,
+          fallback,
+        });
+      }
+    }
+  });
+  if (setLoading) {
+    willStart = reEnvolve(willStart, () => setLoading(true));
+    willEnd = reEnvolve(willEnd, () => setLoading(false));
+  }
   const error = checkErrors();
   if (error) {
-    setError(error);
+    failure(error, {
+      status: "error",
+      message: "Se chequearon errores y se encontró inconsistencia",
+      error,
+    });
     return Promise.reject(error);
   }
   const url = buildUrlFromService(buildEndpoint, service);
   console.log(`[HTTP_GET] resolved URL: ${url} service: ${service}`);
   return SINGLETON_EFFECT({
     url,
-    setError,
+    failure,
+    successful,
     ...rest,
   });
 };
-
 
 export const HTTP_POST = async (params) => {
   return await HTTP_REQUEST({ ...params, method: "post" });

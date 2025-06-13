@@ -22,6 +22,7 @@ import {
   ToggleButton,
   Grid,
   Slider,
+  CircularProgress,
 } from "@mui/material";
 
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
@@ -30,14 +31,14 @@ import SaveIcon from "@mui/icons-material/Save";
 import IconButton from "@mui/material/IconButton";
 import { TitleTab } from "./_repetitive";
 import { ImageLocal } from "@recurrent";
-import { HTTPGET_USEROPERATION_STRATEGY, HTTPPATCH_USEROPERATION_STRATEGY } from "@api";
-import { showSuccess, showError } from "@templates";
+import {
+  HTTPGET_USEROPERATION_STRATEGY,
+  HTTPPATCH_USEROPERATION_STRATEGY,
+} from "@api";
+import { showSuccess, showError, showInfo } from "@templates";
 
 export function CandlestickView() {
-  const [config, setConfig] = useState({
-    period: "5 minutos",
-    percent: { down: 10, up: 10 },
-  });
+  const [config, setConfig] = useState(null);
   const [saving, setSaving] = useState(false);
 
   // Utilidades conversión periodo texto <-> objeto
@@ -53,37 +54,54 @@ export function CandlestickView() {
   const periodObjToText = ({ unit, value }) => {
     if (!unit || !value) return "5 minutos";
     switch (unit) {
-      case "m": return `${value} minutos`;
-      case "h": return `${value} hora${value>1?"s":""}`;
-      case "d": return `${value} día${value>1?"s":""}`;
-      case "s": return `${value} semana${value>1?"s":""}`;
-      case "M": return `${value} mes${value>1?"es":""}`;
-      default: return "5 minutos";
+      case "m":
+        return `${value} minutos`;
+      case "h":
+        return `${value} hora${value > 1 ? "s" : ""}`;
+      case "d":
+        return `${value} día${value > 1 ? "s" : ""}`;
+      case "s":
+        return `${value} semana${value > 1 ? "s" : ""}`;
+      case "M":
+        return `${value} mes${value > 1 ? "es" : ""}`;
+      default:
+        return "5 minutos";
     }
   };
 
   // Carga config candle al montar
   useEffect(() => {
-    const user_id = window.currentUser?.user_id;
-    const id_coin = window.driverParams?.get("id_coin");
-    if (!user_id || !id_coin) return;
-    HTTPGET_USEROPERATION_STRATEGY({
-      user_id,
-      id_coin,
-      strategy: "candle",
-      failure: () => showError("Error al cargar configuración de velas"),
-      setApiData: ([data]) => {
-        const loaded = data;
-        setConfig({
-          period: periodObjToText(loaded.period || { unit: "m", value: 5 }),
-          percent: loaded.percent || { down: 0, up: 0 }
-        });
+    (async () => {
+      const user_id = window.currentUser?.user_id;
+      const id_coin = window.driverParams?.get("id_coin");
+      if (!user_id || !id_coin) {
+        return;
       }
-    });
+      await HTTPGET_USEROPERATION_STRATEGY({
+        user_id,
+        id_coin,
+        strategy: "candle",
+        failure: () => showError("Error al cargar configuración de velas"),
+        setApiData: ([data]) => {
+          const loaded = data;
+          setTimeout(() => {
+            setConfig(data);
+          });
+        },
+      });
+    })();
   }, []);
 
+  if (!config) {
+    return (
+      <div className="d-center gap-10px">
+        <CircularProgress /> fetching...
+      </div>
+    );
+  }
+
   const handlePeriodChange = (e) =>
-    setConfig((prev) => ({ ...prev, period: e.target.value }));
+    setConfig((prev) => ({ ...prev, period: periodTextToObj(e.target.value) }));
   const handlePercentDownChange = (e, val) =>
     setConfig((prev) => ({
       ...prev,
@@ -110,15 +128,11 @@ export function CandlestickView() {
     const id_coin = window.driverParams?.get("id_coin");
     if (!user_id || !id_coin) return;
     setSaving(true);
-    const backendConfig = {
-      period: periodTextToObj(config.period),
-      percent: config.percent
-    };
     await HTTPPATCH_USEROPERATION_STRATEGY({
       user_id,
       id_coin,
       strategy: "candle",
-      new_config: JSON.stringify(backendConfig),
+      new_config: JSON.stringify(config),
       successful: () => showSuccess("Configuración de velas guardada"),
       failure: () => showError("Error al guardar configuración de velas"),
     });
@@ -153,7 +167,7 @@ export function CandlestickView() {
                 <TextField
                   select
                   label="Periodo"
-                  value={config.period}
+                  value={periodObjToText(config.period)}
                   onChange={handlePeriodChange}
                   fullWidth
                   SelectProps={{ native: true }}
@@ -164,10 +178,6 @@ export function CandlestickView() {
                   <option value="30 minutos">30 minutos</option>
                   <option value="1 hora">1 hora</option>
                   <option value="1 día">1 día</option>
-                  <option value="1 semana">1 semana</option>
-                  <option value="2 semanas">2 semanas</option>
-                  <option value="1 mes">1 mes</option>
-                  <option value="30 días">30 días</option>
                 </TextField>
               </Grid>
               <Grid item xs={12} sm={6}>
@@ -180,14 +190,27 @@ export function CandlestickView() {
                   value={config.percent.down}
                   onChange={handlePercentDownChange}
                   valueLabelDisplay="on"
+                  step={0.01}
+                  valueLabelFormat={(value) => `${+value.toFixed(2)}%`}
+                  getAriaValueText={(val) => `${+val.toFixed(2)}%`}
                   min={0}
                   max={10}
                 />
                 <TextField
                   type="number"
                   value={config.percent.down}
+                  onKeyDown={(e) => {
+                    if (e.key === ".") {
+                      e.preventDefault();
+                      showInfo("La separación decimal es con coma");
+                    }
+                    if (e.key === "-") {
+                      e.preventDefault();
+                      showInfo("No se puede ingresar números negativos");
+                    }
+                  }}
                   onChange={handlePercentDownInput}
-                  InputProps={{ inputProps: { min: 0, max: 10 } }}
+                  InputProps={{ inputProps: { min: 0, max: 10, step: 0.01 } }}
                   fullWidth
                 />
               </Grid>
@@ -201,14 +224,27 @@ export function CandlestickView() {
                   value={config.percent.up}
                   onChange={handlePercentUpChange}
                   valueLabelDisplay="on"
+                  step={0.01}
+                  valueLabelFormat={(value) => `${+value.toFixed(2)}%`}
+                  getAriaValueText={(val) => `${+val.toFixed(2)}%`}
                   min={0}
                   max={10}
                 />
                 <TextField
                   type="number"
                   value={config.percent.up}
+                  onKeyDown={(e) => {
+                    if (e.key === ".") {
+                      e.preventDefault();
+                      showInfo("La separación decimal es con coma");
+                    }
+                    if (e.key === "-") {
+                      e.preventDefault();
+                      showInfo("No se puede ingresar números negativos");
+                    }
+                  }}
                   onChange={handlePercentUpInput}
-                  InputProps={{ inputProps: { min: 0, max: 10 } }}
+                  InputProps={{ inputProps: { min: 0, max: 10, step: 0.01 } }}
                   fullWidth
                 />
               </Grid>

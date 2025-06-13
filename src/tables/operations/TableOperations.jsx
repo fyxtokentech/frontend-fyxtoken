@@ -63,7 +63,6 @@ export default class TableOperations extends Component {
     this.updateState({ tableData });
     setTimeout(() => {
       this.forceUpdate();
-      console.log(this.state);
     });
   };
 
@@ -128,7 +127,6 @@ export default class TableOperations extends Component {
         },
         setApiData: (data) => {
           const parsed = data;
-          console.log(parsed);
           tableOperationsState.tableData = parsed;
           this.setTableData(tableOperationsState.tableData);
         },
@@ -190,8 +188,6 @@ export default class TableOperations extends Component {
       this.state;
     const { tableData } = tableOperationsState;
     const loading = this.loadingTableOperation;
-
-    console.log(tableData);
 
     const base = user_id ? tableData : data?.content ?? [];
     const processedContent = Array.isArray(base)

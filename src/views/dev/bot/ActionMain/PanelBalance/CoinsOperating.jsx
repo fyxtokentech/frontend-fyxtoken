@@ -125,22 +125,17 @@ export default class CoinsOperating extends Component {
       }
 
       async function coinStop() {
-        const { all_ok: all_okStop, ...rest } = await HTTPPUT_COINS_STOP({
+        await HTTPPUT_COINS_STOP({
           id_coin: coin.id,
           setError: setErrorCoinOperate,
           willEnd,
           successful: (json, info) => {
-            console.log(json, info)
             showSuccess(`Se detuvo (${coin.symbol})`);
           },
           failure: (json, info) => {
-            console.log(json, info)
             showWarning(`Algo salió mal al detener en ${coin.symbol}`);
           },
         });
-        if (!all_okStop) {
-          showWarning(`Algo salió mal al detener en ${coin.symbol}`, rest);
-        }
       }
     } catch (err) {
       showError(`Error deteniendo ${coin.symbol}`, err);

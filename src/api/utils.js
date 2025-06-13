@@ -1,3 +1,6 @@
+
+import { showError } from "@templates";
+
 export const urlMapApi = {
   local: {
     robot_backend: "http://localhost:8000",
@@ -9,6 +12,30 @@ export const urlMapApi = {
   },
 };
 
+export function getMessageError(err, defaultErr){
+  return err.response?.data || err.message || defaultErr;
+}
+
+export function reEnvolve(mainF, secondF){
+  if (secondF) {
+    return (...args) => {
+      secondF(...args);
+      if(mainF){
+        mainF(...args);
+      }
+    };
+  }
+  if(mainF){
+    return mainF;
+  }
+  return () => 0;
+}
+
+export function failureDefault(...args) {
+  console.error(...args);
+  showError(...args);
+}
+
 /**
  * Resolve full API URL by buildEndpoint using current context.
  */
@@ -16,16 +43,18 @@ export function buildUrlFromService(buildEndpoint, service = "robot_backend") {
   const { IS_LOCAL, CONTEXT } = window;
 
   const env = IS_LOCAL && CONTEXT === "dev" ? "local" : "web";
-  const base = urlMapApi[env][service];
-  return buildEndpoint({ baseUrl: base, genpath, env });
+  const BASE_SERVICE = urlMapApi[env][service];
+  return buildEndpoint({ BASE_SERVICE, service, genpath, env });
 
   function genpath(path, params = {}) {
     return [
-      [base, ...path].join("/"),
+      [BASE_SERVICE, ...path].join("/"),
       Object.entries(params)
         .map(([k, v]) => `${k}=${v}`)
         .join("&"),
-    ].join("?");
+    ]
+      .filter(Boolean)
+      .join("?");
   }
 }
 

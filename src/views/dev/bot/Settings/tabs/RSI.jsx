@@ -21,6 +21,7 @@ import {
   HTTPGET_USEROPERATION_STRATEGY,
   HTTPPATCH_USEROPERATION_STRATEGY,
 } from "@api";
+import { showInfo } from "@templates";
 
 export function RSIView() {
   // Estado agrupado para la configuración RSI
@@ -219,9 +220,6 @@ export function RSIView() {
                 <option value="15 minutos">15 minutos</option>
                 <option value="1 hora">1 hora</option>
                 <option value="1 día">1 día</option>
-                <option value="1 semana">1 semana</option>
-                <option value="2 semanas">2 semanas</option>
-                <option value="1 mes">1 mes</option>
               </TextField>
             </Grid>
             {/* Slider gráfico para Sobreventa/Sobrecompra */}
@@ -237,12 +235,13 @@ export function RSIView() {
                     handleInputChange(["overbought"], newValue[1]);
                   }}
                   valueLabelDisplay="on"
+                  step={0.01}
                   valueLabelFormat={(value, index) =>
                     index === 0
-                      ? `Sobreventa: ${value}`
-                      : `Sobrecompra: ${value}`
+                      ? `Sobreventa: ${+value.toFixed(2)}`
+                      : `Sobrecompra: ${+value.toFixed(2)}`
                   }
-                  getAriaValueText={(val) => `${val}`}
+                  getAriaValueText={(val) => `${+val.toFixed(2)}`}
                   min={0}
                   max={100}
                 />
@@ -256,7 +255,17 @@ export function RSIView() {
                 onChange={(e) =>
                   handleInputChange(["oversold"], e.target.value)
                 }
-                InputProps={{ inputProps: { min: 0, max: 100 } }}
+                onKeyDown={(e) => {
+                  if (e.key === ".") {
+                    e.preventDefault();
+                    showInfo("La separación decimal es con coma");
+                  }
+                  if (e.key === "-") {
+                    e.preventDefault();
+                    showInfo("No se puede ingresar números negativos");
+                  }
+                }}
+                InputProps={{ inputProps: { min: 0, max: 100, step: 0.01 } }}
                 fullWidth
               />
             </Grid>
@@ -265,10 +274,20 @@ export function RSIView() {
                 label="Sobrecompra (overbought)"
                 type="number"
                 value={config.overbought}
-                onChange={(e) =>
-                  handleInputChange(["overbought"], e.target.value)
-                }
-                InputProps={{ inputProps: { min: 0, max: 100 } }}
+                onChange={(e) => {
+                  handleInputChange(["overbought"], e.target.value);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === ".") {
+                    e.preventDefault();
+                    showInfo("La separación decimal es con coma");
+                  }
+                  if (e.key === "-") {
+                    e.preventDefault();
+                    showInfo("No se puede ingresar números negativos");
+                  }
+                }}
+                InputProps={{ inputProps: { min: 0, max: 100, step: 0.01 } }}
                 fullWidth
               />
             </Grid>

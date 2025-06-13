@@ -23,7 +23,9 @@ import { HTTPGET_COINS_METRICS } from "@api";
 import ActionButtons from "./ActionButtons";
 import CoinsOperating from "./CoinsOperating";
 import PanelCoinSelected from "./PanelCoinSelected";
-import PanelOfInsertMoney from "./PanelOfInsertMoney";
+import PanelOfInsertMoney, {
+  changeValueInsertMoney,
+} from "./PanelOfInsertMoney";
 import PanelOfProjections from "./PanelOfProjections";
 
 import { vars_PanelOfInsertMoney } from "./PanelOfInsertMoney";
@@ -167,6 +169,7 @@ window.fetchMetrics = async function (setState = () => 0) {
     setLoading: (loading) => setState({ loadingMetrics: loading }),
     setError: (err) => setState({ errorMetrics: err }),
     setApiData: ([data]) => {
+      changeValueInsertMoney(data.default_usdt_buy)
       if (!data) {
         console.log("[fetchMetrics]: No se recibio datos", id_coin);
         return;

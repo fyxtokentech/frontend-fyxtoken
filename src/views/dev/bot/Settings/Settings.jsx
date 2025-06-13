@@ -72,11 +72,6 @@ export default function Settings({ setView }) {
         </Button>
       </Box>
 
-      <PaperP>
-        <AutomatizacionView />
-      </PaperP>
-      <br />
-
       <Paper>
         <AppBar position="static" color="default">
           <Tabs
@@ -114,6 +109,11 @@ export default function Settings({ setView }) {
           </Box>
         </Box>
       </Paper>
+
+      <br />
+      <PaperP>
+        <AutomatizacionView />
+      </PaperP>
     </>
   );
 }
