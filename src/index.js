@@ -28,9 +28,9 @@ init();
 const componentsContext = require.context("./views", true, /\.jsx$/);
 
 // Cargar usuario automáticamente desde localStorage en window.currentUser
-const storedUser = JSON.parse(localStorage.getItem("user") || "null");
-if (storedUser) {
-  window["currentUser"] = storedUser;
+const storedUser = localStorage.getItem("user");
+if (storedUser && storedUser != "undefined") {
+  window["currentUser"] = JSON.parse(storedUser || "null");
 }
 
 // Progreso circular con etiqueta

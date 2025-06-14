@@ -38,11 +38,13 @@
   "scripts": {
     "start": "react-app-rewired start",
     "build": "react-app-rewired build",
-    "test": "npm run build && serve -s build",
+    "test": "serve -s build",
     "eject": "react-scripts eject",
-    "deploy": "cross-env PUBLIC_URL=/ npm run test",
     "deploy-gh": "cross-env PUBLIC_URL=. npm run build && npm run publish-gh",
-    "publish-gh": "gh-pages -d build"
+    "publish-gh": "gh-pages -d build",
+    "build-prod": "npm run deploy-server --branch=build-prod",
+    "deploy-server": "cross-env PUBLIC_URL=/ npm run build && gh-pages -d build -b %npm_config_branch%",
+    "deploys": "npm run build-prod && npm run deploy-gh"
   },
   "eslintConfig": {
     "extends": [

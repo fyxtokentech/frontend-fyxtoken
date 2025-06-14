@@ -1,14 +1,37 @@
 import React, { useState, useEffect } from "react";
 import { HTTPGET_USER_API } from "src/api/mocks";
 import { showError } from "@templates";
-import { Grid, Checkbox } from "@mui/material";
+import {
+  Grid,
+  Checkbox,
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  TextField,
+} from "@mui/material";
 import { APIKeyExchange } from "./APIKey";
 import { HTTPPATCH_USER_API } from "@api";
+
+import AddIcon from "@mui/icons-material/Add";
+const EXCHANGES_AVAILABLE = ["BINANCE", "BITGET"];
 
 export class APIKeyViewExchange extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { apiKeys: [] };
+    this.state = {
+      apiKeys: [],
+      dialogOpen: false,
+      newExchange: "BINANCE",
+      newApiKey: "",
+      newApiSecret: "",
+      newPassphrase: "",
+    };
   }
 
   componentDidMount() {
@@ -56,7 +79,7 @@ export class APIKeyViewExchange extends React.Component {
         }
       }),
     }));
-  }
+  };
 
   handleSave = () => {
     const { user_id } = window.currentUser;
@@ -71,7 +94,9 @@ export class APIKeyViewExchange extends React.Component {
         showError(response.message);
       }
     });
-  }
+  };
+
+  handleCancel = () => this.setState({ dialogOpen: false });
 
   render() {
     return (
@@ -80,17 +105,17 @@ export class APIKeyViewExchange extends React.Component {
         <br />
         {this.state.apiKeys.map((exchange) => {
           const { name_api, attributes_api, id_api_user, enabled } = exchange;
-          const {
-            API_KEY_BINANCE,
-            SECRET_KEY_BINANCE,
-            API_KEY,
-            API_SECRET,
-          } = attributes_api;
+          const { API_KEY_BINANCE, SECRET_KEY_BINANCE, API_KEY, API_SECRET } =
+            attributes_api;
           const general = {
             getNameExchange: () => name_api,
             getEnabled: () => enabled === "A",
             setEnabled: (value) =>
-              this.handleInputChange(id_api_user, "enabled", ["I", "A"][+value]),
+              this.handleInputChange(
+                id_api_user,
+                "enabled",
+                ["I", "A"][+value]
+              ),
             getAttributesApi: () => attributes_api,
             getIdApiUser: () => id_api_user,
           };
@@ -146,8 +171,73 @@ export class APIKeyViewExchange extends React.Component {
             />
           );
         })}
+
+        <p align="right">
+          <br />
+          <Button
+            variant="contained"
+            color="primary"
+            size="large"
+            startIcon={<AddIcon />}
+            onClick={() => this.setState({ dialogOpen: true })}
+          >
+            Agregar nueva API de Operación
+          </Button>
+        </p>
+
+        <Dialog open={this.state.dialogOpen} onClose={this.handleCancel}>
+          <DialogTitle>Agregar nueva API de Operación</DialogTitle>
+          <DialogContent>
+            <FormControl fullWidth margin="normal">
+              <InputLabel id="exchange-select-label">Exchange</InputLabel>
+              <Select
+                labelId="exchange-select-label"
+                value={this.state.newExchange}
+                label="Exchange"
+                onChange={(e) => this.setState({ newExchange: e.target.value })}
+              >
+                {EXCHANGES_AVAILABLE.map((ex) => (
+                  <MenuItem key={ex} value={ex}>
+                    {ex}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <TextField
+              label="API Key"
+              variant="outlined"
+              fullWidth
+              margin="normal"
+              value={this.state.newApiKey}
+              onChange={(e) => this.setState({ newApiKey: e.target.value })}
+            />
+            <TextField
+              label="API Secret"
+              variant="outlined"
+              fullWidth
+              margin="normal"
+              value={this.state.newApiSecret}
+              onChange={(e) => this.setState({ newApiSecret: e.target.value })}
+            />
+            {this.state.newExchange === "BITGET" && (
+              <TextField
+                label="Passphrase"
+                variant="outlined"
+                fullWidth
+                margin="normal"
+                value={this.state.newPassphrase}
+                onChange={(e) =>
+                  this.setState({ newPassphrase: e.target.value })
+                }
+              />
+            )}
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={this.handleSave}>Guardar</Button>
+            <Button onClick={this.handleCancel}>Cancelar</Button>
+          </DialogActions>
+        </Dialog>
       </>
     );
   }
 }
-

@@ -138,14 +138,14 @@ export const HTTP_GET = ({
     {
       // PROCEDIMIENTO DE MOCKS
       const { CONTEXT } = window;
-      const [data, info, contentMockup] = args;
+      const [data, info, mock_default] = args;
       const use_mockup = (() => {
-        const esArray = Array.isArray(contentMockup);
+        const esArray = Array.isArray(mock_default);
         return esArray && CONTEXT === "dev";
       })();
       if (use_mockup) {
         showWarning("Mockup en uso", url);
-        const fallback = unpackTable(contentMockup);
+        const fallback = unpackTable(mock_default);
         successful(fallback, {
           status: "simulated",
           message: "Mockup en uso",

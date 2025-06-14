@@ -1,4 +1,10 @@
-import { MAKE_GET, MAKE_POST, MAKE_PUT, MAKE_PATCH, AUTO_PARAMS } from "./generic";
+import {
+  MAKE_GET,
+  MAKE_POST,
+  MAKE_PUT,
+  MAKE_PATCH,
+  AUTO_PARAMS,
+} from "./generic";
 
 export async function HTTPGET_COINS_BY_USER({ user_id, ...rest }) {
   ({ user_id } = AUTO_PARAMS({ user_id }));
@@ -86,7 +92,15 @@ export async function HTTPGET_USEROPERATION_STRATEGY({
   return await MAKE_GET({
     ...rest,
     buildEndpoint: ({ genpath }) =>
-      genpath(["operations", "user", user_id, "coin", id_coin, "strategy", strategy]),
+      genpath([
+        "operations",
+        "user",
+        user_id,
+        "coin",
+        id_coin,
+        "strategy",
+        strategy,
+      ]),
   });
 }
 
@@ -143,29 +157,44 @@ export async function HTTPGET_USER_API({ user_id, ...rest }) {
 }
 
 // PATCH /api/id/{id_api_user}
-export async function HTTPPATCH_USER_API({ id_api_user, enabled, new_attributes, ...rest }) {
+export async function HTTPPATCH_USER_API({
+  id_api_user,
+  enabled,
+  new_attributes,
+  ...rest
+}) {
   return await MAKE_PATCH({
     ...rest,
-    buildEndpoint: ({ genpath }) => genpath(["api", "third", "id", id_api_user]),
+    buildEndpoint: ({ genpath }) =>
+      genpath(["api", "third", "id", id_api_user]),
     params: { new_attributes },
   });
 }
 
 // PATCH /operations/user/{user_id}/coin/{id_coin}/strategy/{strategy}
-export async function HTTPPATCH_USEROPERATION_STRATEGY({ user_id, id_coin, strategy, new_config, ...rest }) {
+export async function HTTPPATCH_USEROPERATION_STRATEGY({
+  user_id,
+  id_coin,
+  strategy,
+  new_config,
+  ...rest
+}) {
   ({ user_id, id_coin } = AUTO_PARAMS({ user_id, id_coin }));
   return await MAKE_PATCH({
     ...rest,
     buildEndpoint: ({ genpath }) =>
-      genpath(["operations", "user", user_id, "coin", id_coin, "strategy", strategy], {
-        new_config: (()=>{
-          if(typeof new_config == "string"){
-            return new_config;
-          }
-          // TOdos los json se pasan como cadenas
-          return JSON.stringify(new_config);
-        })(),
-      }),
+      genpath(
+        ["operations", "user", user_id, "coin", id_coin, "strategy", strategy],
+        {
+          new_config: (() => {
+            if (typeof new_config == "string") {
+              return new_config;
+            }
+            // TOdos los json se pasan como cadenas
+            return JSON.stringify(new_config);
+          })(),
+        }
+      ),
   });
 }
 
@@ -179,7 +208,19 @@ export async function HTTPPOST_TRY_LOGIN({ username, password, ...rest }) {
       }),
     isTable: true,
   });
-  return user;
+  return user[0];
 }
 
+export async function HTTPGET_OPERATION_ID({ operationID, ...rest }) {
+  return await MAKE_GET({
+    ...rest,
+    buildEndpoint: ({ genpath }) => genpath(["operations", "id", operationID]),
+  });
+}
 
+export async function HTTPGET_TRANSACTIONS({ id_operation, ...rest }) {
+  return await MAKE_GET({
+    ...rest,
+    buildEndpoint: ({ genpath }) => genpath(["transactions", id_operation]),
+  });
+}

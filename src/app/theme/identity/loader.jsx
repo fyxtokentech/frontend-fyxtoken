@@ -2,7 +2,7 @@ import {} from "@identity/colors";
 import {Main, Skygreen, Lemongreen, Springgreen, BlackNWhite} from "@identity/palettes";
 import scrollbar from "@identity/scrollsbar";
 
-import { packLoadPalette, load_scrollbar, init } from "@jeff-aporta/theme-manager";
+import { packLoadPalette, load_scrollbar, init, getTheme } from "@jeff-aporta/theme-manager";
 
 const main = new Main(packLoadPalette);
 packLoadPalette.color_register["main"] = main;
@@ -19,6 +19,7 @@ packLoadPalette.color_register["springgreen"] = springgreen;
 const blacknwhite = new BlackNWhite(packLoadPalette);
 packLoadPalette.color_register["blacknwhite"] = blacknwhite;
 
+window.getTheme = getTheme;
 
 load_scrollbar(scrollbar);
 

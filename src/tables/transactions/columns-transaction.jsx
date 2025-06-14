@@ -6,7 +6,7 @@ import CandleIcon from "@mui/icons-material/CandlestickChartOutlined";
 import RSIIcon from "@mui/icons-material/QueryStatsOutlined";
 import StatusOkIcon from "@mui/icons-material/CheckCircleOutline";
 import StatusErrorIcon from "@mui/icons-material/UnpublishedOutlined";
-import BackHandIcon from '@mui/icons-material/BackHand';
+import TagFacesOutlinedIcon from '@mui/icons-material/TagFacesOutlined';
 import CurrencyExchangeIcon from "@mui/icons-material/CurrencyExchange";
 
 const retorno = {
@@ -42,7 +42,7 @@ const retorno = {
         label: {
           C: { text: "Candle", icon: <CandleIcon />, color: "secondary" },
           R: { text: "RSI", icon: <RSIIcon />, color: "secondary" },
-          U: { text: "Usuario", icon: <BackHandIcon />, color: "secondary" },
+          U: { text: "Usuario", icon: <TagFacesOutlinedIcon />, color: "secondary" },
           E: { text: "Exchange", icon: <CurrencyExchangeIcon />, color: "secondary" },
         },
       },

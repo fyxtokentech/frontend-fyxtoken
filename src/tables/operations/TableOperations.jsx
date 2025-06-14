@@ -214,16 +214,11 @@ export default class TableOperations extends Component {
                 <IconButton
                   size="small"
                   onClick={() => {
+                    const { driverParams } = window;
                     const table = "transactions";
-                    const params = new URLSearchParams(window.location.search);
-                    params.set("operation-id", row.id_operation);
+                    driverParams.set("id_operation", row.id_operation);
                     window["operation-row"] = row;
-                    params.set("view-table", table);
-                    window.history.replaceState(
-                      null,
-                      "",
-                      `?${params.toString()}`
-                    );
+                    driverParams.set("view-table", table);
                     setOperationTrigger(row);
                     setViewTable(table);
                   }}

@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
-import Alert from '@mui/material/Alert';
-import toast, { Toaster } from 'react-hot-toast';
+import React, { Component, useState } from "react";
+import Alert from "@mui/material/Alert";
+import toast, { Toaster } from "react-hot-toast";
 
-import { ThemeSwitcher } from "@templates";
+import { ThemeSwitcher, showError } from "@templates";
 import { DivM, PaperP } from "@containers";
 import { isDark, controlComponents, href } from "@jeff-aporta/theme-manager";
+
+import { HTTPPOST_TRY_LOGIN } from "@api";
 
 import {
   Box,
@@ -23,11 +25,9 @@ import HttpsIcon from "@mui/icons-material/Https";
 import LockResetIcon from "@mui/icons-material/LockReset";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 
-export default Index;
-
-function Index() {
+export default function () {
   return (
-    <ThemeSwitcher urlShader="shaders/27.glsl" bgtype="portal" h_init="100px" h_fin="100px">
+    <ThemeSwitcher bgtype="portal" h_init="100px" h_fin="100px">
       <DivM m_max={40} className="d-center min-h-50vh">
         <LoginForm />
       </DivM>
@@ -36,49 +36,33 @@ function Index() {
 }
 
 function LoginForm() {
-  const [showPassword, setShowPassword] = React.useState(false);
   const [showAlert, setShowAlert] = useState(false);
 
-  const handleClickShowPassword = () => setShowPassword((show) => !show);
-
-  const handleMouseDownPassword = (event) => {
-    event.preventDefault();
-  };
-
-  const handleMouseUpPassword = (event) => {
-    event.preventDefault();
-  };
-
   const handleLogin = async () => {
-    const username = document.getElementById('username').value;
-    const password = document.getElementById('password').value;
+    const username = document.getElementById("username").value;
+    const password = document.getElementById("password").value;
     // Validaciones de campos
     if (!username && !password) {
-      setShowAlert(true);
-      toast.error("Por favor ingresa usuario y contraseña");
-      setTimeout(() => setShowAlert(false), 10000);
+      showError("Por favor ingresa usuario y contraseña");
       return;
     }
     if (!username) {
-      setShowAlert(true);
-      toast.error("Por favor ingresa usuario");
-      setTimeout(() => setShowAlert(false), 10000);
+      showError("Por favor ingresa usuario");
       return;
     }
     if (!password) {
-      setShowAlert(true);
-      toast.error("Por favor ingresa contraseña");
-      setTimeout(() => setShowAlert(false), 10000);
+      showError("Por favor ingresa contraseña");
       return;
     }
-    const user = await window["loadUser"](username, password);
-    if (!user) {
-      setShowAlert(true);
-      toast.error("Credenciales inválidas");
-      setTimeout(() => setShowAlert(false), 10000);
+    const user = await HTTPPOST_TRY_LOGIN({ username, password });
+
+    if (window.isResponseError(user)) {
+      showError("Credenciales inválidas");
       return;
     }
     const target = href({ view: "@wallet" });
+    localStorage.setItem("user", JSON.stringify(user));
+    window.currentUser = user;
     window.location.href = target;
   };
 
@@ -92,15 +76,7 @@ function LoginForm() {
       <center className="pad-10px">
         <Typography variant="h4">Ingresa al Wallet</Typography>
       </center>
-      {showAlert && <Alert severity="error" sx={{ width: '100%' }}>Credenciales inválidas</Alert>}
-      <Credentials
-        {...{
-          showPassword,
-          handleClickShowPassword,
-          handleMouseDownPassword,
-          handleMouseUpPassword,
-        }}
-      />
+      <Credentials />
       <div className="d-flex-col ai-end gap-10px fullWidth">
         <div
           className="d-flex-col ai-end gap-10px"
@@ -137,11 +113,7 @@ function LoginForm() {
           </Link>
         </div>
 
-        <Button
-          variant="contained"
-          fullWidth
-          onClick={handleLogin}
-        >
+        <Button variant="contained" fullWidth onClick={handleLogin}>
           Iniciar
         </Button>
 
@@ -160,59 +132,74 @@ function LoginForm() {
   );
 }
 
-function Credentials({
-  showPassword,
-  handleClickShowPassword,
-  handleMouseDownPassword,
-  handleMouseUpPassword,
-}) {
-  const { enfasis_input } = controlComponents();
+class Credentials extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { showPassword: false };
+  }
 
-  return (
-    <div className="d-flex-col gap-40px">
-      <div className="d-flex-col">
-        <Typography variant="caption" color="secondary">
-          <small>Correo electrónico</small>
-        </Typography>
-        <Box sx={{ display: "inline-flex", alignItems: "flex-end" }}>
-          <EmailIcon sx={{ mr: 1 }} color="secondary" />
-          <Input
-            fullWidth
-            id="username"
-            placeholder="Ingresa Correo electrónico"
-            color={enfasis_input}
-            variant="filled"
-          />
-        </Box>
-      </div>
-      <div className="d-flex-col">
-        <Typography variant="caption" color="secondary">
-          <small>Contraseña</small>
-        </Typography>
-        <Box sx={{ display: "inline-flex", alignItems: "end" }}>
-          <HttpsIcon sx={{ mr: 1 }} color="secondary" />
-          <FormControl variant="standard" fullWidth>
+  handleClickShowPassword() {
+    this.setState((prev) => ({ showPassword: !prev.showPassword }));
+  }
+
+  static handleMouseDownPassword(e) {
+    e.preventDefault();
+  }
+
+  static handleMouseUpPassword(e) {
+    e.preventDefault();
+  }
+
+  render() {
+    const { showPassword } = this.state;
+    const { enfasis_input } = controlComponents();
+
+    return (
+      <div className="d-flex-col gap-40px">
+        <div className="d-flex-col">
+          <Typography variant="caption" color="secondary">
+            <small>Correo electrónico</small>
+          </Typography>
+          <Box sx={{ display: "inline-flex", alignItems: "flex-end" }}>
+            <EmailIcon sx={{ mr: 1 }} color="secondary" />
             <Input
-              id="password"
-              type={showPassword ? "text" : "password"}
-              placeholder="Ingresa Contraseña"
-              color={enfasis_input}
               fullWidth
-              endAdornment={
-                <InputAdornment position="end">
-                  <IconButton
-                    onClick={handleClickShowPassword}
-                    onMouseDown={handleMouseDownPassword}
-                    onMouseUp={handleMouseUpPassword}
-                  >
-                    {showPassword ? <VisibilityOff /> : <Visibility />}
-                  </IconButton>
-                </InputAdornment>
-              }
+              id="username"
+              placeholder="Ingresa Correo electrónico"
+              color={enfasis_input}
+              variant="filled"
             />
-          </FormControl>
-        </Box>
+          </Box>
+        </div>
+        <div className="d-flex-col">
+          <Typography variant="caption" color="secondary">
+            <small>Contraseña</small>
+          </Typography>
+          <Box sx={{ display: "inline-flex", alignItems: "flex-end" }}>
+            <HttpsIcon sx={{ mr: 1 }} color="secondary" />
+            <FormControl variant="standard" fullWidth>
+              <Input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                placeholder="Ingresa Contraseña"
+                color={enfasis_input}
+                fullWidth
+                endAdornment={
+                  <InputAdornment position="end">
+                    <IconButton
+                      onClick={this.handleClickShowPassword}
+                      onMouseDown={this.handleMouseDownPassword}
+                      onMouseUp={this.handleMouseUpPassword}
+                    >
+                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                }
+              />
+            </FormControl>
+          </Box>
+        </div>
       </div>
-    </div>
-  );
+    );
+  }
 }

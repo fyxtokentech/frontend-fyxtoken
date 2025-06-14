@@ -10,7 +10,7 @@ import {
   useMediaQuery,
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
-import CloseIcon from "@mui/icons-material/Close";
+import DisabledByDefaultIcon from '@mui/icons-material/DisabledByDefault';
 import ApiIcon from "@mui/icons-material/Api";
 import CurrencyBitcoinIcon from "@mui/icons-material/CurrencyBitcoin";
 import ShowChartIcon from "@mui/icons-material/ShowChart";
@@ -62,13 +62,13 @@ export default function Settings({ setView }) {
     <>
       <Box sx={{ display: "flex", justifyContent: "flex-end", p: 1 }}>
         <Button
-          variant="outlined"
-          color="secondary"
+          variant="contained"
+          color="error"
           size="small"
-          startIcon={<CloseIcon />}
+          endIcon={<DisabledByDefaultIcon />}
           onClick={() => setView("main")}
         >
-          Cerrar
+          Cerrar configuración
         </Button>
       </Box>
 

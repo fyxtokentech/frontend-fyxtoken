@@ -27,19 +27,20 @@ import {
 import SellIcon from "@mui/icons-material/Sell";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import AddIcon from "@mui/icons-material/Add";
-import Snackbar from "@mui/material/Snackbar";
+
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import SaveIcon from "@mui/icons-material/Save";
 import SwapHorizIcon from "@mui/icons-material/SwapHoriz";
 import { TitleTab } from "./_repetitive";
+import { showSuccess } from "@templates";
 import { PaperP } from "@containers";
 
 export function CriptomonedasView() {
   const [tab, setTab] = useState(0);
-  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  
   const handleTabChange = (e, newValue) => setTab(newValue);
-  const handleSaveConfig = () => setSnackbarOpen(true);
+  const handleSaveConfig = () => showSuccess("Rutas guardadas exitosamente");
 
   return (
     <Box sx={{ p: 2 }}>
@@ -332,21 +333,6 @@ export function CriptomonedasView() {
           </TableBody>
         </Table>
       </TableContainer>
-      <Fab
-        size="small"
-        color="primary"
-        aria-label="save"
-        sx={{ position: "fixed", bottom: 16, right: 16 }}
-        onClick={handleSaveConfig}
-      >
-        <SaveIcon />
-      </Fab>
-      <Snackbar
-        open={snackbarOpen}
-        autoHideDuration={3000}
-        onClose={() => setSnackbarOpen(false)}
-        message="Rutas guardadas exitosamente"
-      />
     </Box>
   );
 }

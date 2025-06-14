@@ -11,6 +11,26 @@ const { utilities } = window;
 export function setContext(nc) {
   localStorage.setItem("context", nc);
 }
+export function isResponseError(response) {
+  if (!response) {
+    return true;
+  }
+  return (
+    checkStatus(response.$status) ||
+    checkStatus(response.status) ||
+    checkStatus(response.status_code)
+  );
+
+  function checkStatus(status) {
+    if (typeof status === "string") {
+      return status === "error";
+    }
+    if (typeof status === "number") {
+      return status >= 400;
+    }
+    return false;
+  }
+}
 
 export function init() {
   // --- Sección 1: Entorno ---
@@ -35,6 +55,7 @@ export function init() {
     IS_LOCAL: global.IS_LOCAL,
     IS_GITHUB_IO: global.IS_GITHUB_IO,
     CONTEXT: context,
+    isResponseError,
   });
 
   // --- Sección 3: URL params helper ---
