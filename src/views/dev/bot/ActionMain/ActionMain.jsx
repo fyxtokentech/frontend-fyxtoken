@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from "react";
 
-import { PaperP } from "@containers";
-import { IconButtonWithTooltip } from "@recurrent";
+import {
+  PaperP,
+  IconButtonWithTooltip,
+  driverParams,
+} from "@jeff-aporta/camaleon";
 import UpdateIcon from "@mui/icons-material/Cached";
 
 import TableOperations from "@tables/operations/TableOperations";
 import TableTransactions from "@tables/transactions/TableTransactions";
 
-import GraphDriver from "@components/GUI/graph/graph-driver";
+import { MovementsGraph } from "@components/graph/graph-driver";
 
 import PanelBalance from "./PanelBalance/PanelBalance";
 
@@ -34,7 +37,7 @@ function UpdateButton({ update_available, setUpdateAvailable, ...rest_props }) {
   );
 }
 
-export default function ActionMain({
+export function ActionMain({
   currency,
   update_available,
   setUpdateAvailable,
@@ -58,7 +61,7 @@ export default function ActionMain({
   const [deletionTimers, setDeletionTimers] = useState([]);
 
   return (
-    <PaperP className="d-flex flex-column gap-20px">
+    <PaperP className="flex col-direction gap-20px">
       <PanelBalance
         {...{
           currency,
@@ -112,8 +115,7 @@ function ViewTable({
   setOperationTrigger,
 }) {
   console.log("ActionMain [DEV] viewTable:", viewTable);
-  // Load coinid from URL parameters via global.driverParams
-  const { driverParams } = global;
+  // Load coinid from URL parameters via driverParams
   const coinidStr = driverParams.get("id_coin");
   const coinidFromUrl = coinidStr ? parseInt(coinidStr, 10) : undefined;
 
@@ -127,7 +129,7 @@ function ViewTable({
           }}
           pretable={
             <>
-              <GraphDriver typeDataInput="none" />
+              <MovementsGraph typeDataInput="none" />
               <br />
             </>
           }

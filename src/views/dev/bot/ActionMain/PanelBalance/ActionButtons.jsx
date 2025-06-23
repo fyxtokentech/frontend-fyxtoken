@@ -1,12 +1,12 @@
 import React, { useState } from "react";
 import { Button, Typography } from "@mui/material";
 import UpdateIcon from "@mui/icons-material/Cached";
-import { IconButtonWithTooltip, TooltipNoPointerEvents } from "@recurrent";
+import { TooltipGhost, IconButtonWithTooltip } from "@jeff-aporta/camaleon";
 import PauseIcon from "@mui/icons-material/Pause";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
-import fluidCSS from "@jeff-aporta/fluidcss";
+import { fluidCSS } from "@jeff-aporta/camaleon";
 import { HTTPPUT_COINS_START, HTTPPUT_COINS_STOP } from "@api";
-import { showSuccess, showWarning, showError } from "@templates";
+import { showSuccess, showWarning, showError } from "@jeff-aporta/camaleon";
 
 export default function ActionButtons({
   update_available,
@@ -22,8 +22,8 @@ export default function ActionButtons({
   actionInProcess,
   setActionInProcess,
 }) {
-  const { user_id } = window["currentUser"];
-  const { getCoinKey } = global;
+  const { user_id } = window.currentUser;
+  const { getCoinKey } = window;
   const [autoOpEnabled, setAutoOpEnabled] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const hayMoneda = currency.current.trim();
@@ -42,26 +42,26 @@ export default function ActionButtons({
   ].reduce((a, b) => a || b, false);
 
   return (
-    <div className="inline-flex ai-end col-direction gap-10px">
+    <div className="inline-flex align-end col-direction gap-10px">
       <div className="flex">
         <UpdateButton {...{ update_available, setUpdateAvailable }} />
         {settingIcon()}
       </div>
-      <div>
+      <div className="flex wrap gap-10px">
         <ButtonOperate />
         <ButtonStop />
       </div>
       <hr />
-      <div>
-      <ButtonAutoOp />
-      <ButtonPauseResume />
+      <div className="flex wrap gap-10px">
+        <ButtonAutoOp />
+        <ButtonPauseResume />
       </div>
     </div>
   );
 
   function ButtonPauseResume() {
     return (
-      <TooltipNoPointerEvents title={isPaused ? "Reanudar" : "Pausar"}>
+      <TooltipGhost title={isPaused ? "Reanudar" : "Pausar"}>
         <div>
           <Button
             variant="contained"
@@ -119,13 +119,13 @@ export default function ActionButtons({
             <small>{isPaused ? "Reanudar" : "Pausar"}</small>
           </Button>
         </div>
-      </TooltipNoPointerEvents>
+      </TooltipGhost>
     );
   }
 
   function ButtonAutoOp() {
     return (
-      <TooltipNoPointerEvents title="Auto-op">
+      <TooltipGhost title="Auto-op">
         <div>
           <Button
             variant="contained"
@@ -136,13 +136,13 @@ export default function ActionButtons({
             <small>Auto-op</small>
           </Button>
         </div>
-      </TooltipNoPointerEvents>
+      </TooltipGhost>
     );
   }
 
   function ButtonStop() {
     return (
-      <TooltipNoPointerEvents
+      <TooltipGhost
         title={(() => {
           if (!hayMoneda) {
             return "Seleccione una moneda";
@@ -173,13 +173,13 @@ export default function ActionButtons({
             }
           />
         </div>
-      </TooltipNoPointerEvents>
+      </TooltipGhost>
     );
   }
 
   function ButtonOperate() {
     return (
-      <TooltipNoPointerEvents
+      <TooltipGhost
         title={(() => {
           if (!hayMoneda) {
             return "Seleccione una moneda";
@@ -198,7 +198,7 @@ export default function ActionButtons({
             disabled={!hayMoneda || monedaYaOperando || actionInProcess}
           />
         </div>
-      </TooltipNoPointerEvents>
+      </TooltipGhost>
     );
 
     function Operar(props) {

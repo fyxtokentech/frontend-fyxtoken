@@ -1,4 +1,4 @@
-import modelsFormat from "@GUI/DynTable/modelsFormat";
+import {modelsFormat} from "@jeff-aporta/camaleon";
 
 import StatusOpenIcon from '@mui/icons-material/HourglassTop';
 import StatusCloseIcon from '@mui/icons-material/HourglassBottom';
@@ -18,7 +18,7 @@ const retorno = {
       fit_content: true,
       renderInfo: {
         iconized(params, renderString) {
-          let { value, row } = params;
+          let { value, row } = params ?? {};
           const strings_open = {
             texto: "Abierto",
             tooltip: "Abierto",
@@ -37,7 +37,7 @@ const retorno = {
             icon: <StatusCloseIcon />,
             color: "secondary",
           };
-          if (!row["end_date_operation"]) {
+          if (row && !row["end_date_operation"]) {
             return openState;
           }
           switch (value) {

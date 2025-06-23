@@ -8,13 +8,13 @@ import CurrencyExchangeIcon from "@mui/icons-material/CurrencyExchange";
 import { Chip } from "@mui/material";
 import Typography from "@mui/material/Typography";
 
-import { PaperP } from "@containers";
+import { PaperP } from "@jeff-aporta/camaleon";
 import { AutoSkeleton } from "@components/controls";
 
-import fluidCSS from "@jeff-aporta/fluidcss";
+import { fluidCSS } from "@jeff-aporta/camaleon";
 
-import { TooltipNoPointerEvents } from "@recurrent";
-import { getThemeLuminance } from "@jeff-aporta/theme-manager";
+import { TooltipGhost } from "@jeff-aporta/camaleon";
+import { getThemeLuminance, modelsFormat } from "@jeff-aporta/camaleon";
 import { getBalance } from "./PanelOfInsertMoney";
 
 export const panelProjectionsState = {
@@ -26,7 +26,7 @@ export const panelProjectionsState = {
 
 export const getCoinMetric = () => {
   return panelProjectionsState.coinMetric;
-}
+};
 
 export function getPriceProjectionColor() {
   const { priceProjectionValue } = panelProjectionsState;
@@ -59,7 +59,6 @@ export default class PanelOfProjections extends Component {
   fetchMetrics = async () => {
     await window.fetchMetrics((state) => {
       Object.assign(panelProjectionsState, state);
-      console.log({ panelProjectionsState });
       this.forceUpdate();
     });
   };
@@ -123,13 +122,9 @@ export default class PanelOfProjections extends Component {
         : 0;
 
     return (
-      <PaperP
-        className="d-inline-center"
-      >
+      <PaperP className="d-inline-center">
         <div className="flex col-direction gap-10px">
-          <div
-            className="flex ai-center space-between gap-10px"
-          >
+          <div className="flex align-center space-between gap-10px">
             <PriceProjectionCard
               priceProjection={projectedPrice}
               currentPrice={currentPrice}
@@ -182,8 +177,8 @@ class PriceProjectionCard extends Component {
     }
     return (
       <PaperP elevation={3} className="p-relative">
-        <div className="d-flex flex-column">
-          <TooltipNoPointerEvents title="Periodo operación: 5 Minutos">
+        <div className="flex col-direction">
+          <TooltipGhost title="Periodo operación: 5 Minutos">
             <Chip
               size="small"
               label="5 Minutos"
@@ -198,7 +193,7 @@ class PriceProjectionCard extends Component {
                 color: getThemeLuminance() === "dark" ? "white" : "black",
               }}
             />
-          </TooltipNoPointerEvents>
+          </TooltipGhost>
           <Typography
             variant="caption"
             color="text.secondary"
@@ -206,11 +201,12 @@ class PriceProjectionCard extends Component {
           >
             <small>Precio</small>
           </Typography>
-          <div className="d-flex ai-center gap-5px">
-            <TooltipNoPointerEvents
-              title={`Actual USD: ${window["format"]["number"][
-                "toCoinDifference"
-              ](currentPrice, priceProjection)}`}
+          <div className="flex align-center gap-5px">
+            <TooltipGhost
+              title={`Actual USD: ${modelsFormat.format.number.toCoinDifference(
+                currentPrice,
+                priceProjection
+              )}`}
             >
               <span>
                 <PriceCard
@@ -221,23 +217,24 @@ class PriceProjectionCard extends Component {
                   loading={loading}
                 />
               </span>
-            </TooltipNoPointerEvents>
-            <TooltipNoPointerEvents
-              title={`Proyectado USD: ${window["format"]["number"][
-                "toCoinDifference"
-              ](priceProjection, currentPrice)}`}
+            </TooltipGhost>
+            <TooltipGhost
+              title={`Proyectado USD: ${modelsFormat.format.number.toCoinDifference(
+                priceProjection,
+                currentPrice
+              )}`}
             >
               <span>
                 <PriceCard
                   title="Proyectado USD"
                   value={priceProjection}
                   value2={currentPrice}
-                  icon={getPriceProjectionIcon(priceProjection- currentPrice)}
+                  icon={getPriceProjectionIcon(priceProjection - currentPrice)}
                   color={projectionColor}
                   loading={loading}
                 />
               </span>
-            </TooltipNoPointerEvents>
+            </TooltipGhost>
           </div>
         </div>
       </PaperP>
@@ -250,21 +247,21 @@ class PriceCard extends Component {
     const { title, value, value2, icon, color, loading } = this.props;
     if (loading) {
       return (
-        <PaperP p_min={2} p_max={10} className="d-flex-col">
+        <PaperP p_min={2} p_max={10} className="flex-col">
           <AutoSkeleton loading width="100%" height="50px" />
         </PaperP>
       );
     }
     return (
-      <PaperP p_min={2} p_max={10} className="d-flex-col">
+      <PaperP p_min={2} p_max={10} className="flex-col">
         <Typography color="text.secondary" variant="caption">
           <small>{title}</small>
         </Typography>
         <Typography color={color} variant="caption">
-          <span className="nowrap d-flex ai-center">
+          <span className="nowrap flex align-center">
             {icon && <>{icon}&nbsp;&nbsp;</>}
             {value != null
-              ? window["format"]["number"]["toCoinDifference"](value, value2)
+              ? modelsFormat.format.number.toCoinDifference(value, value2)
               : "---"}
           </span>
         </Typography>
@@ -331,7 +328,7 @@ class ProfitProjCard extends Component {
         elevation={3}
       >
         <div className="flex col-direction gap-10px">
-          <TooltipNoPointerEvents
+          <TooltipGhost
             title={
               !!projectedGainUSD &&
               `${labelTitle}: ${valueProfitProjected} USD por cada ${this.balance} USD`
@@ -347,7 +344,7 @@ class ProfitProjCard extends Component {
             <Typography color={color}>
               {["---", `${valueProfitProjected} USD`][+!!projectedGainUSD]}
             </Typography>
-          </TooltipNoPointerEvents>
+          </TooltipGhost>
         </div>
       </PaperP>
     );
@@ -402,7 +399,7 @@ class ROICard extends Component {
     })();
     const cardOpacity = valid ? 1 : 0.5;
     return (
-      <TooltipNoPointerEvents
+      <TooltipGhost
         title={(() => {
           if (!totalBought) {
             return "No hay compra";
@@ -412,21 +409,21 @@ class ROICard extends Component {
         })()}
       >
         <PaperP
-          className={`d-flex ai-stretch p-relative`}
+          className={`flex align-stretch p-relative`}
           elevation={3}
           sx={{ opacity: cardOpacity, minWidth: "100px" }}
         >
           <ClaseROI />
           <ContentText />
         </PaperP>
-      </TooltipNoPointerEvents>
+      </TooltipGhost>
     );
 
     function ContentText() {
       return (
-        <div className="d-flex flex-column jc-space-evenly gap-5px">
+        <div className="flex col-direction justify-space-evenly gap-5px">
           <LabelROI />
-          <div className="d-flex ai-center gap-5px">
+          <div className="flex align-center gap-5px">
             <ValueROI />
           </div>
         </div>
@@ -462,7 +459,7 @@ class ROICard extends Component {
       return (
         <>
           {!!clase && (
-            <TooltipNoPointerEvents title={etiqueta}>
+            <TooltipGhost title={etiqueta}>
               <Chip
                 label={<span className="metric-label">{clase}</span>}
                 size="small"
@@ -487,7 +484,7 @@ class ROICard extends Component {
                   })(),
                 }}
               />
-            </TooltipNoPointerEvents>
+            </TooltipGhost>
           )}
         </>
       );

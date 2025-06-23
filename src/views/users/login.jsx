@@ -1,10 +1,8 @@
 import React, { Component, useState } from "react";
 import Alert from "@mui/material/Alert";
-import toast, { Toaster } from "react-hot-toast";
 
-import { ThemeSwitcher, showError } from "@templates";
-import { DivM, PaperP } from "@containers";
-import { isDark, controlComponents, href } from "@jeff-aporta/theme-manager";
+import { isDark, showError, href, DivM, PaperP } from "@jeff-aporta/camaleon";
+import { Main } from "@theme/main.jsx";
 
 import { HTTPPOST_TRY_LOGIN } from "@api";
 
@@ -16,10 +14,11 @@ import {
   IconButton,
   Input,
   InputAdornment,
-  Link,
   Typography,
+  Checkbox,
+  Link,
 } from "@mui/material";
-import fluidCSS from "@jeff-aporta/fluidcss";
+import { fluidCSS, HTTP_IS_ERROR } from "@jeff-aporta/camaleon";
 import EmailIcon from "@mui/icons-material/Email";
 import HttpsIcon from "@mui/icons-material/Https";
 import LockResetIcon from "@mui/icons-material/LockReset";
@@ -27,11 +26,11 @@ import { Visibility, VisibilityOff } from "@mui/icons-material";
 
 export default function () {
   return (
-    <ThemeSwitcher bgtype="portal" h_init="100px" h_fin="100px">
+    <Main bgtype="portal" h_init="100px" h_fin="100px">
       <DivM m_max={40} className="d-center min-h-50vh">
         <LoginForm />
       </DivM>
-    </ThemeSwitcher>
+    </Main>
   );
 }
 
@@ -56,37 +55,35 @@ function LoginForm() {
     }
     const user = await HTTPPOST_TRY_LOGIN({ username, password });
 
-    if (window.isResponseError(user)) {
+    if (HTTP_IS_ERROR(user)) {
       showError("Credenciales inválidas");
       return;
     }
-    const target = href({ view: "@wallet" });
+    const target = href("@wallet");
     localStorage.setItem("user", JSON.stringify(user));
     window.currentUser = user;
     window.location.href = target;
   };
 
-  const { themized } = controlComponents();
-
   return (
     <PaperP
       elevation={6}
-      className="d-flex-col flex-wrap gap-30px min-h-150px w-fit"
+      className="flex-col flex-wrap gap-30px min-h-150px w-fit"
     >
       <center className="pad-10px">
         <Typography variant="h4">Ingresa al Wallet</Typography>
       </center>
       <Credentials />
-      <div className="d-flex-col ai-end gap-10px fullWidth">
+      <div className="flex-col align-end gap-10px fullWidth">
         <div
-          className="d-flex-col ai-end gap-10px"
+          className="flex-col align-end gap-10px"
           style={{ scale: "0.8", transformOrigin: "right center" }}
         >
           <div>
             <FormControlLabel
               color="secondary"
-              className="d-flex fd-row-reverse"
-              control={<themized.Checkbox id="remerber-me" defaultChecked />}
+              className="flex fd-row-reverse"
+              control={<Checkbox id="remerber-me" defaultChecked />}
               label={<small>Recordarme</small>}
               sx={{
                 marginRight: 0,
@@ -152,11 +149,10 @@ class Credentials extends Component {
 
   render() {
     const { showPassword } = this.state;
-    const { enfasis_input } = controlComponents();
 
     return (
-      <div className="d-flex-col gap-40px">
-        <div className="d-flex-col">
+      <div className="flex-col gap-40px">
+        <div className="flex-col">
           <Typography variant="caption" color="secondary">
             <small>Correo electrónico</small>
           </Typography>
@@ -166,12 +162,12 @@ class Credentials extends Component {
               fullWidth
               id="username"
               placeholder="Ingresa Correo electrónico"
-              color={enfasis_input}
+              color="primary"
               variant="filled"
             />
           </Box>
         </div>
-        <div className="d-flex-col">
+        <div className="flex-col">
           <Typography variant="caption" color="secondary">
             <small>Contraseña</small>
           </Typography>
@@ -182,7 +178,6 @@ class Credentials extends Component {
                 id="password"
                 type={showPassword ? "text" : "password"}
                 placeholder="Ingresa Contraseña"
-                color={enfasis_input}
                 fullWidth
                 endAdornment={
                   <InputAdornment position="end">

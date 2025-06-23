@@ -1,12 +1,12 @@
 import { useState } from "react";
 
-import { PaperP } from "@containers";
 import {
-  generate_inputs,
+  PaperP,
+  genInputsGender,
   TitleInfo,
-  generate_selects,
-} from "@recurrent";
-import {DynTable} from "@components/GUI/DynTable/DynTable";
+  genSelectFast,
+  DynTable,
+} from "@jeff-aporta/camaleon";
 
 import { Button, Tooltip, Typography } from "@mui/material";
 
@@ -182,7 +182,10 @@ function PanelIWishToWithdraw({ mode, setMode }) {
           }
         />
       </div>
-      <div className="d-inline-block padb-10px padt-5px padw-10px" style={custom_styles.controlInput}>
+      <div
+        className="d-inline-block padb-10px padt-5px padw-10px"
+        style={custom_styles.controlInput}
+      >
         <SelectModeWithDrawal mode={mode} setMode={setMode} />
       </div>
       <br />
@@ -197,7 +200,7 @@ function PanelIWishToWithdraw({ mode, setMode }) {
       return (
         <PaperP elevation={0}>
           <Typography variant="h6">Información de {mode}</Typography>
-          <div className="d-flex flex-wrap gap-30px padh-20px">
+          <div className="flex flex-wrap gap-30px padh-20px">
             <ChooseForm />
           </div>
         </PaperP>
@@ -247,7 +250,7 @@ function PanelIWishToWithdraw({ mode, setMode }) {
             <Button
               disabled={!mode}
               variant="contained"
-              color="verde_lima"
+              color="primaryl4"
               startIcon={<i className="fa-solid fa-hand-holding-dollar" />}
             >
               Solicitar Retiro
@@ -260,12 +263,12 @@ function PanelIWishToWithdraw({ mode, setMode }) {
 }
 
 function SelectModeWithDrawal({ mode, setMode }) {
-  return generate_selects([
+  return genSelectFast([
     {
       label: "Modo",
       name: "withdrawal",
       value: mode,
-      setter: setMode,
+      onChange: (e, value) => setMode(value),
       style: {
         minWidth: "250px",
       },
@@ -287,7 +290,7 @@ function SelectModeWithDrawal({ mode, setMode }) {
 function Corporativo() {
   return (
     <>
-      {generate_inputs([
+      {genInputsGender([
         {
           label: "Cantidad a retirar",
           type: "number",
@@ -301,7 +304,7 @@ function Corporativo() {
 function ACH() {
   return (
     <>
-      {generate_inputs([
+      {genInputsGender([
         {
           label: "Cantidad a retirar",
           type: "number",
@@ -315,7 +318,7 @@ function ACH() {
 function Wallet() {
   return (
     <>
-      {generate_inputs([
+      {genInputsGender([
         {
           label: "Cantidad a retirar",
           type: "number",
@@ -333,14 +336,14 @@ function Staking() {
   _currency_staking_ = currency;
   return (
     <>
-      {generate_inputs([
+      {genInputsGender([
         {
           label: "Cantidad a retirar",
           type: "number",
           name: "amount",
         },
       ])}
-      {generate_selects([
+      {genSelectFast([
         {
           label: "Plataforma de Staking",
           name: "staking",
@@ -363,7 +366,7 @@ function Staking() {
 function Programado() {
   return (
     <>
-      {generate_inputs([
+      {genInputsGender([
         {
           label: "Cantidad a retirar",
           type: "number",
@@ -382,7 +385,7 @@ function Programado() {
 function TarjetaDebitoAsociada() {
   return (
     <>
-      {generate_inputs([
+      {genInputsGender([
         {
           label: "Cantidad a retirar",
           type: "number",
@@ -396,7 +399,7 @@ function TarjetaDebitoAsociada() {
 function CuentaFIAT() {
   return (
     <>
-      {generate_inputs([
+      {genInputsGender([
         {
           label: "Cantidad a retirar",
           type: "number",
@@ -415,7 +418,7 @@ function CuentaFIAT() {
 function TarjetaDebito() {
   return (
     <>
-      {generate_inputs([
+      {genInputsGender([
         {
           label: "Número de tarjeta",
           type: "text",
@@ -434,7 +437,7 @@ function TarjetaDebito() {
 function CuentaBancaria() {
   return (
     <>
-      {generate_inputs([
+      {genInputsGender([
         {
           label: "Número de cuenta",
           type: "text",

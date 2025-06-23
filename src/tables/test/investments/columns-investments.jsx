@@ -1,5 +1,5 @@
 import React from "react";
-import modelsFormat from "@components/GUI/DynTable/modelsFormat";
+import { modelsFormat } from "@jeff-aporta/camaleon";
 
 // No hay iconos específicos de estado para posiciones abiertas generalmente,
 // pero podríamos añadir uno para el activo si fuera necesario.
@@ -9,7 +9,8 @@ const columns_investments = [
   {
     field: "profit", // Cómo voy (ganancia/pérdida no realizada)
     headerName: "Beneficio proyectado",
-    description: "Ganancia o pérdida potencial si la posición se cerrara ahora.",
+    description:
+      "Ganancia o pérdida potencial si la posición se cerrara ahora.",
     ...modelsFormat.profit, // Formato beneficio/pérdida
   },
   {
@@ -46,12 +47,11 @@ const columns_investments = [
     headerName: "Par",
     description: "Par de trading asociado a la posición.",
   },
-   {
+  {
     field: "user_id", // 8. Dueño (menos relevante en vista personal)
     headerName: "ID Usuario",
     description: "Identificador del usuario propietario de la posición.",
   },
-
 
   // --- Columnas Ocultas / Internas ---
   {

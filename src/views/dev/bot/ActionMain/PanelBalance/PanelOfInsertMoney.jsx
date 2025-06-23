@@ -2,9 +2,13 @@ import React, { useState } from "react";
 import { Typography, TextField, Slider, Button } from "@mui/material";
 import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
 import { HTTPPUT_USEROPERATION_INVESTMEN } from "@api";
-import { showSuccess, showWarning } from "@templates";
-import { PaperP } from "@components/containers";
-import { TooltipNoPointerEvents } from "@recurrent";
+import {
+  showSuccess,
+  showWarning,
+  PaperP,
+  driverParams,
+} from "@jeff-aporta/camaleon";
+import { TooltipGhost } from "@jeff-aporta/camaleon";
 
 let _balance_ = 10;
 const MAX_VALUE_INVERSION = 1000000;
@@ -87,7 +91,6 @@ export default class PanelOfInsertMoney extends React.Component {
   }
 
   handleInvest() {
-    const { driverParams } = global;
     this.setState({ updating: true });
     const coin_id = driverParams.get("id_coin");
     HTTPPUT_USEROPERATION_INVESTMEN({
@@ -113,8 +116,8 @@ export default class PanelOfInsertMoney extends React.Component {
   render() {
     _balance_ = +vars_PanelOfInsertMoney.inputValue;
     return (
-      <PaperP className="inline-flex">
-        <div className="d-flex col-direction gap-10px">
+      <PaperP style={{ minWidth: "250px" }}>
+        <div className="flex col-direction gap-10px">
           <Typography variant="caption" color="secondary">
             Insertar Dinero
           </Typography>
@@ -136,7 +139,7 @@ export default class PanelOfInsertMoney extends React.Component {
           />
           <div
             className="d-inline-center"
-            style={{ width: "90%", margin: "auto" }}
+            style={{ width: "95%", margin: "auto" }}
           >
             <Slider
               aria-label="Custom marks"
@@ -156,7 +159,7 @@ export default class PanelOfInsertMoney extends React.Component {
             />
           </div>
           <div style={{ marginTop: 8, textAlign: "right" }}>
-            <TooltipNoPointerEvents title="Invertir">
+            <TooltipGhost title="Invertir">
               <Button
                 variant="contained"
                 size="small"
@@ -168,7 +171,7 @@ export default class PanelOfInsertMoney extends React.Component {
               >
                 Invertir
               </Button>
-            </TooltipNoPointerEvents>
+            </TooltipGhost>
           </div>
         </div>
       </PaperP>

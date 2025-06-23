@@ -10,6 +10,6 @@
     "allowSyntheticDefaultImports": true,
     "types": []
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "../_temp/welcome", "../_temp/users", "../_temp/dev"],
   "exclude": ["node_modules", "build", "dist"]
 }

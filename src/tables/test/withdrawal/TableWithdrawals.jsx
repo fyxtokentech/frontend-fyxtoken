@@ -1,15 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { Box, Typography, Alert } from "@mui/material";
-import { DynTable } from "@components/GUI/DynTable/DynTable";
+import { DynTable } from "@jeff-aporta/camaleon";
 import { AutoSkeleton, DateRangeControls } from "@components/controls";
 import dayjs from "dayjs";
-import axios from "axios";
+import { HTTPGET_WITHDRAWALS } from "@api";
 
 // Importar datos mock y configuración de columnas
 import mock_withdrawals from "./mock-withdrawals.json";
 import columns_withdrawals from "./columns-withdrawals.jsx";
-
-const { CONTEXT } = window;
 
 export default function TableWithdrawals({
   user_id,
@@ -37,63 +35,18 @@ export default function TableWithdrawals({
       return;
     }
 
-    try {
-      // Formatear fechas para la API
-      const startDate = dateRangeInit.format("YYYY-MM-DD");
-      const endDate = dateRangeFin.format("YYYY-MM-DD");
-
-      // Determinar la base URL según la configuración global
-      const apiBaseUrl = "http://82.29.198.89:8000";
-      const localApiUrl = "http://localhost:8000";
-
-      // Usar la configuración global para determinar el entorno
-      const baseUrl =
-        CONTEXT === "dev" ? localApiUrl : apiBaseUrl;
-
-      // Construir URL con parámetros
-      const apiUrl = `${baseUrl}/withdrawals/${user_id}?start_date=${startDate}&end_date=${endDate}&page=0&limit=999999`;
-
-      // Configuración para manejar CORS
-      const config = {
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-        // Agregar configuración CORS solo para producción
-        ...(CONTEXT !== "dev" && { withCredentials: false }),
-      };
-
-      // Realizar la petición con manejo de errores
-      try {
-        const response = await axios.get(apiUrl, config);
-        
-        // Actualizar estado con los datos recibidos
-        if (response.data && Array.isArray(response.data)) {
-          setApiData(response.data);
-        } else {
-          console.error("Formato de respuesta inesperado:", response.data);
-          setError("Error en el formato de los datos recibidos.");
-          setApiData(mock_withdrawals);
-        }
-      } catch (error) {
-        console.error("Error al obtener datos de retiros:", error);
-        
-        // En desarrollo, usar datos mock
-        if (CONTEXT === "dev") {
-          console.log("Usando datos mock debido al error");
-          setApiData(mock_withdrawals);
-        } else {
-          setError("Error al cargar los retiros.");
-          setApiData([]);
-        }
-      }
-    } catch (err) {
-      console.error("Error general:", err);
-      setError("Error al cargar los retiros.");
-      setApiData(mock_withdrawals);
-    } finally {
-      setLoading(false);
-    }
+    setLoading(true);
+    const startDate = dateRangeInit.format("YYYY-MM-DD");
+    const endDate = dateRangeFin.format("YYYY-MM-DD");
+    const data = await HTTPGET_WITHDRAWALS({
+      willStart: (props) => setLoading(true),
+      willEnd: (props) => setLoading(false),
+      user_id,
+      start_date: startDate,
+      end_date: endDate,
+      mock_default: mock_withdrawals,
+    });
+    setApiData(data);
   };
 
   // Efecto para cargar datos cuando cambia el rango de fechas o el user_id

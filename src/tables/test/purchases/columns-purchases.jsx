@@ -1,22 +1,27 @@
 import React from "react";
-import modelsFormat from "@components/GUI/DynTable/modelsFormat";
+import { modelsFormat } from "@jeff-aporta/camaleon";
 
 // Importar iconos necesarios
 import StatusOkIcon from "@mui/icons-material/CheckCircleOutline"; // Para Completed
-import StatusPendingIcon from "@mui/icons-material/HourglassTop";    // Para Pending
+import StatusPendingIcon from "@mui/icons-material/HourglassTop"; // Para Pending
 import StatusErrorIcon from "@mui/icons-material/UnpublishedOutlined"; // Para Failed (según tu especificación)
-import BuyIcon from '@mui/icons-material/SaveAlt';
+import BuyIcon from "@mui/icons-material/SaveAlt";
 
 const columns_purchases = [
   // --- Columnas con Iconos / Formato Especial Primero ---
   {
     field: "status",
     headerName: "Estado Compra",
-    description: "Estado actual de la orden de compra (Completada, Pendiente, Fallida).",
+    description:
+      "Estado actual de la orden de compra (Completada, Pendiente, Fallida).",
     renderInfo: {
       label: {
         Completed: { text: "Bien", icon: <StatusOkIcon />, color: "ok" },
-        Pending: { text: "Pendiente", icon: <StatusPendingIcon />, color: "warning" },
+        Pending: {
+          text: "Pendiente",
+          icon: <StatusPendingIcon />,
+          color: "warning",
+        },
         Failed: { text: "Error", icon: <StatusErrorIcon />, color: "error" },
       },
     },

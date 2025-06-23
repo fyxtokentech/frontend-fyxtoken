@@ -7,16 +7,17 @@ import CurrencyExchangeIcon from "@mui/icons-material/CurrencyExchange";
 
 import { Typography, Grid, Chip, TextField, Slider } from "@mui/material";
 
-import fluidCSS from "@jeff-aporta/fluidcss";
-import { getThemeLuminance } from "@jeff-aporta/theme-manager";
+import { fluidCSS } from "@jeff-aporta/camaleon";
+import { getThemeLuminance } from "@jeff-aporta/camaleon";
 
 import {
   IconButtonWithTooltip,
-  TooltipNoPointerEvents,
-  generate_selects,
-} from "@recurrent";
+  TooltipGhost,
+  genSelectFast,
+  PaperP,
+  driverParams,
+} from "@jeff-aporta/camaleon";
 
-import { PaperP } from "@components/containers";
 import { AutoSkeleton } from "@components/controls";
 import { HTTPGET_COINS_METRICS } from "@api";
 
@@ -43,13 +44,7 @@ export default class PanelBalance extends Component {
       title="Configurar"
       onClick={() => this.props.setView("settings")}
       icon={
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-          }}
-        >
+        <div className="flex col-direction align-center">
           <SettingsIcon />
           <Typography variant="caption" color="text.secondary">
             <small>Configurar</small>
@@ -89,7 +84,7 @@ export default class PanelBalance extends Component {
     return (
       <div key={currency.current}>
         <PaperP elevation={0}>
-          <div className={`flex wrap stretch space-between gap-10px`}>
+          <div className={`flex wrap space-between gap-10px`}>
             <PanelCoinSelected
               {...{
                 currency,
@@ -161,7 +156,6 @@ export default class PanelBalance extends Component {
 }
 
 window.fetchMetrics = async function (setState = () => 0) {
-  const { driverParams } = global;
   const id_coin = driverParams.get("id_coin");
   if (!id_coin) return;
   await HTTPGET_COINS_METRICS({
@@ -169,12 +163,12 @@ window.fetchMetrics = async function (setState = () => 0) {
     setLoading: (loading) => setState({ loadingMetrics: loading }),
     setError: (err) => setState({ errorMetrics: err }),
     setApiData: ([data]) => {
-      changeValueInsertMoney(data.default_usdt_buy)
       if (!data) {
         console.log("[fetchMetrics]: No se recibio datos", id_coin);
         return;
       }
       setState({ coinMetric: data });
+      changeValueInsertMoney(data.default_usdt_buy);
     },
   });
 };

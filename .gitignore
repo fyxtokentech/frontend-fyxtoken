@@ -3,6 +3,8 @@ tareas-pendientes.txt
 # dependencies
 /.pnp
 .pnp.js
+.vscode
+.vscode/
 
 # testing
 /coverage

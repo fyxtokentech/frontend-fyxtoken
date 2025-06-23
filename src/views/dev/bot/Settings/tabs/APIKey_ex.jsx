@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { HTTPGET_USER_API } from "src/api/mocks";
-import { showError } from "@templates";
+import { HTTPGET_USER_API } from "@api";
+import { showError } from "@jeff-aporta/camaleon";
 import {
   Grid,
   Checkbox,

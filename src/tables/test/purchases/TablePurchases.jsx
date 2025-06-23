@@ -1,13 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { DynTable } from "@components/GUI/DynTable/DynTable";
+import { DynTable } from "@jeff-aporta/camaleon";
 
 import columns_purchases from "./columns-purchases.jsx";
 import mock_purchases from "./mock-purchases.json";
 import { Box, Typography } from "@mui/material";
-import {
-  AutoSkeleton,
-  DateRangeControls,
-} from "@components/controls";
+import { AutoSkeleton, DateRangeControls } from "@components/controls";
 import dayjs from "dayjs";
 
 export default function TablePurchases({

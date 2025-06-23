@@ -1,14 +1,16 @@
-import React, { useState, useEffect } from 'react';
-import {
-  DynTable,
-} from "@components/GUI/DynTable/DynTable";
+import React, { useState, useEffect } from "react";
+import { DynTable } from "@jeff-aporta/camaleon";
 
 import columns_user_apis from "./columns-UserApis.jsx";
 import mock_UserApis from "./mock-UserApis.json"; // Corregido nombre archivo mock
-import { Box } from '@mui/material';
+import { Box } from "@mui/material";
 import { AutoSkeleton } from "@components/controls"; // Sin controles de fecha
 
-export default function TableUserApis({ data = mock_UserApis, columns_config = columns_user_apis, ...rest }) {
+export default function TableUserApis({
+  data = mock_UserApis,
+  columns_config = columns_user_apis,
+  ...rest
+}) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -22,12 +24,8 @@ export default function TableUserApis({ data = mock_UserApis, columns_config = c
   return (
     <Box>
       {/* Sin DateRangeControls para APIs */}
-      <AutoSkeleton loading={loading} h="300px" >
-        <DynTable
-          rows={data}
-          columns={columns_config}
-          {...rest}
-        />
+      <AutoSkeleton loading={loading} h="300px">
+        <DynTable rows={data} columns={columns_config} {...rest} />
       </AutoSkeleton>
     </Box>
   );

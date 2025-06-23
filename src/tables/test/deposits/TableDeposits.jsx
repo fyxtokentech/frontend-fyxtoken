@@ -1,13 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { DynTable } from "@components/GUI/DynTable/DynTable";
+import { DynTable } from "@jeff-aporta/camaleon";
 
 import columns_deposits from "./columns-deposits.jsx";
 import mock_deposits from "./mock-deposits.json";
 import { Box } from "@mui/material";
-import {
-  AutoSkeleton,
-  DateRangeControls,
-} from "@components/controls"; // Asumiendo que quieres controles
+import { AutoSkeleton, DateRangeControls } from "@components/controls"; // Asumiendo que quieres controles
 import dayjs from "dayjs";
 
 export default function TableDeposits({

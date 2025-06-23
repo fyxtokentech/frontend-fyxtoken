@@ -1,5 +1,5 @@
 import React from "react";
-import modelsFormat from "@components/GUI/DynTable/modelsFormat";
+import { modelsFormat } from "@jeff-aporta/camaleon";
 
 // Importar iconos necesarios
 import StatusOkIcon from "@mui/icons-material/CheckCircleOutline";
@@ -15,7 +15,11 @@ const columns_deposits = [
     renderInfo: {
       label: {
         Completed: { text: "Bien", icon: <StatusOkIcon />, color: "ok" },
-        Pending: { text: "Pendiente", icon: <StatusPendingIcon />, color: "warning" },
+        Pending: {
+          text: "Pendiente",
+          icon: <StatusPendingIcon />,
+          color: "warning",
+        },
         Failed: { text: "Error", icon: <StatusErrorIcon />, color: "error" },
       },
     },
@@ -64,7 +68,8 @@ const columns_deposits = [
   {
     field: "create_date", // Renombrado de 'date' si existía
     headerName: "Fecha Creación",
-    description: "Fecha y hora en que se registró el depósito (generado automáticamente).",
+    description:
+      "Fecha y hora en que se registró el depósito (generado automáticamente).",
     inTable: false, // Oculta porque 'exclude: true'
     exclude: true, // No relevante para el usuario final
     ...modelsFormat.datetime, // Formato de fecha y hora

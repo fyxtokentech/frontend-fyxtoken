@@ -1,5 +1,5 @@
 import React from "react";
-import { HTTPGET_USER_API, HTTPPATCH_USER_API } from "src/api/mocks";
+import { HTTPGET_USER_API, HTTPPATCH_USER_API } from "@api";
 
 import {
   Grid,
@@ -25,17 +25,17 @@ import ExitToAppIcon from "@mui/icons-material/ExitToApp";
 import SaveIcon from "@mui/icons-material/Save";
 import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
 import SettingsIcon from "@mui/icons-material/Settings";
-import { IconButtonWithTooltip, GhostTooltip } from "@recurrent";
+import { TooltipGhost } from "@jeff-aporta/camaleon";
 import SmartToyIcon from "@mui/icons-material/SmartToy";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import { TitleTab } from "./_repetitive";
-import { showError } from "@templates";
+import { showError } from "@jeff-aporta/camaleon";
 
 import { APIKeyViewExchange } from "./APIKey_ex";
 
 import { ExchangeManagerWithdrawal } from "./APIKey_exwithdrawal";
-import fluidCSS from "@jeff-aporta/fluidcss";
+import { fluidCSS, IconButtonWithTooltip } from "@jeff-aporta/camaleon";
 
 class PasswordField extends React.Component {
   constructor(props) {
@@ -97,11 +97,11 @@ export class APIKeyExchange extends React.Component {
   render() {
     const { apiKeyInstance, onSave, onDiscard } = this.props;
     const { openSettingsDialog } = this.state;
-    
+
     return (
-      <div className="flex wrap jc-space-between">
+      <div className="flex wrap justify-space-between">
         <div className="flex col-direction gap-20px">
-          <div className="flex ai-center gap-10px">
+          <div className="flex align-center gap-10px">
             <Typography variant="subtitle1" fontWeight="bold">
               Exchange
             </Typography>
@@ -124,7 +124,7 @@ export class APIKeyExchange extends React.Component {
             .ltX(900, { width: "100%" })
             .end("flex col-direction gap-20px")}
         >
-          <div className="flex ai-center gap-10px">
+          <div className="flex align-center gap-10px">
             <Typography variant="subtitle1" fontWeight="bold">
               API Key
             </Typography>
@@ -141,7 +141,7 @@ export class APIKeyExchange extends React.Component {
             .ltX(900, { width: "100%" })
             .end("flex col-direction gap-20px")}
         >
-          <div className="flex ai-center gap-10px">
+          <div className="flex align-center gap-10px">
             <Typography variant="subtitle1" fontWeight="bold">
               Secret Key
             </Typography>
@@ -161,7 +161,7 @@ export class APIKeyExchange extends React.Component {
           <div
             className={fluidCSS()
               .ltX(920, { justifyContent: ["start", "end"] })
-              .end("flex ai-center gap-10px")}
+              .end("flex align-center gap-10px")}
           >
             <Typography variant="subtitle1" fontWeight="bold">
               Acciones
@@ -171,9 +171,9 @@ export class APIKeyExchange extends React.Component {
           <div
             className={fluidCSS()
               .ltX(920, { justifyContent: ["start", "end"] })
-              .end("flex ai-center gap-10px")}
+              .end("flex align-center gap-10px")}
           >
-            <GhostTooltip title="Guardar cambios">
+            <TooltipGhost title="Guardar cambios">
               <IconButton
                 onClick={onSave || (() => alert("Guardar cambios"))}
                 color="default"
@@ -182,8 +182,8 @@ export class APIKeyExchange extends React.Component {
               >
                 <SaveIcon />
               </IconButton>
-            </GhostTooltip>
-            <GhostTooltip title="Descartar cambios">
+            </TooltipGhost>
+            <TooltipGhost title="Descartar cambios">
               <IconButton
                 onClick={onDiscard || (() => alert("Descartar cambios"))}
                 color="secondary"
@@ -192,8 +192,8 @@ export class APIKeyExchange extends React.Component {
               >
                 <RemoveCircleOutlineIcon />
               </IconButton>
-            </GhostTooltip>
-            <GhostTooltip title="Ajustes">
+            </TooltipGhost>
+            <TooltipGhost title="Ajustes">
               <IconButton
                 onClick={this.handleOpenSettings}
                 color="default"
@@ -202,7 +202,7 @@ export class APIKeyExchange extends React.Component {
               >
                 <SettingsIcon />
               </IconButton>
-            </GhostTooltip>
+            </TooltipGhost>
           </div>
         </div>
         <Dialog

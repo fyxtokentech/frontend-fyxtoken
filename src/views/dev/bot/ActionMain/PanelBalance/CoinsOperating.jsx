@@ -5,18 +5,18 @@ import PendingIcon from "@mui/icons-material/Pending";
 import CircularProgress from "@mui/material/CircularProgress";
 
 import { Tooltip, Chip, Autocomplete, TextField } from "@mui/material";
-import { PaperP } from "@containers";
+import { PaperP } from "@jeff-aporta/camaleon";
 import {
   HTTPGET_USEROPERATION_OPEN,
   HTTPPOST_EXCHANGE_SELL,
   HTTPPUT_COINS_STOP,
 } from "@api";
 
-import { showSuccess, showWarning, showError } from "@templates";
+import { showSuccess, showWarning, showError } from "@jeff-aporta/camaleon";
 
 export const vars_CoinsOperating = {
   actionInProcess: false,
-}
+};
 
 export default class CoinsOperating extends Component {
   constructor(props) {
@@ -30,7 +30,7 @@ export default class CoinsOperating extends Component {
     if (onExternalDeleteRef) {
       onExternalDeleteRef.current = (coinSymbol) => {
         const coin = coinsOperatingList.current.find(
-          (c) => global.getCoinKey(c) === coinSymbol
+          (c) => window.getCoinKey(c) === coinSymbol
         );
         if (coin) this.handleCoinDelete({ preventDefault: () => {} }, coin);
       };
@@ -70,23 +70,19 @@ export default class CoinsOperating extends Component {
         const operationOpen = {};
         await HTTPGET_USEROPERATION_OPEN({
           id_coin: coin.id,
-          setApiData: ([data]) => {
-            if (!data) {
-              return;
-            }
+          setError: setErrorCoinOperate,
+          successful: ([data], info) => {
             Object.assign(operationOpen, data);
           },
-          setError: setErrorCoinOperate,
-          successful: (json, info) => {
-            console.log(json, info)
-            showSuccess(`Se empezó a operar (${coin.symbol})`);
-          },
           failure: (json, info) => {
-            console.log(json, info)
-            showWarning(`Algo salió mal al empezar a operar en ${coin.symbol}`);
+            console.log(json, info);
+            showWarning(
+              `Algo salió mal al encontrar operación abierta en: ${coin.symbol}`
+            );
           },
         });
         const { id_operation } = operationOpen;
+        console.log({ operationOpen });
         if (!id_operation) {
           showWarning(`No se encontro la operacion abierta en ${coin.symbol}`, {
             operationOpen,
@@ -103,16 +99,15 @@ export default class CoinsOperating extends Component {
           setError: setErrorCoinOperate,
           willEnd,
           successful: (json, info) => {
-            console.log(json, info)
             showSuccess(`Se vendio (${coin.symbol})`);
           },
           failure: (json, info) => {
-            console.log(json, info)
-            showWarning(`Algo salió mal al vender en ${coin.symbol}`);
+            showWarning(`Algo salió mal en el exchange con ${coin.symbol}`);
+            setTimeout(() => window.location.reload(), 7000);
           },
         });
         if (all_okSell) {
-          showSuccess(`Se vendio (${coin.symbol})`);
+          showSuccess(`${coin.symbol} Vendido`);
           coinsOperatingList.current = coinsOperatingList.current.filter(
             (c) => c.id !== coin.id
           );
@@ -120,7 +115,7 @@ export default class CoinsOperating extends Component {
             (c) => c.id !== coin.id
           );
         } else {
-          showWarning(`Algo salió mal al vender en ${coin.symbol}`, rest);
+          showWarning(`No se completó la venta ${coin.symbol}`, rest);
         }
       }
 
@@ -134,6 +129,7 @@ export default class CoinsOperating extends Component {
           },
           failure: (json, info) => {
             showWarning(`Algo salió mal al detener en ${coin.symbol}`);
+            setTimeout(() => window.location.reload(), 7000);
           },
         });
       }
@@ -169,9 +165,9 @@ export default class CoinsOperating extends Component {
           </span>
         ) : (
           coinsOperatingList.current.map((option, index) => {
-            const symbol = global.getCoinKey(option);
+            const symbol = window.getCoinKey(option);
             const isPendingDelete = coinsToDelete.current.some(
-              (c) => global.getCoinKey(c) === symbol
+              (c) => window.getCoinKey(c) === symbol
             );
             return (
               <Tooltip

@@ -1,19 +1,34 @@
 import React, { useRef, useState, useEffect } from "react";
 
-import { ThemeSwitcher } from "@templates";
-import { DivM } from "@containers";
+import { Main } from "@theme/main";
+import { DivM, driverParams } from "@jeff-aporta/camaleon";
 
 import { HTTPGET_COINS_BY_USER } from "@api";
 
-import { Title } from "@recurrent";
-
-import ActionMain from "./ActionMain/ActionMain";
+import { ActionMain } from "./ActionMain/ActionMain";
 import Settings from "./Settings/Settings";
+import { Typography } from "@mui/material";
+import dayjs from "dayjs";
 
-export default function PanelRobot() {
+export default function () {
+  initParams();
+  return <PanelRobot />;
+}
+
+//Iniciar parametros
+function initParams() {
+  if (!driverParams.get("period")) {
+    driverParams.set("period", "most_recent");
+  }
+  if (!driverParams.get("id_coin")) {
+    driverParams.set("id_coin", 1);
+  }
+}
+
+function PanelRobot() {
   const { user_id } = window["currentUser"];
+  
 
-  const { driverParams } = global;
   const [viewTable, setViewTable] = useState(
     driverParams.get("view-table") || "operations"
   );
@@ -52,7 +67,7 @@ export default function PanelRobot() {
             const paramCoin = driverParams.get("coin");
             if (!paramCoin && coinsToOperate.current.length > 0) {
               const first = coinsToOperate.current[0];
-              const key = global.getCoinKey(first);
+              const key = window.getCoinKey(first);
               currency.current = key;
               driverParams.set("coin", key);
               driverParams.set("id_coin", first.id);
@@ -70,9 +85,12 @@ export default function PanelRobot() {
   }, []);
 
   return (
-    <ThemeSwitcher h_init="20px" h_fin="300px">
+    <Main h_init="20px" h_fin="300px">
       <DivM>
-        <Title txt="Panel Robot" />
+        <Typography variant="h2" className="color-bg-opposite">
+          Panel Robot
+        </Typography>
+        <br />
         {(() => {
           switch (view) {
             case "main":
@@ -105,6 +123,6 @@ export default function PanelRobot() {
           }
         })()}
       </DivM>
-    </ThemeSwitcher>
+    </Main>
   );
 }

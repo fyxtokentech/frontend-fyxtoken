@@ -9,7 +9,7 @@ import {
 } from "@mui/material";
 import TransactionsIcon from "@mui/icons-material/PriceChange";
 
-import { DynTable } from "@components/GUI/DynTable/DynTable";
+import { DynTable, driverParams } from "@jeff-aporta/camaleon";
 
 import mock_operation from "./mock-operation.json";
 import columns_operation from "./columns-operation.jsx";
@@ -21,13 +21,19 @@ import React, { Component } from "react";
 import dayjs from "dayjs";
 
 import FilterAltIcon from "@mui/icons-material/FilterAlt";
-import { showError } from "@templates";
+import { showError } from "@jeff-aporta/camaleon";
 
 const tableOperationsState = {
-  tableData: []
+  tableData: [],
 };
 
-const { driverParams, IS_GITHUB_IO } = global;
+const { IS_GITHUB_IO } = global;
+
+let _TableOperations_;
+
+export function updateTableOperations() {
+  _TableOperations_.invokeFetch();
+}
 
 export default class TableOperations extends Component {
   constructor(props) {
@@ -41,10 +47,11 @@ export default class TableOperations extends Component {
   }
 
   updateDatas = () => {
-    const [start, end] = driverParams.gets("start_date", "end_date");
+    let [start, end] = driverParams.gets("start_date", "end_date");
     this.updateState({
-      dateRangeInit: [null, dayjs(start)][+!!start],
-      dateRangeFin: [null, dayjs(end)][+!!end],
+      filterApply: true,
+      dateRangeInit: dayjs(start),
+      dateRangeFin: dayjs(end),
     });
   };
 
@@ -69,6 +76,7 @@ export default class TableOperations extends Component {
   componentDidMount() {
     this.updateDatas();
     this.invokeFetch();
+    _TableOperations_ = this;
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -77,8 +85,12 @@ export default class TableOperations extends Component {
       this.invokeFetch();
     }
     // enable filterApply when date range changes, safely handle null dates
-    const { dateRangeInit: prevInit, dateRangeFin: prevFin } = prevState;
-    const { dateRangeInit: currInit, dateRangeFin: currFin } = this.state;
+    let { dateRangeInit: prevInit, dateRangeFin: prevFin } = prevState;
+    let { dateRangeInit: currInit, dateRangeFin: currFin } = this.state;
+    prevInit = dayjs(prevInit);
+    prevFin = dayjs(prevFin);
+    currInit = dayjs(currInit);
+    currFin = dayjs(currFin);
     const initChanged = (() => {
       if (prevInit && currInit) {
         return !prevInit.isSame(currInit);
@@ -91,9 +103,6 @@ export default class TableOperations extends Component {
       }
       return prevFin !== currFin;
     })();
-    if (initChanged || finChanged) {
-      this.setFilterApply(true);
-    }
   }
 
   async fetchData({ dateRangeInit, dateRangeFin }) {
@@ -107,7 +116,7 @@ export default class TableOperations extends Component {
     }
     this.delay = Date.now();
     this.loadingTableOperation = true;
-    const { driverParams, IS_GITHUB_IO } = global;
+    const { IS_GITHUB_IO } = global;
     if (!user_id || !dateRangeInit || !dateRangeFin) {
       console.log("Fetch cancelado (faltan parámetros)", {
         user_id,
@@ -118,8 +127,8 @@ export default class TableOperations extends Component {
     }
     try {
       await HTTPGET_USEROPERATION_PERIOD({
-        start_date: dateRangeInit.format("YYYY-MM-DD"),
-        end_date: dateRangeFin.format("YYYY-MM-DD"),
+        start_date: dayjs(dateRangeInit).format("YYYY-MM-DD"),
+        end_date: dayjs(dateRangeFin).format("YYYY-MM-DD"),
         // ---------------------
         setError: this.setError,
         setLoading: (value) => {
@@ -163,14 +172,14 @@ export default class TableOperations extends Component {
   handleInitChange = (dateRangeInit) => {
     this.updateState({ dateRangeInit });
     if (dateRangeInit && typeof dateRangeInit.format === "function") {
-      global.driverParams.set("start_date", dateRangeInit.format("YYYY-MM-DD"));
+      driverParams.set("start_date", dateRangeInit.format("YYYY-MM-DD"));
     }
   };
 
   handleFinChange = (dateRangeFin) => {
     this.updateState({ dateRangeFin });
     if (dateRangeFin && typeof dateRangeFin.format === "function") {
-      global.driverParams.set("end_date", dateRangeFin.format("YYYY-MM-DD"));
+      driverParams.set("end_date", dateRangeFin.format("YYYY-MM-DD"));
     }
   };
 
@@ -184,8 +193,7 @@ export default class TableOperations extends Component {
       ...rest
     } = this.props;
     const { user_id } = window["currentUser"];
-    const { dateRangeInit, dateRangeFin, error, filterApply } =
-      this.state;
+    const { dateRangeInit, dateRangeFin, error, filterApply } = this.state;
     const { tableData } = tableOperationsState;
     const loading = this.loadingTableOperation;
 
@@ -214,7 +222,6 @@ export default class TableOperations extends Component {
                 <IconButton
                   size="small"
                   onClick={() => {
-                    const { driverParams } = window;
                     const table = "transactions";
                     driverParams.set("id_operation", row.id_operation);
                     window["operation-row"] = row;
@@ -256,7 +263,7 @@ export default class TableOperations extends Component {
               Usuario: {user_id}
             </Typography>
             <div
-              className={`d-flex ai-center jc-space-between flex-wrap gap-10px ${
+              className={`flex align-center justify-space-between flex-wrap gap-10px ${
                 loading ? "" : "mh-10px"
               }`}
             >

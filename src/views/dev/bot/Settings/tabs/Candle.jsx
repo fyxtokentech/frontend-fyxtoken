@@ -30,12 +30,17 @@ import TimelineIcon from "@mui/icons-material/Timeline";
 import SaveIcon from "@mui/icons-material/Save";
 import IconButton from "@mui/material/IconButton";
 import { TitleTab } from "./_repetitive";
-import { ImageLocal } from "@recurrent";
+import { ImageLocal } from "@jeff-aporta/camaleon";
 import {
   HTTPGET_USEROPERATION_STRATEGY,
   HTTPPATCH_USEROPERATION_STRATEGY,
 } from "@api";
-import { showSuccess, showError, showInfo } from "@templates";
+import {
+  showSuccess,
+  showError,
+  showInfo,
+  driverParams,
+} from "@jeff-aporta/camaleon";
 
 export function CandlestickView() {
   const [config, setConfig] = useState(null);
@@ -72,8 +77,8 @@ export function CandlestickView() {
   // Carga config candle al montar
   useEffect(() => {
     (async () => {
-      const user_id = window.currentUser?.user_id;
-      const id_coin = window.driverParams?.get("id_coin");
+      const { user_id } = window.currentUser;
+      const id_coin = driverParams.get("id_coin");
       if (!user_id || !id_coin) {
         return;
       }
@@ -82,7 +87,7 @@ export function CandlestickView() {
         id_coin,
         strategy: "candle",
         failure: () => showError("Error al cargar configuración de velas"),
-        setApiData: ([data]) => {
+        successful: ([data]) => {
           const loaded = data;
           setTimeout(() => {
             setConfig(data);
@@ -124,9 +129,11 @@ export function CandlestickView() {
     }));
 
   const handleSave = async () => {
-    const user_id = window.currentUser?.user_id;
-    const id_coin = window.driverParams?.get("id_coin");
-    if (!user_id || !id_coin) return;
+    const { user_id } = window.currentUser;
+    const id_coin = driverParams.get("id_coin");
+    if (!user_id || !id_coin) {
+      return;
+    }
     setSaving(true);
     await HTTPPATCH_USEROPERATION_STRATEGY({
       user_id,

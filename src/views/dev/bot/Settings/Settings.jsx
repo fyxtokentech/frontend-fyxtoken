@@ -10,14 +10,14 @@ import {
   useMediaQuery,
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
-import DisabledByDefaultIcon from '@mui/icons-material/DisabledByDefault';
+import DisabledByDefaultIcon from "@mui/icons-material/DisabledByDefault";
 import ApiIcon from "@mui/icons-material/Api";
 import CurrencyBitcoinIcon from "@mui/icons-material/CurrencyBitcoin";
 import ShowChartIcon from "@mui/icons-material/ShowChart";
 import CandlestickChartIcon from "@mui/icons-material/CandlestickChart";
 import AutoFixHighIcon from "@mui/icons-material/AutoFixHigh";
 
-import { PaperP } from "@containers";
+import { PaperP, driverParams } from "@jeff-aporta/camaleon";
 import { APIKeyView, exchanges_withdrawal } from "./tabs/APIKey";
 import { RSIView } from "./tabs/RSI";
 import { CriptomonedasView } from "./tabs/Cripto";
@@ -36,7 +36,6 @@ export default function Settings({ setView }) {
     { id: "rsi", label: "RSI", icon: <ShowChartIcon /> },
     { id: "candlestick", label: "Candlestick", icon: <CandlestickChartIcon /> },
   ];
-  const { driverParams } = global;
   const initialView = driverParams.get("view-setting") || "apis";
   const [selectedViewSetting, setSelectedViewSetting] = useState(initialView);
 
@@ -92,7 +91,7 @@ export default function Settings({ setView }) {
         </AppBar>
         <Box
           sx={{ display: isMobile ? "block" : "flex" }}
-          className="fullWidth ai-stretch"
+          className="fullWidth align-stretch"
         >
           <Box component="main" sx={{ flexGrow: 1 }}>
             <PaperP>

@@ -1,10 +1,11 @@
 import React from "react";
-import { PaperP } from "@containers";
+import { PaperP } from "@jeff-aporta/camaleon";
 import { AutoSkeleton } from "@components/controls";
-import { generate_selects } from "@recurrent";
-import fluidCSS from "@jeff-aporta/fluidcss";
+import { genSelectFast, driverParams } from "@jeff-aporta/camaleon";
+import { fluidCSS } from "@jeff-aporta/camaleon";
 import { Typography } from "@mui/material";
 import { getCoinMetric } from "./PanelOfProjections";
+import { updateTableOperations } from "@tables/operations/TableOperations";
 
 export default class extends React.Component {
   render() {
@@ -92,7 +93,7 @@ export default class extends React.Component {
                 </Typography>
               </div>
 
-              <Typography>{balance.toLocaleString()}</Typography>
+              <Typography>{(balance ?? 0).toLocaleString()}</Typography>
             </div>
           </PaperP>
         );
@@ -120,7 +121,7 @@ export default class extends React.Component {
               >
                 Balance {currency}
               </Typography>
-              <Typography>{total_tokens.toLocaleString()}</Typography>
+              <Typography>{(total_tokens ?? 0).toLocaleString()}</Typography>
             </div>
           </PaperP>
         );
@@ -129,7 +130,7 @@ export default class extends React.Component {
 
     return (
       <PaperP elevation={3}>
-        <div className="gap-10px flex col-direction jc-space-between">
+        <div className="gap-10px flex col-direction justify-space-between">
           <CoinSelectionOperate
             {...{
               currency,
@@ -144,7 +145,7 @@ export default class extends React.Component {
               setViewTable,
             }}
           />
-          <div className="d-flex jc-space-evenly flex-row gap-10px">
+          <div className="flex justify-space-evenly flex-row gap-10px">
             <BalanceUSDTCard balance={balanceUSDT} />
             <BalanceCoinCard
               balance={balanceCoin}
@@ -181,7 +182,7 @@ function CoinSelectionOperate({
   viewTable,
   setViewTable,
 }) {
-  const { driverParams, getCoinKey } = global;
+  const { getCoinKey } = window;
   // Solo mostrar símbolos de monedas que NO están en operación actualmente
   const opns = coinsToOperate.current.map(
     (coin) => coin.symbol || coin.name || coin.id || "-"
@@ -191,10 +192,10 @@ function CoinSelectionOperate({
   return (
     <PaperP className="d-center">
       <AutoSkeleton loading={loadingCoinToOperate} w="200px" h="48px">
-        {generate_selects([
+        {genSelectFast([
           {
             value: currency.current,
-            setter: (value) => {
+            onChange: (e, value) => {
               currency.current = value;
               updateCoinSelected(currency);
               driverParams.set("view-table", "operations");
@@ -207,6 +208,7 @@ function CoinSelectionOperate({
                 driverParams.set("id_coin", selected.id);
               }
               setUpdateAvailable((prev) => !prev);
+              updateTableOperations();
             },
             name: "currency",
             label: "Moneda",

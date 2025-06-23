@@ -1,13 +1,22 @@
 import React, { useEffect, useState } from "react";
 
-import { colorsTheme, getThemeLuminance, getThemeName, isDark } from "@jeff-aporta/theme-manager";
-import fluidCSS from "@jeff-aporta/fluidcss";
-import JS2CSS from "@jeff-aporta/js2css";
+import { getThemeLuminance, getThemeName, isDark } from "@jeff-aporta/camaleon";
+import { fluidCSS } from "@jeff-aporta/camaleon";
+import { JS2CSS } from "@jeff-aporta/camaleon";
 
-import { ThemeSwitcher, themeSwitch_listener } from "@templates";
-import { DivM, PaperP } from "@containers";
+import { addThemeChangeListener, DivM, PaperP } from "@jeff-aporta/camaleon";
 
-import { Button, Chip, Paper, Typography, Box, Container, Grid } from "@mui/material";
+import { Main } from "@theme/main.jsx";
+
+import {
+  Button,
+  Chip,
+  Paper,
+  Typography,
+  Box,
+  Container,
+  Grid,
+} from "@mui/material";
 import TaskAltIcon from "@mui/icons-material/TaskAlt";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import UnpublishedIcon from "@mui/icons-material/Unpublished";
@@ -18,73 +27,80 @@ import template from "./mock.js";
 
 const { plans, features } = template;
 
-JS2CSS.insertStyle({
-  id: "pricing-custom",
-  objJs: {
-    width: `calc(100% / ${plans.length})`,
-    minWidth: "150px",
-  },
-});
-
-export default Pricing;
+export default function () {
+  return <Pricing />;
+}
 
 function Pricing() {
-  const [theme, setTheme] = useState(getThemeName()+getThemeLuminance());
+  const [theme, setTheme] = useState(getThemeName() + getThemeLuminance());
   const [selectedTab, setSelectedTab] = useState("individuals");
   const pageTitle = "Planes y precios";
   document.querySelector("title").innerHTML = pageTitle;
 
   useEffect(() => {
-    themeSwitch_listener.push((theme_name, theme_luminance)=>{
-      setTheme(theme_name+theme_luminance)
+    addThemeChangeListener((name, luminance) => {
+      setTheme(name + luminance);
     });
   }, []);
 
-  const subtitle_classes = isDark() ? "morado-enfasis-brillante" : "verde-cielo";
+  const subtitle_classes = isDark()
+    ? "morado-enfasis-brillante"
+    : "verde-cielo";
 
   JS2CSS.insertStyle({
     id: "pricing",
-    objJs: {
-      ":root": {
-        "--border-table": `${
-          isDark() ? "hsla(81, 100%, 37%, 0.8)" : "lightgray"
-        }`,
-        "--border-bright-table": `${
-          isDark() ? "hsla(81, 100%, 60%, 0.2)" : "transparent"
-        }`,
-        "--bg-table": `${
-          isDark() ? "rgba(0, 0, 0, 0.2)" : "rgba(255, 255, 255, 0.5)"
-        }`,
-      },
+    ":root": {
+      "--border-table": `${
+        isDark() ? "hsla(81, 100%, 37%, 0.8)" : "lightgray"
+      }`,
+      "--border-bright-table": `${
+        isDark() ? "hsla(81, 100%, 60%, 0.2)" : "transparent"
+      }`,
+      "--bg-table": `${
+        isDark() ? "rgba(0, 0, 0, 0.2)" : "rgba(255, 255, 255, 0.5)"
+      }`,
     },
   });
 
   return (
-    <ThemeSwitcher h_fin="300px">
+    <Main h_fin="300px">
       <div className="overflow-hidden">
         <Container maxWidth="lg">
           {/* Encabezado */}
           <Box className="plans-section" textAlign="center" mt={4}>
-            <Typography variant="h2" component="div" className="plans-section-title" gutterBottom>
+            <Typography
+              variant="h2"
+              component="div"
+              className="plans-section-title"
+              gutterBottom
+            >
               {pageTitle}
             </Typography>
-            <Typography variant="h5" component="div" className="plans-section-subtitle">
+            <Typography
+              variant="h5"
+              component="div"
+              className="plans-section-subtitle"
+            >
               Elige el plan perfecto para tu estrategia
             </Typography>
-            
+
             {/* Selector de tipo de plan */}
             <Box display="flex" justifyContent="center" mt={2} mb={4}>
-              <Button 
-                variant={selectedTab === "individuals" ? "contained" : "outlined"} 
-                color="primary" 
+              <Button
+                variant={
+                  selectedTab === "individuals" ? "contained" : "outlined"
+                }
+                color="primary"
                 onClick={() => setSelectedTab("individuals")}
                 sx={{ mr: 1 }}
               >
                 Para individuos
               </Button>
-              <Button 
-                variant={selectedTab === "organizations" ? "contained" : "outlined"} 
-                color={isDark() ? "white" : "black"} 
+              <Button
+                variant={
+                  selectedTab === "organizations" ? "contained" : "outlined"
+                }
+                color={isDark() ? "white" : "black"}
                 onClick={() => setSelectedTab("organizations")}
               >
                 Para grupos
@@ -103,13 +119,7 @@ function Pricing() {
 
           {/* Tabla comparativa */}
           <Box mt={6} mb={4} textAlign="center">
-            <Typography
-              variant="h4"
-              component="h3"
-              className={`goodtimes-rg ${
-                isDark() ? "verde-lima" : "verde-cielo"
-              }`}
-            >
+            <Typography variant="h4" component="h3" color="contrast">
               Compara planes y características
             </Typography>
           </Box>
@@ -133,29 +143,40 @@ function Pricing() {
                   {plans.map((plan, index) => (
                     <tr key={index}>
                       <td>
-                        <Typography variant="body1" component="div" fontWeight="bold">
+                        <Typography
+                          variant="body1"
+                          component="div"
+                          fontWeight="bold"
+                        >
                           {plan.name}
                           {plan.popular && (
-                            <Chip 
-                              label="Popular" 
-                              size="small" 
-                              color="primary" 
-                              sx={{ ml: 1, scale: 0.9, color: "white" }} 
+                            <Chip
+                              label="Popular"
+                              size="small"
+                              color="primary"
+                              sx={{ ml: 1, scale: 0.9, color: "white" }}
                             />
                           )}
                         </Typography>
                       </td>
                       <td>{plan.period}</td>
                       <td>
-                        {plan.operations.quantity === -1 
-                          ? "Ilimitado" 
+                        {plan.operations.quantity === -1
+                          ? "Ilimitado"
                           : `${plan.operations.quantity} op. ${plan.operations.interval}`}
                       </td>
                       <td>{plan.ganancia || "-"}</td>
                       <td>{plan.comision || "-"}</td>
                       <td>
-                        <Typography variant="body1" component="div" fontWeight="bold">
-                          {plan.costo || (plan.price && plan.price.quantity === 0 ? "Gratis" : "-")}
+                        <Typography
+                          variant="body1"
+                          component="div"
+                          fontWeight="bold"
+                        >
+                          {plan.costo ||
+                            (plan.price && plan.price.quantity === 0
+                              ? "Gratis"
+                              : "-")}
                         </Typography>
                       </td>
                       <td>{plan.maxInversion || "-"}</td>
@@ -175,7 +196,11 @@ function Pricing() {
                     <th>Características</th>
                     {plans.map((plan, index) => (
                       <th key={index}>
-                        <Typography variant="body1" component="div" fontWeight="bold">
+                        <Typography
+                          variant="body1"
+                          component="div"
+                          fontWeight="bold"
+                        >
                           {plan.name}
                         </Typography>
                       </th>
@@ -197,14 +222,21 @@ function Pricing() {
                   {features.map((feature, index) => (
                     <tr key={index}>
                       <td>
-                        <Typography variant="body1" component="div">{feature.name}</Typography>
-                        <Typography variant="caption" component="div" color="textSecondary">
+                        <Typography variant="body1" component="div">
+                          {feature.name}
+                        </Typography>
+                        <Typography
+                          variant="caption"
+                          component="div"
+                          color="textSecondary"
+                        >
                           {feature.description}
                         </Typography>
                       </td>
                       {plans.map((plan, planIndex) => (
                         <td key={planIndex} align="center">
-                          {plan.benefits && plan.benefits.includes(feature.id) ? (
+                          {plan.benefits &&
+                          plan.benefits.includes(feature.id) ? (
                             <CheckCircleIcon className="feature-available" />
                           ) : (
                             <UnpublishedIcon className="feature-unavailable" />
@@ -219,9 +251,16 @@ function Pricing() {
           </Paper>
 
           {/* Sección de referidos */}
-          <Box textAlign="center" my={6} p={3} bgcolor={isDark() ? "rgba(0,0,0,0.3)" : "rgba(0,0,0,0.05)"} borderRadius={2}>
+          <Box
+            textAlign="center"
+            my={6}
+            p={3}
+            bgcolor={isDark() ? "rgba(0,0,0,0.3)" : "rgba(0,0,0,0.05)"}
+            borderRadius={2}
+          >
             <Typography variant="h5" component="div" gutterBottom>
-              Refiere a un amigo o un plan de pago para ganar 500 créditos gratis
+              Refiere a un amigo o un plan de pago para ganar 500 créditos
+              gratis
             </Typography>
             <Button variant="contained" color="primary" sx={{ mt: 2 }}>
               Referir ahora
@@ -229,18 +268,29 @@ function Pricing() {
           </Box>
         </Container>
       </div>
-    </ThemeSwitcher>
+    </Main>
   );
 }
 
 function PricingCard({ plan }) {
-  const { name, price, period, popular, important, operations, ganancia, comision, costo, maxInversion } = plan || {};
-  
+  const {
+    name,
+    price,
+    period,
+    popular,
+    important,
+    operations,
+    ganancia,
+    comision,
+    costo,
+    maxInversion,
+  } = plan || {};
+
   return (
-    <PaperP 
-      className={`pricing-card ${popular ? 'popular' : ''}`}
+    <PaperP
+      className={`pricing-card ${popular ? "popular" : ""}`}
       style={{
-        border: popular ? `3px solid ${colorsTheme().secondary.color.hex()}` : `1px solid ${colorsTheme().secondary.color.hex()}`,
+        border: popular ? `3px solid gray` : `1px solid gray`,
       }}
     >
       <div className="pricing-card-header">
@@ -248,29 +298,37 @@ function PricingCard({ plan }) {
           {name || ""}
         </Typography>
         <div className="pricing-card-price">
-          {price && (price.quantity === 0 ? "Gratis" : `${price.prefix || ""}${price.quantity || 0}${price.sufix || ""}`)}
+          {price &&
+            (price.quantity === 0
+              ? "Gratis"
+              : `${price.prefix || ""}${price.quantity || 0}${
+                  price.sufix || ""
+                }`)}
           <Typography variant="body2" className="pricing-card-period">
             {period || ""}
           </Typography>
         </div>
       </div>
-      
+
       <div className="pricing-card-body">
         {important && important.legend && (
           <Typography variant="body1" component="div" paragraph>
             {important.legend}
           </Typography>
         )}
-        
+
         {operations && (
           <div className="pricing-card-feature">
             <TaskAltIcon className="feature-icon" />
             <Typography variant="body2" component="div">
-              <strong>Operaciones:</strong> {operations.quantity === -1 ? "Ilimitadas" : `${operations.quantity || 0} ${operations.interval || ""}`}
+              <strong>Operaciones:</strong>{" "}
+              {operations.quantity === -1
+                ? "Ilimitadas"
+                : `${operations.quantity || 0} ${operations.interval || ""}`}
             </Typography>
           </div>
         )}
-        
+
         {ganancia && (
           <div className="pricing-card-feature">
             <TaskAltIcon className="feature-icon" />
@@ -279,7 +337,7 @@ function PricingCard({ plan }) {
             </Typography>
           </div>
         )}
-        
+
         {comision && (
           <div className="pricing-card-feature">
             <TaskAltIcon className="feature-icon" />
@@ -288,7 +346,7 @@ function PricingCard({ plan }) {
             </Typography>
           </div>
         )}
-        
+
         {maxInversion && (
           <div className="pricing-card-feature">
             <TaskAltIcon className="feature-icon" />
@@ -298,7 +356,7 @@ function PricingCard({ plan }) {
           </div>
         )}
       </div>
-      
+
       <div className="pricing-card-footer">
         <Button variant="contained" color="primary" fullWidth>
           Seleccionar plan

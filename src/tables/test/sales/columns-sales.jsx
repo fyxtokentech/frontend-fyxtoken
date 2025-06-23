@@ -1,5 +1,5 @@
 import React from "react";
-import modelsFormat from "@components/GUI/DynTable/modelsFormat";
+import { modelsFormat } from "@jeff-aporta/camaleon";
 
 // Importar iconos necesarios
 import StatusOkIcon from "@mui/icons-material/CheckCircleOutline"; // Para Completed

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { DynTable } from "@components/GUI/DynTable/DynTable";
+import { DynTable } from "@jeff-aporta/camaleon";
 
 import columns_investments from "./columns-investments.jsx";
 import mock_investments from "./mock-investments.json";
@@ -28,22 +28,28 @@ export default function TableInvestments({
   useEffect(() => {
     const filterData = () => {
       // Filtrar por rango de fechas
-      let filtered = data.filter(item => {
+      let filtered = data.filter((item) => {
         const itemDate = dayjs(item.date);
-        return itemDate.isAfter(dateRangeInit) && itemDate.isBefore(dateRangeFin.add(1, 'day'));
+        return (
+          itemDate.isAfter(dateRangeInit) &&
+          itemDate.isBefore(dateRangeFin.add(1, "day"))
+        );
       });
-      
+
       // Filtrar por nombre de usuario si hay un filtro activo
       if (userFilter) {
-        filtered = filtered.filter(item => {
+        filtered = filtered.filter((item) => {
           // Verificar si el nombre de usuario contiene el texto de búsqueda (case insensitive)
-          return item.user_name && item.user_name.toLowerCase().includes(userFilter.toLowerCase());
+          return (
+            item.user_name &&
+            item.user_name.toLowerCase().includes(userFilter.toLowerCase())
+          );
         });
       }
-      
+
       return filtered;
     };
-    
+
     setFilteredData(filterData());
   }, [data, dateRangeInit, dateRangeFin, userFilter]);
 
@@ -61,7 +67,12 @@ export default function TableInvestments({
         Inversiones
       </Typography>
       <br />
-      <Grid container spacing={3} alignItems="center" justifyContent="space-between">
+      <Grid
+        container
+        spacing={3}
+        alignItems="center"
+        justifyContent="space-between"
+      >
         <Grid item xs={12} md={7}>
           <DateRangeControls
             {...{
@@ -73,7 +84,15 @@ export default function TableInvestments({
             }}
           />
         </Grid>
-        <Grid item xs={12} md={5} sx={{ display: 'flex', justifyContent: { xs: 'flex-start', md: 'flex-end' } }}>
+        <Grid
+          item
+          xs={12}
+          md={5}
+          sx={{
+            display: "flex",
+            justifyContent: { xs: "flex-start", md: "flex-end" },
+          }}
+        >
           <UserFilterControl
             value={userFilter}
             onChange={setUserFilter}

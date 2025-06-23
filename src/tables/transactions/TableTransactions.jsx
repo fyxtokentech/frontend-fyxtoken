@@ -26,13 +26,13 @@ import InfoIcon from "@mui/icons-material/Info";
 import AccountTreeIcon from "@mui/icons-material/AccountTree";
 import { AutoSkeleton } from "@components/controls";
 
-import FyxDialog from "@components/GUI/dialog";
+import { DialogSimple } from "@jeff-aporta/camaleon";
 import {
   DynTable,
   genAllColumns,
   rendersTemplate,
   exclude,
-} from "@components/GUI/DynTable/DynTable";
+} from "@jeff-aporta/camaleon";
 
 import mock_transaction from "./mock-transaction.json";
 import columns_transaction from "./columns-transaction.jsx";
@@ -41,7 +41,7 @@ import mock_operation from "@tables/operations/mock-operation.json";
 import columns_operation from "@tables/operations/columns-operation.jsx";
 import dayjs from "dayjs";
 import { HTTPGET_TRANSACTIONS, HTTPGET_OPERATION_ID } from "@api";
-import { showError } from "@templates";
+import { showError, driverParams } from "@jeff-aporta/camaleon";
 import { Button } from "@mui/material";
 import DisabledByDefaultIcon from "@mui/icons-material/DisabledByDefault";
 
@@ -49,7 +49,6 @@ let id_operation;
 let _data_;
 
 function updateIDOperation() {
-  const { driverParams } = window;
   ({ id_operation = driverParams.get("id_operation") } =
     window["operation-row"] ?? {});
 }
@@ -122,11 +121,8 @@ export default class TableTransactions extends Component {
     const { loading, apiData, error } = this.state;
     const { IS_GITHUB_IO } = global;
     const content = apiData ?? (IS_GITHUB_IO ? mock_transaction : []).content;
-    console.log(content);
     const columns_config = propColumns ?? [...columns_transaction.config];
     const { name_coin } = content.find((m) => m["name_coin"]) ?? {};
-
-    console.log("____---__----__----");
 
     return (
       <div className="p-relative">
@@ -295,7 +291,7 @@ function Informacion({ columns_config }) {
       const { row } = params;
       return (
         <div style={{ textAlign: "center" }}>
-          <FyxDialog
+          <DialogSimple
             placement="left"
             button_text="Listo"
             variant="div"
@@ -346,7 +342,7 @@ function Informacion({ columns_config }) {
                 </IconButton>
               </Paper>
             </Tooltip>
-          </FyxDialog>
+          </DialogSimple>
         </div>
       );
     },

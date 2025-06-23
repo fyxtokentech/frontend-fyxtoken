@@ -1,10 +1,10 @@
 import React from "react";
-import modelsFormat from "@components/GUI/DynTable/modelsFormat";
+import { modelsFormat } from "@jeff-aporta/camaleon";
 
 // Importar iconos necesarios
 import StatusOkIcon from "@mui/icons-material/CheckCircleOutline"; // Para Active
 import StatusErrorIcon from "@mui/icons-material/UnpublishedOutlined"; // Para Revoked o Error
-import KeyIcon from '@mui/icons-material/VpnKey'; // Icono representativo para la clave API
+import KeyIcon from "@mui/icons-material/VpnKey"; // Icono representativo para la clave API
 // import PermissionsIcon from '@mui/icons-material/Rule'; // Icono para permisos (Eliminado)
 import { Chip } from "@mui/material";
 
@@ -17,7 +17,11 @@ const columns_user_apis = [
     renderInfo: {
       label: {
         Active: { text: "Activa", icon: <StatusOkIcon />, color: "ok" },
-        Revoked: { text: "Revocada", icon: <StatusErrorIcon />, color: "error" },
+        Revoked: {
+          text: "Revocada",
+          icon: <StatusErrorIcon />,
+          color: "error",
+        },
       },
     },
   },
@@ -26,9 +30,16 @@ const columns_user_apis = [
   {
     field: "api_key", // 2. La clave en sí (o su alias/parte visible)
     headerName: "Clave API",
-    description: "La clave API generada para el usuario (puede mostrarse parcialmente).",
+    description:
+      "La clave API generada para el usuario (puede mostrarse parcialmente).",
     renderCell: (params) => (
-      <span>{params.value ? `${params.value.substring(0, 4)}...${params.value.substring(params.value.length - 4)}` : 'N/A'}</span>
+      <span>
+        {params.value
+          ? `${params.value.substring(0, 4)}...${params.value.substring(
+              params.value.length - 4
+            )}`
+          : "N/A"}
+      </span>
     ),
   },
   {
@@ -49,7 +60,6 @@ const columns_user_apis = [
     description: "Identificador del usuario propietario de la clave API.",
   },
 
-
   // --- Columnas Ocultas / Internas ---
   {
     field: "id",
@@ -57,7 +67,7 @@ const columns_user_apis = [
     description: "Identificador único de la clave API.",
     inTable: false,
   },
-   {
+  {
     field: "create_date", // Proveniente del mock renombrado
     headerName: "Fecha SQL",
     description: "Fecha SQL.",

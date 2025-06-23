@@ -1,5 +1,5 @@
 import React from 'react';
-import {DynTable} from "@components/GUI/DynTable/DynTable";
+import {DynTable} from "@jeff-aporta/camaleon";
 
 const INVESTMENT_PACKAGES = [
   {

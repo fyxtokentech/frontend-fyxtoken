@@ -1,16 +1,21 @@
-import React, { useState } from "react";
+import React, { Component } from "react";
 
-import fluidCSS from "@jeff-aporta/fluidcss";
+import { fluidCSS } from "@jeff-aporta/camaleon";
 
-import { PaperP } from "@containers";
-import { FormContainer } from "@recurrent";
 import {
-  generate_inputs,
-  generate_selects,
+  PaperP,
+  genInputsGender,
+  genSelectFast,
   Info,
-} from "@recurrent";
-
-import { isDark } from "@jeff-aporta/theme-manager";
+  isDark,
+  showInfo,
+  showSuccess,
+  TooltipGhost,
+  Layer,
+  Design,
+  isMedium,
+  ReserveLayer,
+} from "@jeff-aporta/camaleon";
 
 import {
   Box,
@@ -31,7 +36,7 @@ function InvestmentActions({
   setPacktype,
 }) {
   return (
-    <div className="d-flex flex-wrap gap-10px jc-space-between">
+    <div className="flex wrap gap-10px justify-space-evenly">
       <InvestmentActionRecharge {...{ rechargeType, setRechargeType }} />
       <InvestmentActionInvest {...{ packtype, setPacktype, time, setTime }} />
     </div>
@@ -56,6 +61,7 @@ function InvestmentActionInvest({ packtype, setPacktype, time, setTime }) {
           <Info
             placement="right"
             className="ml-20px"
+            title_text="Información de Inversión"
             title={
               <>
                 Invierte tu dinero eligiendo el paquete y el plazo que mejor se
@@ -72,7 +78,7 @@ function InvestmentActionInvest({ packtype, setPacktype, time, setTime }) {
         text: "Hacer inversión",
       }}
     >
-      {generate_inputs([
+      {genInputsGender([
         {
           name: "investment_amount",
           label: "Monto de inversión",
@@ -80,16 +86,27 @@ function InvestmentActionInvest({ packtype, setPacktype, time, setTime }) {
           id: "money-to-invest",
         },
       ])}
-      {generate_selects([
+      {genSelectFast([
         {
-          model: "plan",
+          label: "plan",
           value: packtype,
-          setter: setPacktype,
+          onChange: (e, value) => setPacktype(value),
+          opns: {
+            pse: "PSE",
+            nequi: "Nequi",
+          },
         },
         {
-          model: "interval",
+          label: "Intervalo",
           value: time,
-          setter: setTime,
+          onChange: (e, value) => setTime(value),
+          opns: {
+            "5m": "5 minutos",
+            "10m": "10 minutos",
+            "15m": "15 minutos",
+            "1h": "1 hora",
+            "1d": "1 día",
+          },
         },
       ])}
     </InvestmentAction>
@@ -125,17 +142,20 @@ function InvestmentActionRecharge({ rechargeType, setRechargeType }) {
         text: "Hacer Recarga",
       }}
     >
-      {generate_selects([
+      {genSelectFast([
         {
           label: "Tipo",
           name: "recharge",
           value: rechargeType,
-          setter: setRechargeType,
+          onChange: (e, value) => setRechargeType(value),
           required: true,
-          opns: ["PSE", "Nequi (ejemplo)"],
+          opns: {
+            pse: "PSE",
+            nequi: "Nequi (ejemplo)",
+          },
         },
       ])}
-      {generate_inputs([
+      {genInputsGender([
         {
           label: "Monto a recargar",
           id: "money-to-recharge",
@@ -147,83 +167,95 @@ function InvestmentActionRecharge({ rechargeType, setRechargeType }) {
   );
 }
 
-function InvestmentAction({
-  title,
-  children,
-  clean,
-  button_action,
-  onSubmit,
-  w,
-}) {
-  const [process_transaction, setProcessTransaction] = useState(false);
+class InvestmentAction extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      process_transaction: false,
+      windowWidth: window.innerWidth,
+    };
+  }
 
-  return (
-    <PaperP
-      className={fluidCSS()
-        .ltX(1260, {
-          width: ["100%", w],
-        })
-        .end()}
-    >
-      <Typography variant="h6">{title}</Typography>
-      <br />
-      <FormContainer
-        component="form"
-        style={{
-          pointerEvents: process_transaction ? "none" : "auto",
-        }}
-        onSubmit={async (e, data, notify, form_reset) => {
-          console.log("procesar data:", data, "invocado por:", e.target);
+  componentDidMount() {
+    window.addEventListener("resize", this.handleResize);
+  }
 
-          setProcessTransaction(true);
+  componentWillUnmount() {
+    window.removeEventListener("resize", this.handleResize);
+  }
 
-          notify({
-            severity: "info",
-            message: "Espera mientras se procesa tu solicitud",
-            icon: (
-              <CircularProgress
-                size="16px"
-                color={isDark() ? "verde_cielo" : "white"}
-              />
-            ),
-          });
+  handleResize = () => {
+    this.setState({ windowWidth: window.innerWidth });
+  };
 
-          // Espera 5 segundos
-          await new Promise((resolve) => setTimeout(resolve, 5000));
+  handleSubmit = async (e) => {
+    e.preventDefault();
+    const { clean, onSubmit } = this.props;
+    this.setState({ process_transaction: true });
 
-          clean();
-          form_reset();
+    if (onSubmit) {
+      await onSubmit(e);
+    } else {
+      showInfo("Espera mientras se procesa tu solicitud");
+      await new Promise((resolve) => setTimeout(resolve, 5000));
+      showSuccess("Muy bien");
+      clean();
+    }
 
-          setProcessTransaction(false);
-          return {
-            severity: "success",
-            message: "Listo",
-          };
-        }}
+    this.setState({ process_transaction: false });
+    return true;
+  };
+
+  render() {
+    const { title, children, button_action } = this.props;
+    const { process_transaction } = this.state;
+
+    return (
+      <PaperP
+        className={fluidCSS()
+          .ltX("large", {
+            maxWidth: ["100%", "50%"],
+            width: ["100%", "49%"],
+          })
+          .end("design")}
       >
-        <div
-          className="d-flex flex-wrap gap-20px"
+        <Typography variant="h6">{title}</Typography>
+        <br />
+        <Box
+          component="form"
           style={{
             pointerEvents: process_transaction ? "none" : "auto",
-            opacity: process_transaction ? 0.6 : 1,
           }}
+          onSubmit={this.handleSubmit}
         >
-          {children}
-        </div>
-        <br />
-        <Tooltip title={button_action.tooltip_title}>
-          <Button
-            type="submit"
-            variant="contained"
-            startIcon={button_action.startIcon}
-            disabled={process_transaction}
+          <div
+            className="flex wrap gap-20px"
+            style={{
+              pointerEvents: process_transaction ? "none" : "auto",
+              opacity: process_transaction ? 0.6 : 1,
+            }}
           >
-            {button_action.text}
-          </Button>
-        </Tooltip>
-      </FormContainer>
-    </PaperP>
-  );
+            {children}
+          </div>
+          <br />
+          <ReserveLayer className="right bottom pad-10px flex justify-end">
+            <br />
+            <TooltipGhost title={button_action.tooltip_title}>
+              <Button
+                type="submit"
+                variant="contained"
+                size={isMedium() ? "small" : "medium"}
+                startIcon={button_action.startIcon}
+                disabled={process_transaction}
+              >
+                {button_action.text}
+              </Button>
+            </TooltipGhost>
+          </ReserveLayer>
+        </Box>
+      </PaperP>
+    );
+  }
 }
 
 export { InvestmentActions };

@@ -24,7 +24,7 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import SaveIcon from "@mui/icons-material/Save";
 import { TitleTab } from "./_repetitive";
 import AutoFixHighIcon from "@mui/icons-material/AutoFixHigh";
-import { showSuccess, showError } from "@templates";
+import { showSuccess, showError } from "@jeff-aporta/camaleon";
 
 export function AutomatizacionView() {
   const [autoOp, setAutoOp] = useState(true);
@@ -41,7 +41,8 @@ export function AutomatizacionView() {
   const handleSwitch = () => setAutoOp(!autoOp);
   const handleAccordion = (panel) => () =>
     setExpanded(expanded === panel ? false : panel);
-  const handleSave = () => showSuccess("🚧 Automatización actualizada exitosamente");
+  const handleSave = () =>
+    showSuccess("🚧 Automatización actualizada exitosamente");
 
   return (
     <Box sx={{ p: 2 }}>

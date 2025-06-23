@@ -1,11 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { Box, Tabs, Tab, Paper, Typography } from "@mui/material";
-import { DriverParams } from "@jeff-aporta/router";
-import fluidCSS from "@jeff-aporta/fluidcss"; // Importar fluidCSS
+import { fluidCSS, driverParams, getPaletteConfig } from "@jeff-aporta/camaleon"; // Importar fluidCSS
 
 // Importar contenedores y templates
-import { ThemeSwitcher } from "@templates";
-import { DivM } from "@containers";
+import { DivM, addThemeSwitchListener, removeThemeSwitchListener } from "@jeff-aporta/camaleon";
 
 // Importar los componentes de las pestañas (se crearán a continuación)
 import OperationsTable from "./actions/OperationsTable";
@@ -17,130 +15,101 @@ import SalesTable from "./actions/SalesTable";
 import PurchasesTable from "./actions/PurchasesTable";
 import WithdrawalsTable from "./actions/WithdrawalsTable"; // Nuevo componente para retiros
 
-import {paletteConfig} from "@jeff-aporta/theme-manager";
-
-import {themeSwitch_listener} from "@templates";
-
-import { Title } from "@recurrent";
+import {Main} from "@theme/main.jsx";
 
 const tabMapping = {
   deposits: 0,
   investments: 1,
   operations: 2,
   withdrawals: 3, // Nueva pestaña de retiros
-  purchases: 4,   // Compra antes que venta
-  sales: 5,       // Venta después de compra
-  apis: 6,        // APIs al final
+  purchases: 4, // Compra antes que venta
+  sales: 5, // Venta después de compra
+  apis: 6, // APIs al final
 };
 
-const {
-  verde_lima
-} = global.identity.colors;
+const { lemonGreen } = window.themeColors;
 
 const reverseTabMapping = Object.fromEntries(
   Object.entries(tabMapping).map(([key, value]) => [value, key])
 );
 
-export default function DevView() {
-  const [theme, setTheme] = useState(0);
-  const driverParams = DriverParams();
-  const initialTabKey = driverParams.get("action-id") || "deposits";
-  // Ensure initialTabKey is valid, otherwise default to deposits (index 0)
-  const initialTabIndex = tabMapping.hasOwnProperty(initialTabKey) ? tabMapping[initialTabKey] : 0;
-  const [activeTab, setActiveTab] = useState(initialTabIndex);
+export default function() {
+  return <Resume/>
+}
 
-  // Update URL and state when tab changes
-  const handleChange = (event, newValue) => {
-    const newTabKey = reverseTabMapping[newValue];
-    setActiveTab(newValue);
-    // Update URL without reloading the page if possible, 
-    // assuming DriverParams handles history updates correctly.
-    driverParams.set("action-id", newTabKey); 
+class Resume extends React.Component {
+  constructor(props) {
+    super(props);
+    const key = driverParams.get("action-id") || "deposits";
+    const idx = tabMapping.hasOwnProperty(key) ? tabMapping[key] : 0;
+    this.state = { theme: 0, activeTab: idx };
+  }
+
+  handleThemeSwitch(theme) {
+    this.setState({ theme });
+  }
+
+  componentDidMount() {
+    addThemeSwitchListener(this.handleThemeSwitch);
+  }
+
+  componentWillUnmount() {
+    removeThemeSwitchListener(this.handleThemeSwitch);
+  }
+
+  handleChange = (_, newValue) => {
+    const tabKey = reverseTabMapping[newValue];
+    this.setState({ activeTab: newValue });
+    driverParams.set("action-id", tabKey);
   };
 
-  useEffect(() => {
-    themeSwitch_listener.push(setTheme);
-  }, []);
-
-  // Effect to sync tab state if URL changes externally (e.g., back/forward buttons)
-  useEffect(() => {
-    const currentActionId = driverParams.get("action-id") || 'deposits';
-    const desiredTabIndex = tabMapping.hasOwnProperty(currentActionId) ? tabMapping[currentActionId] : 0;
-    if (activeTab !== desiredTabIndex) {
-        setActiveTab(desiredTabIndex);
+  renderTabContent() {
+    const { activeTab } = this.state;
+    switch (reverseTabMapping[activeTab]) {
+      case "deposits":      return <DepositsTable />;
+      case "investments":   return <InvestmentsTable />;
+      case "operations":    return <OperationsTable />;
+      case "withdrawals":   return <WithdrawalsTable />;
+      case "purchases":     return <PurchasesTable />;
+      case "sales":         return <SalesTable />;
+      case "apis":          return <UserApisTable />;
+      default:              return <DepositsTable />;
     }
-    // Optional: Set initial action-id if missing (might be redundant if handled elsewhere)
-    // if (!driverParams.get("action-id")) {
-    //   driverParams.set("action-id", "deposits");
-    // }
-  }, [driverParams.get("action-id")]); // Re-run if action-id changes
+  }
 
-
-  const renderTabContent = () => {
-    const currentTabKey = reverseTabMapping[activeTab];
-    switch (currentTabKey) {
-      case "deposits":
-        return <DepositsTable />;
-      case "investments":
-        return <InvestmentsTable />;
-      case "operations":
-        return <OperationsTable />;
-      case "withdrawals":
-        return <WithdrawalsTable />;
-      case "purchases":
-        return <PurchasesTable />;
-      case "sales":
-        return <SalesTable />;
-      case "apis":
-        return <UserApisTable />;
-      default:
-         // Fallback to deposits if the key is somehow invalid
-        return <DepositsTable />;
-    }
-  };
-
-  const palette_config = paletteConfig();
-
-  return (
-    // Envolver con ThemeSwitcher y DivM
-    <ThemeSwitcher h_init="20px" h_fin="300px">
-      <DivM>
-        {/* Usar el componente Title */}
-        <Title txt="Panel Resumen" />
-
-        {/* Mantener Paper para la estructura interna de las pestañas */}
-        <Paper sx={{ width: '100%', p: 3 /* mt: 2 eliminado ya que DivM puede manejar margen */ }}> 
-          {/* Typography h4 eliminada, manejada por Title */}
-          <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
-            <Tabs 
-                value={activeTab} 
-                onChange={handleChange} 
-                variant="scrollable" 
+  render() {
+    const { activeTab } = this.state;
+    const palette = getPaletteConfig();
+    return (
+      <Main h_init="20px" h_fin="300px">
+        <DivM>
+          <Typography variant="h4">Panel Resumen</Typography>
+          <br />
+          <Paper sx={{ width: "100%", p: 3 }}>
+            <Box sx={{ borderBottom:1, borderColor:"divider", mb:3 }}>
+              <Tabs
+                value={activeTab}
+                onChange={this.handleChange}
+                variant="scrollable"
                 scrollButtons="auto"
                 sx={{
-                    '& .Mui-selected': {
-                        color: `${palette_config.constrast_color.hex()} !important`, // Color del texto de la pestaña seleccionada
-                    },
-                    '& .MuiTabs-indicator': {
-                        backgroundColor: `${palette_config.constrast_color.hex()} !important`, // Color del indicador
-                    },
+                  "& .Mui-selected": { color:`${palette.constrast_color.hex()} !important` },
+                  "& .MuiTabs-indicator": { backgroundColor:`${palette.constrast_color.hex()} !important` },
                 }}
-            >
-              <Tab label="Depósitos" id="tab-deposits" aria-controls="tabpanel-deposits" />
-              <Tab label="Inversiones" id="tab-investments" aria-controls="tabpanel-investments" />
-              <Tab label="Operaciones" id="tab-operations" aria-controls="tabpanel-operations" />
-              <Tab label="Retiros" id="tab-withdrawals" aria-controls="tabpanel-withdrawals" />
-              <Tab label="Compras" id="tab-purchases" aria-controls="tabpanel-purchases" />
-              <Tab label="Ventas" id="tab-sales" aria-controls="tabpanel-sales" />
-              <Tab label="APIs de Usuario" id="tab-apis" aria-controls="tabpanel-apis" />
-            </Tabs>
-          </Box>
-          {/* Render content based on active tab */}
-          <Box>
-              {renderTabContent()}
-          </Box>
-        </Paper>
-      </DivM>
-    </ThemeSwitcher>
-  );
+              >
+                <Tab label="Depósitos"        id="tab-deposits"      aria-controls="tabpanel-deposits" />
+                <Tab label="Inversiones"      id="tab-investments"   aria-controls="tabpanel-investments" />
+                <Tab label="🚧 Operaciones"    id="tab-operations"    aria-controls="tabpanel-operations" />
+                <Tab label="🚧 Retiros"        id="tab-withdrawals"   aria-controls="tabpanel-withdrawals" />
+                <Tab label="Compras"          id="tab-purchases"     aria-controls="tabpanel-purchases" />
+                <Tab label="Ventas"           id="tab-sales"         aria-controls="tabpanel-sales" />
+                <Tab label="APIs de Usuario"  id="tab-apis"          aria-controls="tabpanel-apis" />
+              </Tabs>
+            </Box>
+            <Box>{this.renderTabContent()}</Box>
+          </Paper>
+        </DivM>
+      </Main>
+    );
+  }
 }

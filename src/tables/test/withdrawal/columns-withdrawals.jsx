@@ -1,5 +1,5 @@
 import React from "react";
-import modelsFormat from "@components/GUI/DynTable/modelsFormat";
+import { modelsFormat } from "@jeff-aporta/camaleon";
 
 // Importar iconos necesarios
 import StatusOkIcon from "@mui/icons-material/CheckCircleOutline";
@@ -16,8 +16,16 @@ const columns_withdrawals = [
     renderInfo: {
       label: {
         Completed: { text: "Completado", icon: <StatusOkIcon />, color: "ok" },
-        Pending: { text: "Pendiente", icon: <StatusPendingIcon />, color: "warning" },
-        Processing: { text: "Procesando", icon: <StatusProcessingIcon />, color: "info" },
+        Pending: {
+          text: "Pendiente",
+          icon: <StatusPendingIcon />,
+          color: "warning",
+        },
+        Processing: {
+          text: "Procesando",
+          icon: <StatusProcessingIcon />,
+          color: "info",
+        },
         Failed: { text: "Fallido", icon: <StatusErrorIcon />, color: "error" },
       },
     },

@@ -1,32 +1,31 @@
 import React, { useEffect, useRef, useState } from "react";
-import { useLocation } from "react-router-dom";
 
-import {DriverParams} from "@jeff-aporta/router";
-import fluidCSS from "@jeff-aporta/fluidcss";
+import "./wallet.css";
 
-import { ThemeSwitcher } from "@templates";
-import { DivM, PaperP } from "@containers";
-import FyxCarrusel from "@components/GUI/slick-carrousel";
+import { Main } from "@theme/main";
+import { FyxCarrusel } from "@components/carrousel/slick-carrousel";
+
 import { Button, ButtonGroup, Paper, Tooltip, Typography } from "@mui/material";
 import NewspaperIcon from "@mui/icons-material/Newspaper";
 
-import { isDark } from "@jeff-aporta/theme-manager";
-
-import { zIndex } from "@theme/constants";
+import {
+  isDark,
+  fluidCSS,
+  driverParams,
+  DivM,
+  PaperP,
+  Hm,
+} from "@jeff-aporta/camaleon";
 
 import { Investment, Withdrawal, Movements } from "./panels/panels";
-import "./wallet.css";
 
-const wbrk = 950;
-
-export default Wallet;
+export default function () {
+  return <Wallet />;
+}
 
 function Wallet() {
-  const location = useLocation();
-  const driverParams = DriverParams();
-
   if (!driverParams.get("action-id")) {
-    driverParams.set("action-id", "investment", { reload: true });
+    driverParams.set("action-id", "investment", { reload: 500 });
   }
 
   const [actionSelected, setActionSelected] = useState(
@@ -34,13 +33,15 @@ function Wallet() {
   );
 
   useEffect(() => {
-    setActionSelected(actionSelected ?? driverParams.get("action-id") ?? "investment");
+    setActionSelected(
+      actionSelected ?? driverParams.get("action-id") ?? "investment"
+    );
   }, []);
 
   const refcontainer = useRef();
 
   return (
-    <ThemeSwitcher h_init="1px" h_fin="300px">
+    <Main h_init="20px">
       <DivM>
         <Title />
         <br />
@@ -61,37 +62,31 @@ function Wallet() {
         {(() => {
           return (
             <>
-              {actionSelected ? (
-                <>
-                  <br />
-                  <br />
-                  <br />
-                </>
-              ) : null}
+              {actionSelected ? <br /> : null}
               <br />
               <hr />
               <br />
               <br />
-              <Typography variant="h4" className="d-flex ai-center gap-20px">
-                <NewspaperIcon color="secondary" fontSize="large" />{" "}
-                <span>Novedades</span>
+              <Typography variant="h4" className="flex align-center gap-20px">
+                <NewspaperIcon color="contrast" fontSize="large" />{" "}
+                <span className="color-bg-opposite">Novedades</span>
               </Typography>
               <br />
               <br />
               <FyxCarrusel
+                className="rz-overfx"
                 style={{
-                  position: "relative",
                   width: "100%",
                   minHeight: "clamp(390px, 50vh, 90vw)",
                   margin: "0 auto",
-                  zIndex: zIndex.MinOverMouseFx,
                 }}
               />
             </>
           );
         })()}
       </DivM>
-    </ThemeSwitcher>
+      <Hm r={10} />
+    </Main>
   );
 
   function PanelActionSelected() {
@@ -113,7 +108,9 @@ function Wallet() {
     return (
       <Typography
         variant="h2"
-        className={fluidCSS().ltX(600, { fontWeight: "500" }).end()}
+        className={fluidCSS()
+          .ltX(600, { fontWeight: "500" })
+          .end("color-bg-opposite")}
       >
         {txt}
       </Typography>
@@ -134,10 +131,10 @@ function Wallet() {
     return (
       <Paper
         elevation={2}
+        className="z-overfx"
         style={{
           position: "sticky",
           top: "0",
-          zIndex: zIndex.MinOverscroll,
           padding: "10px",
         }}
       >
@@ -207,7 +204,6 @@ function Wallet() {
                       behavior: "smooth",
                     });
                   }
-                  console.log(action_id)
                   driverParams.set("action-id", action_id);
                   setActionSelected(action_id);
                 }}
@@ -234,34 +230,27 @@ function Balance() {
       <PaperP
         elevation={isDark() ? 24 : 6}
         className={fluidCSS()
-          .ltX(wbrk, { textAlign: "center" })
+          .ltX("medium", { textAlign: "center" })
           .end(
-            "d-space-between-center p-relative flex-wrap gap-20px min-h-150px"
+            "flex space-between align-center relative wrap gap-20px min-h-150px"
           )}
       >
-        <Label_AvailableBalance />
-        <Value_AvailableBalance />
+        <LabelPart variant="h3">Saldo disponible:</LabelPart>
+        <br />
+        <LabelPart variant="h4">$10.000,00 USDC</LabelPart>
       </PaperP>
     </div>
   );
 
-  function Cell_Field(props) {
+  function LabelPart(props) {
     return (
       <Typography
-        {...props}
         variant="h3"
+        {...props}
         className={fluidCSS()
-          .ltX(wbrk, { width: "100%" })
+          .ltX("medium", { width: "100%" })
           .end(props.className ?? "")}
       />
     );
-  }
-
-  function Value_AvailableBalance() {
-    return <Cell_Field>$10.000,00 USDC</Cell_Field>;
-  }
-
-  function Label_AvailableBalance() {
-    return <Cell_Field>Saldo disponible:</Cell_Field>;
   }
 }

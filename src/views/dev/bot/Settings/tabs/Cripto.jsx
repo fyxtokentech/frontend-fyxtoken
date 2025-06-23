@@ -33,12 +33,12 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import SaveIcon from "@mui/icons-material/Save";
 import SwapHorizIcon from "@mui/icons-material/SwapHoriz";
 import { TitleTab } from "./_repetitive";
-import { showSuccess } from "@templates";
-import { PaperP } from "@containers";
+import { showSuccess } from "@jeff-aporta/camaleon";
+import { PaperP } from "@jeff-aporta/camaleon";
 
 export function CriptomonedasView() {
   const [tab, setTab] = useState(0);
-  
+
   const handleTabChange = (e, newValue) => setTab(newValue);
   const handleSaveConfig = () => showSuccess("Rutas guardadas exitosamente");
 
@@ -199,7 +199,11 @@ export function CriptomonedasView() {
                 variant="h6"
               />
             </Box>
-            <FormControl variant="outlined" sx={{ minWidth: 200, mb: 2 }} size="small">
+            <FormControl
+              variant="outlined"
+              sx={{ minWidth: 200, mb: 2 }}
+              size="small"
+            >
               <InputLabel>Par de Compra</InputLabel>
               <Select defaultValue="USDT/BTC" label="Par de Compra">
                 <MenuItem value="USDT/BTC">USDT/BTC</MenuItem>
@@ -212,14 +216,23 @@ export function CriptomonedasView() {
               type="number"
               label="Cantidad de Compra"
               defaultValue={100}
-              InputProps={{ endAdornment: <InputAdornment position="end">USDT</InputAdornment> }}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">USDT</InputAdornment>
+                ),
+              }}
               helperText="Cantidad en USDT"
               sx={{ mb: 2, ml: 2 }}
             />
             <Typography variant="subtitle2" sx={{ mb: 2 }}>
               Ruta: USDT → BTC
             </Typography>
-            <Button size="small" variant="contained" color="primary" startIcon={<AddIcon />}>
+            <Button
+              size="small"
+              variant="contained"
+              color="primary"
+              startIcon={<AddIcon />}
+            >
               Agregar Ruta de Compra
             </Button>
           </>
@@ -234,7 +247,11 @@ export function CriptomonedasView() {
                 variant="h6"
               />
             </Box>
-            <FormControl variant="outlined" sx={{ minWidth: 200, mb: 2 }} size="small">
+            <FormControl
+              variant="outlined"
+              sx={{ minWidth: 200, mb: 2 }}
+              size="small"
+            >
               <InputLabel>Par de Retiro</InputLabel>
               <Select defaultValue="BTC/USDT" label="Par de Retiro">
                 <MenuItem value="BTC/USDT">BTC/USDT</MenuItem>
@@ -246,14 +263,23 @@ export function CriptomonedasView() {
               type="number"
               label="Cantidad a Retirar"
               defaultValue={0.01}
-              InputProps={{ endAdornment: <InputAdornment position="end">BTC</InputAdornment> }}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">BTC</InputAdornment>
+                ),
+              }}
               helperText="Cantidad mínima: 0.0001 BTC"
               sx={{ mb: 2, ml: 2 }}
             />
             <Typography variant="subtitle2" sx={{ mb: 2 }}>
               Ruta: BTC → USDT
             </Typography>
-            <Button size="small" variant="contained" color="primary" startIcon={<AddIcon />}>
+            <Button
+              size="small"
+              variant="contained"
+              color="primary"
+              startIcon={<AddIcon />}
+            >
               Agregar Ruta de Retiro
             </Button>
           </>
@@ -268,7 +294,11 @@ export function CriptomonedasView() {
                 variant="h6"
               />
             </Box>
-            <FormControl variant="outlined" sx={{ minWidth: 200, mb: 2 }} size="small">
+            <FormControl
+              variant="outlined"
+              sx={{ minWidth: 200, mb: 2 }}
+              size="small"
+            >
               <InputLabel>Método de Pago</InputLabel>
               <Select defaultValue="Tarjeta" label="Método de Pago">
                 <MenuItem value="Tarjeta">Tarjeta</MenuItem>
@@ -280,11 +310,20 @@ export function CriptomonedasView() {
               type="number"
               label="Monto"
               defaultValue={50}
-              InputProps={{ endAdornment: <InputAdornment position="end">USD</InputAdornment> }}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">USD</InputAdornment>
+                ),
+              }}
               helperText="Monto a pagar"
               sx={{ mb: 2, ml: 2 }}
             />
-            <Button size="small" variant="contained" color="primary" startIcon={<AddIcon />}>
+            <Button
+              size="small"
+              variant="contained"
+              color="primary"
+              startIcon={<AddIcon />}
+            >
               Agregar Ruta de Pago
             </Button>
           </>

@@ -1,7 +1,6 @@
 import React from "react";
-import { PaperP } from "@containers";
-import { TitleInfo } from "@recurrent";
-import MovementsGraph from "@components/GUI/graph/graph-driver";
+import { PaperP, TitleInfo } from "@jeff-aporta/camaleon";
+import {MovementsGraph} from "@components/graph/graph-driver";
 
 function Movements() {
   return (

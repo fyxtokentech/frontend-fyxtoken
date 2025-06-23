@@ -1,10 +1,9 @@
 import React from "react";
 import { Paper, Typography } from "@mui/material";
-import { Info } from "@recurrent";
 import InvestmentTable from "./InvestmentTable";
-import { getThemeName } from "@jeff-aporta/theme-manager";
+import { getThemeName, Info } from "@jeff-aporta/camaleon";
 
-function ActiveInvestments() {
+export default function ActiveInvestments() {
   return (
     <>
       <Typography variant="h5">
@@ -22,11 +21,9 @@ function ActiveInvestments() {
         />
       </Typography>
       <br />
-      <div style={{ width: "100%", minHeight: "100px" }}>
-          <InvestmentTable />
-      </div>
+      <Paper elevation={0}>
+        <InvestmentTable />
+      </Paper>
     </>
   );
 }
-
-export default ActiveInvestments;

@@ -1,9 +1,15 @@
 import React from "react";
-import { ThemeSwitcher } from "@templates";
-import { DivM, PaperP } from "@containers";
-import { isDark, controlComponents, href } from "@jeff-aporta/theme-manager";
-import fluidCSS from "@jeff-aporta/fluidcss";
-import { ImageLocal } from "@recurrent";
+import {
+  ImageLocal,
+  DivM,
+  PaperP,
+  isDark,
+  controlComponents,
+  NavigationLink,
+  fluidCSS,
+  showPromptDialog,
+  getSelectedPalette,
+} from "@jeff-aporta/camaleon";
 
 import {
   Box,
@@ -17,6 +23,8 @@ import {
   Rating,
   TextField,
   Typography,
+  FormControlLabel,
+  Checkbox,
 } from "@mui/material";
 
 // Iconos
@@ -29,13 +37,19 @@ import SpeedIcon from "@mui/icons-material/Speed";
 import MonetizationOnIcon from "@mui/icons-material/MonetizationOn";
 import ShowChartIcon from "@mui/icons-material/ShowChart";
 import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
-import CurrencyBitcoinIcon from '@mui/icons-material/CurrencyBitcoin';
+import CurrencyBitcoinIcon from "@mui/icons-material/CurrencyBitcoin";
 
-export default WelcomePage;
+import { Main } from "@theme/main";
+
+export default function () {
+  return <WelcomePage />;
+}
 
 function WelcomePage() {
+  const palette = getSelectedPalette();
+  console.log(palette);
   return (
-    <ThemeSwitcher bgtype="default">
+    <Main bgtype="default">
       <div className="welcome-page">
         {/* Hero Section */}
         <HeroSection />
@@ -52,7 +66,7 @@ function WelcomePage() {
         {/* Stats Section */}
         <StatsSection />
       </div>
-    </ThemeSwitcher>
+    </Main>
   );
 }
 
@@ -104,43 +118,47 @@ function HeroSection() {
         <Grid container spacing={4} alignItems="center">
           <Grid item xs={12} md={6}>
             <Box sx={{ maxWidth: "500px" }}>
-              <Typography variant="caption">
-                <b>El futuro es digital y tokenizado</b>
-              </Typography>
-              <Typography
-                variant="h3"
-                component="h1"
-                sx={{ fontWeight: "bold", my: 2 }}
-              >
-                Automatización y seguridad
-              </Typography>
-              <Typography variant="body1" sx={{ opacity: 0.8, mb: 3 }}>
-                Procesos automáticos y transacciones descentralizadas gracias a
-                la tecnología blockchain en mercados tokenizados.
-              </Typography>
+              <div className="color-bg-opposite">
+                <Typography variant="caption">
+                  <b>El futuro es digital y tokenizado</b>
+                </Typography>
+                <Typography
+                  variant="h3"
+                  component="h1"
+                  sx={{ fontWeight: "bold", my: 2 }}
+                >
+                  Automatización y seguridad
+                </Typography>
+                <Typography variant="body1" sx={{ opacity: 0.8, mb: 3 }}>
+                  Procesos automáticos y transacciones descentralizadas gracias
+                  a la tecnología blockchain en mercados tokenizados.
+                </Typography>
+              </div>
               <Box sx={{ display: "flex", gap: 2 }}>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  href={href("/login")}
-                  sx={{
+                <NavigationLink to="/login">
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    sx={{
                     borderRadius: "20px",
                     px: 3,
                   }}
                 >
                   Comenzar ahora
                 </Button>
+                </NavigationLink>
+                <NavigationLink to="/pricing">
                 <Button
                   variant="outlined"
-                  color="secondary.main"
+                  color="secondary"
                   sx={{
                     borderRadius: "20px",
                     px: 3,
                   }}
-                  href={href("/pricing")}
                 >
                   ¿Cómo funciona?
                 </Button>
+                </NavigationLink>
               </Box>
             </Box>
           </Grid>
@@ -155,23 +173,25 @@ function HeroSection() {
                   textAlign: "left",
                 }}
               >
-                <Typography variant="h6" sx={{ fontWeight: "bold" }}>
-                  $425
-                </Typography>
-                <Typography variant="caption">Beneficio total</Typography>
-                <Box
-                  className="d-center"
-                  sx={{
-                    width: "100px",
-                    height: "30px",
-                    bgcolor: "warning.main",
-                    borderRadius: "10px",
-                    mt: 1,
-                  }}
-                >
-                  <CurrencyBitcoinIcon />
-                  BTC
-                </Box>
+                <div className="color-bg-opposite">
+                  <Typography variant="h6" sx={{ fontWeight: "bold" }}>
+                    $425
+                  </Typography>
+                  <Typography variant="caption">Beneficio total</Typography>
+                  <Box
+                    className="d-center"
+                    sx={{
+                      width: "100px",
+                      height: "30px",
+                      bgcolor: "warning.main",
+                      borderRadius: "10px",
+                      mt: 1,
+                    }}
+                  >
+                    <CurrencyBitcoinIcon />
+                    BTC
+                  </Box>
+                </div>
               </Box>
 
               {/* Teléfono central */}
@@ -189,9 +209,9 @@ function HeroSection() {
                   overflow: "hidden",
                 }}
               >
-                <Box
+                <Paper
+                  elevation={0}
                   sx={{
-                    bgcolor: "background.default",
                     borderRadius: "20px",
                     flex: 1,
                     display: "flex",
@@ -216,9 +236,9 @@ function HeroSection() {
                   </Typography>
 
                   {/* Tarjeta de crédito simulada */}
-                  <Box
+                  <Paper
+                    elevation={10}
                     sx={{
-                      bgcolor: "primary.main",
                       borderRadius: "10px",
                       padding: "10px",
                       mb: 2,
@@ -234,10 +254,9 @@ function HeroSection() {
                         mt: 1,
                       }}
                     >
-                      <Typography variant="caption">JOHN DOE</Typography>
                       <Typography variant="caption">05/28</Typography>
                     </Box>
-                  </Box>
+                  </Paper>
 
                   {/* Botón de acción */}
                   <Button
@@ -252,7 +271,7 @@ function HeroSection() {
                   >
                     Transferir
                   </Button>
-                </Box>
+                </Paper>
               </Paper>
 
               {/* Elementos decorativos a la derecha */}
@@ -340,7 +359,7 @@ function BenefitsSection() {
           variant="h4"
           component="h2"
           align="center"
-          color="primary"
+          color="contrast"
           sx={{
             fontWeight: "bold",
             mb: 5,
@@ -352,6 +371,7 @@ function BenefitsSection() {
         <Typography
           variant="body1"
           align="center"
+          className="color-bg-opposite"
           sx={{
             maxWidth: "700px",
             margin: "0 auto",
@@ -516,7 +536,8 @@ function BenefitsSection() {
         </Grid>
 
         {/* Nota de seguridad */}
-        <Box
+        <Paper
+          elevation={24}
           sx={{
             display: "flex",
             alignItems: "center",
@@ -526,32 +547,26 @@ function BenefitsSection() {
             margin: "50px auto 0",
             padding: "15px",
             borderRadius: "30px",
-            bgcolor: `rgba(${
-              [
-                [255, 255, 255],
-                [0, 0, 0],
-              ][+isDark()]
-            },0.2)`,
           }}
         >
-          <Box
+          <Paper
+            className="invert-nohue"
             sx={{
               width: "30px",
               height: "30px",
               borderRadius: "50%",
-              bgcolor: "background.paper",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
             }}
           >
-            <CheckCircleOutlineIcon color="primary" />
-          </Box>
+            <CheckCircleOutlineIcon />
+          </Paper>
           <Typography variant="body2" color="warning.main">
             La tokenización garantiza la seguridad y trazabilidad en la
             propiedad mediante tecnología blockchain.
           </Typography>
-        </Box>
+        </Paper>
       </Container>
     </Box>
   );
@@ -681,6 +696,7 @@ function CTASection() {
           variant="h5"
           component="h2"
           align="center"
+          className="color-bg-opposite"
           sx={{
             fontWeight: "bold",
             mb: 3,
@@ -735,14 +751,11 @@ function StatsSection() {
         paddingBottom: "150px",
       }}
     >
-      <Container>
+      <Container className="color-bg-opposite">
         <Grid container spacing={4} justifyContent="center">
           <Grid item xs={12} md={4}>
             <Box sx={{ textAlign: "center" }}>
-              <Typography
-                variant="h4"
-                sx={{ fontWeight: "bold" }}
-              >
+              <Typography variant="h4" sx={{ fontWeight: "bold" }}>
                 +1000 Clientes
               </Typography>
               <Typography variant="caption" sx={{ opacity: 0.7 }}>
@@ -753,10 +766,7 @@ function StatsSection() {
 
           <Grid item xs={12} md={4}>
             <Box sx={{ textAlign: "center" }}>
-              <Typography
-                variant="h4"
-                sx={{ fontWeight: "bold" }}
-              >
+              <Typography variant="h4" sx={{ fontWeight: "bold" }}>
                 5 Años
               </Typography>
               <Typography variant="caption" sx={{ opacity: 0.7 }}>
@@ -767,10 +777,7 @@ function StatsSection() {
 
           <Grid item xs={12} md={4}>
             <Box sx={{ textAlign: "center" }}>
-              <Typography
-                variant="h4"
-                sx={{ fontWeight: "bold" }}
-              >
+              <Typography variant="h4" sx={{ fontWeight: "bold" }}>
                 20x
               </Typography>
               <Typography variant="caption" sx={{ opacity: 0.7 }}>
