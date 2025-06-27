@@ -34,10 +34,8 @@
     "build": "react-app-rewired build",
     "serve": "serve -s build",
     "eject": "react-scripts eject",
-    "deploys": "npm run build-prod && npm run deploy-gh",
-    "build-prod": "npm run deploy-server --branch=build-prod",
-    "deploy-server": "cross-env PUBLIC_URL=/ npm run build && gh-pages -d build -b %npm_config_branch%",
-    "deploy-gh": "cross-env PUBLIC_URL=. npm run build && gh-pages -d build"
+    "build:context": "cross-env-shell PUBLIC_URL=%npm_config_public_url% npm run build",
+    "deploy:gh-pages": "gh-pages -d build"
   },
   "devDependencies": {
     "cross-env": "^7.0.3",
