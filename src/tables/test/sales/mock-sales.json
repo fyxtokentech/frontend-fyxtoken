@@ -1,0 +1,34 @@
+[
+  {
+    "id": "ORDER002",
+    "user_id": "user123",
+    "pair": "ETH/USDT",
+    "type": "SELL",
+    "amount_base": 1.5,
+    "execution_price": 3500.00,
+    "amount_quote": 5250.00,
+    "status": "Canceled",
+    "profit": 0,
+    "name_coin": "USDT",
+    "id_coin": "12345",
+    "create_date": "2024-04-16T11:05:00Z",
+    "execution_date": "2024-04-16T11:15:00Z",
+    "purchase_date": "2024-03-10T08:00:00Z"
+  },
+  {
+    "id": "ORDER004",
+    "user_id": "user789",
+    "pair": "BTC/USDT",
+    "type": "SELL",
+    "amount_base": 0.05,
+    "execution_price": 68000.00,
+    "amount_quote": 3400.00,
+    "status": "Filled",
+    "profit": 149.97,
+    "name_coin": "USDT",
+    "id_coin": "12345",
+    "create_date": "2024-04-18T09:00:00Z",
+    "execution_date": "2024-04-18T09:00:10Z",
+    "purchase_date": "2024-04-15T10:30:05Z"
+  }
+]

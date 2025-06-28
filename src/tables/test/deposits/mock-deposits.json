@@ -1,0 +1,32 @@
+[
+  {
+    "id": "DEP001",
+    "amount": 1000.50,
+    "name_coin": "USDT",
+    "id_coin": "12345",
+    "status": "Completed",
+    "create_date": "2024-04-01T10:00:00Z",
+    "deposit_date": "2025-03-14 00:01:11.000",
+    "user_id": "user123"
+  },
+  {
+    "id": "DEP002",
+    "amount": 500.75,
+    "name_coin": "USDT",
+    "id_coin": "12345",
+    "status": "Pending",
+    "create_date": "2024-04-02T11:30:00Z",
+    "deposit_date": null,
+    "user_id": "user456"
+  },
+  {
+    "id": "DEP003",
+    "amount": 2000.00,
+    "name_coin": "USDT",
+    "id_coin": "12345",
+    "status": "Failed",
+    "create_date": "2024-04-03T15:45:00Z",
+    "deposit_date": null,
+    "user_id": "user789"
+  }
+]

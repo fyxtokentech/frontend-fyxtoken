@@ -1,0 +1,265 @@
+#container-pricing {
+  position: relative;
+  border: 1px solid var(--border-table);
+  overflow: auto;
+  text-align: center;
+  position: relative;
+  margin: 2rem 0;
+  border-radius: 8px;
+
+  .fix-left {
+    position: sticky;
+    left: 0;
+    z-index: 0;
+    &.bg-primary{
+      background: var(--border-table);
+    }
+  }
+
+  .fix-top {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: var(--border-table);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.5);
+  }
+}
+
+#pricing {
+  min-width: 100%;
+  text-align: left;
+  border-collapse: separate;
+  border-spacing: 0;
+
+  .nombre-plan {
+    font-size: 1.5rem;
+    font-weight: bold;
+    padding-bottom: 20px;
+    display: block;
+  }
+  
+  .precio-plan {
+    font-size: 1.8rem;
+    font-weight: bold;
+    padding-bottom: 15px;
+    display: block;
+  }
+  
+  .periodo-plan {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+    display: block;
+  }
+  
+  .bordear{
+    border: 3px solid var(--border-table); 
+    &.no-right{
+      border-right-color: transparent;
+    }
+  }
+
+  & tr {
+    td {
+      &:not(:is(.no-bordear)){
+        border: 1.5px solid var(--border-table);
+      }
+      &:not(:is(.no-pad)) {
+        padding: 20px;
+      }
+    }
+  }
+}
+
+/* Estilos para las tarjetas de planes */
+.pricing-cards-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: center;
+  margin: 2rem 0;
+}
+
+.pricing-card {
+  flex: 1;
+  min-width: 250px;
+  max-width: 350px;
+  display: flex;
+  flex-direction: column;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+  }
+  
+  &.popular {
+    position: relative;
+    
+    &::before {
+      content: "Popular";
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background-color: var(--border-table);
+      color: var(--text-primary);
+      padding: 5px 10px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: bold;
+    }
+  }
+}
+
+.pricing-card-header {
+  padding: 20px;
+  text-align: center;
+}
+
+.pricing-card-price {
+  font-size: 2.5rem;
+  font-weight: bold;
+  margin: 1rem 0;
+}
+
+.pricing-card-period {
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+}
+
+.pricing-card-body {
+  padding: 20px;
+  flex-grow: 1;
+}
+
+.pricing-card-feature {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 15px;
+  
+  .feature-icon {
+    margin-right: 10px;
+    color: var(--border-table);
+  }
+}
+
+.pricing-card-footer {
+  padding: 20px;
+  text-align: center;
+}
+
+/* Estilos para la tabla comparativa */
+.features-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin: 0;
+  border-radius: 8px;
+  overflow: hidden;
+  
+  th, td {
+    padding: 15px;
+    text-align: center;
+    border: 1px solid var(--border-table);
+  }
+  
+  th {
+    background-color: var(--bg-table);
+    font-weight: bold;
+  }
+  
+  th:first-child {
+    text-align: left;
+  }
+  
+  td:first-child {
+    text-align: left;
+    font-weight: bold;
+  }
+  
+  .feature-available {
+    color: var(--success-color, #4caf50);
+  }
+  
+  .feature-unavailable {
+    color: var(--error-color, #f44336);
+  }
+  
+  .section-header {
+    background-color: rgba(0, 0, 0, 0.05);
+    text-align: left;
+  }
+}
+
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Utilidades */
+.mb-4 {
+  margin-bottom: 1.5rem;
+}
+
+/* Media queries para responsividad */
+@media (max-width: 1200px) {
+  .pricing-cards-container {
+    justify-content: center;
+  }
+  
+  .pricing-card {
+    flex: 0 0 calc(50% - 20px);
+    max-width: calc(50% - 20px);
+  }
+}
+
+@media (max-width: 768px) {
+  .pricing-card {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+  
+  .features-table th, 
+  .features-table td {
+    padding: 10px;
+    font-size: 0.9rem;
+  }
+  
+  .pricing-card-price {
+    font-size: 2rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .features-table th, 
+  .features-table td {
+    padding: 8px;
+    font-size: 0.8rem;
+  }
+  
+  .pricing-card-price {
+    font-size: 1.8rem;
+  }
+  
+  .pricing-card-feature {
+    margin-bottom: 10px;
+  }
+}
+
+/* Estilos para la sección de planes y características */
+.plans-section {
+  padding: 2rem 0;
+  text-align: center;
+}
+
+.plans-section-title {
+  margin-bottom: 1rem;
+}
+
+.plans-section-subtitle {
+  margin-bottom: 2rem;
+  color: var(--text-secondary);
+}

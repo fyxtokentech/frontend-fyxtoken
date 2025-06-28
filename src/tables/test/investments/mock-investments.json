@@ -1,0 +1,44 @@
+[
+  {
+    "id": "POS001",
+    "user_id": "user789",
+    "pair": "BTC/USDT",
+    "base_asset_symbol": "BTC",
+    "amount_base": 0.5,
+    "purchase_price": 50000.00,
+    "current_price": 55000.00,
+    "position_value": 27500.00,
+    "profit": 2500.00,
+    "name_coin": "USDT",
+    "id_coin": "12345",
+    "create_date": "2024-03-15T09:00:00Z"
+  },
+  {
+    "id": "POS002",
+    "user_id": "user123",
+    "pair": "ETH/USDT",
+    "base_asset_symbol": "ETH",
+    "amount_base": 2.0,
+    "purchase_price": 3000.00,
+    "current_price": 3450.00,
+    "position_value": 6900.00,
+    "profit": 900.00,
+    "name_coin": "USDT",
+    "id_coin": "12345",
+    "create_date": "2024-04-01T11:30:00Z"
+  },
+  {
+    "id": "POS003",
+    "user_id": "user789",
+    "pair": "SOL/USDT",
+    "base_asset_symbol": "SOL",
+    "amount_base": 100.0,
+    "purchase_price": 180.00,
+    "current_price": 175.50,
+    "position_value": 17550.00,
+    "profit": -450.00,
+    "name_coin": "USDT",
+    "id_coin": "12345",
+    "create_date": "2024-04-02T15:00:00Z"
+  }
+]
