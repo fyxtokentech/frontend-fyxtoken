@@ -1,5 +1,5 @@
 import React from "react";
-import { modelsFormat } from "@jeff-aporta/camaleon";
+import { getModelsFormat } from "@jeff-aporta/camaleon";
 
 // Importar iconos necesarios
 import StatusOkIcon from "@mui/icons-material/CheckCircleOutline"; // Para Completed
@@ -48,19 +48,19 @@ const columns_purchases = [
     field: "amount_base",
     headerName: "Cantidad Comprada",
     description: "Cantidad de la moneda base comprada.",
-    ...modelsFormat.numberGeneral, // Usando numberGeneral según especificación
+    ...getModelsFormat().numberGeneral, // Usando numberGeneral según especificación
   },
   {
     field: "price",
     headerName: "Precio Compra",
     description: "Precio por unidad de la moneda base al momento de la compra.",
-    ...modelsFormat.currentCoin,
+    ...getModelsFormat().currentCoin,
   },
   {
     field: "amount_quote",
     headerName: "Total Pagado",
     description: "Cantidad total de la moneda cotizada pagada por la compra.",
-    ...modelsFormat.currentCoin,
+    ...getModelsFormat().currentCoin,
   },
   {
     field: "user_id",
@@ -71,7 +71,7 @@ const columns_purchases = [
     field: "execution_date",
     headerName: "Fecha Ejecución",
     description: "Fecha y hora en que se completó o falló la compra.",
-    ...modelsFormat.datetime,
+    ...getModelsFormat().datetime,
   },
 
   // --- Columnas Ocultas / Internas ---
@@ -87,7 +87,7 @@ const columns_purchases = [
     description: "Fecha SQL.",
     exclude: true, // Excluido según especificación
     inTable: false, // Asegurarse que no se muestre
-    ...modelsFormat.datetime,
+    ...getModelsFormat().datetime,
   },
   {
     field: "name_coin",

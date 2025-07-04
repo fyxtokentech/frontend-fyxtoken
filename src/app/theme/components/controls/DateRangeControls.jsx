@@ -7,6 +7,7 @@ import {
   getPaletteConfig,
   fluidCSS,
   driverParams,
+  getContrastPaperBow,
 } from "@jeff-aporta/camaleon";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
@@ -20,10 +21,6 @@ let nWeeks;
 
 export function DateRangeControls({
   type = "select",
-  dateRangeInit,
-  dateRangeFin,
-  setDateRangeInit,
-  setDateRangeFin,
   loading,
   period = "most_recent", // day, week, month
   willPeriodChange = (period) => {},
@@ -37,7 +34,7 @@ export function DateRangeControls({
     WEEK, // semana
     MONTH, // mes
     WEEK, // semana
-  ] = driverParams.gets(
+  ] = driverParams.get(
     "start_date",
     "end_date",
     "period",
@@ -67,7 +64,7 @@ export function DateRangeControls({
 
   // Sincronizar parámetros de URL tras cambios en estado
   useEffect(() => {
-    driverParams.sets({
+    driverParams.set({
       month: selectedMonth,
       week: selectedWeek,
       period: periodValue,
@@ -96,7 +93,9 @@ export function DateRangeControls({
         fin = init;
         break;
       case "week":
-        const iw = +driverParams.get("week") || getInitWeek(month);
+        const [iw] = (driverParams.get("week") || [getInitWeek(month)]).map(
+          (x) => +x
+        );
         setSelectedWeek(iw);
         const { start, end } = getWeekRange(iw);
         init = getYYYYMMDD(year, month, start);
@@ -109,31 +108,30 @@ export function DateRangeControls({
         driverParams.set("month", month);
         break;
     }
-    driverParams.sets({
+    driverParams.set({
       period: value,
       start_date: init,
       end_date: fin,
     });
-    setDateRangeInit(init);
-    setDateRangeFin(fin);
   };
 
   const handleDateChange = (date) => {
     setSelectedDate(date);
     const d = dayjs(date).format("YYYY-MM-DD");
-    driverParams.sets({
+    driverParams.set({
       start_date: d,
       end_date: d,
     });
-    setDateRangeInit(date);
-    setDateRangeFin(date);
   };
 
   // Sync dateRange when date param changes
   useEffect(() => {
     if (periodValue === "day") {
-      setDateRangeInit(selectedDate);
-      setDateRangeFin(selectedDate);
+      const d = dayjs(selectedDate).format("YYYY-MM-DD");
+      driverParams.set({
+        start_date: d,
+        end_date: d,
+      });
     }
   }, [selectedDate, periodValue]);
 
@@ -169,18 +167,14 @@ export function DateRangeControls({
     let startDate, endDate;
     if (date.isAfter(today)) {
       // Si el inicio está en el futuro, usar la fecha actual
-      setDateRangeInit(today);
-      setDateRangeFin(today);
       startDate = today;
       endDate = today;
     } else {
       // Si está en el pasado o presente, usar el rango normal
-      setDateRangeInit(date);
-      setDateRangeFin(date.date(end));
       startDate = date;
       endDate = date.date(end);
     }
-    driverParams.sets({
+    driverParams.set({
       week: week,
       month: selectedMonth,
       start_date: startDate.format("YYYY-MM-DD"),
@@ -201,9 +195,7 @@ export function DateRangeControls({
     const date = dayjs().month(month);
     const start = date.startOf("month");
     const end = date.endOf("month");
-    setDateRangeInit(start);
-    setDateRangeFin(end);
-    driverParams.sets({
+    driverParams.set({
       month: month,
       week: iw2,
       start_date: start.format("YYYY-MM-DD"),
@@ -213,10 +205,12 @@ export function DateRangeControls({
   // Ejecutar handlePeriodChange al montar el componente
   useEffect(() => {
     // Solo inicializa si las fechas no están definidas
-    if (!dateRangeInit || !dateRangeFin) {
+    if (driverParams.get("start_date", "end_date").some((x) => !x)) {
       const now = dayjs();
-      setDateRangeFin(now);
-      setDateRangeInit(now.startOf("day"));
+      driverParams.set({
+        start_date: now.format("YYYY-MM-DD"),
+        end_date: now.format("YYYY-MM-DD"),
+      });
       handlePeriodChange();
     }
   }, []);
@@ -236,8 +230,8 @@ export function DateRangeControls({
               <DateTimePicker
                 className="fullWidth"
                 label="Fecha inicio"
-                value={dateRangeInit}
-                onChange={(date) => setDateRangeInit(date)}
+                value={driverParams.get("start_date")[0]}
+                onChange={(date) => driverParams.set("start_date", date)}
                 slotProps={{ textField: { size: "small" } }}
               />
             </LocalizationProvider>
@@ -249,8 +243,8 @@ export function DateRangeControls({
               <DateTimePicker
                 className="fullWidth"
                 label="Fecha Fin"
-                value={dateRangeFin}
-                onChange={(date) => setDateRangeFin(date)}
+                value={driverParams.get("end_date")[0]}
+                onChange={(date) => driverParams.set("end_date", date)}
                 slotProps={{ textField: { size: "small" } }}
               />
             </LocalizationProvider>
@@ -299,6 +293,14 @@ export function DateRangeControls({
                   textField: {
                     size: "small",
                     variant: "outlined",
+                  },
+                  actionBar: {
+                    actions: ["accept"],
+                    sx: {
+                      "& .MuiButton-root": {
+                        color: (theme) => getContrastPaperBow().hex(),
+                      },
+                    },
                   },
                 }}
                 maxDate={dayjs()}

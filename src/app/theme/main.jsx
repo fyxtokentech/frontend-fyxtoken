@@ -8,6 +8,8 @@ import {
 
 import { Footer, HeadMain } from "./menu/index.js";
 
+import "./temp.scss";
+
 initThemeCamaleon();
 
 export class Main extends Component {

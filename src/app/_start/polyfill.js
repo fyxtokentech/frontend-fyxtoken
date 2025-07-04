@@ -1,64 +1,54 @@
 // Polyfills and environment adjustments
 import utilities from "./utilities";
 
-import { href as routerHref } from "@jeff-aporta/camaleon";
+import { href } from "@jeff-aporta/camaleon";
+
+let CONTEXT;
 
 export function init() {
-  window.CONTEXT ??= "dev";
-  
+  if (!CONTEXT) {
+    CONTEXT = localStorage.getItem("context-app") || "dev";
+  }
+
+  Object.assign(window, {
+    getContext() {
+      if (!CONTEXT) {
+        CONTEXT = localStorage.getItem("context-app") || "dev";
+      }
+      return CONTEXT;
+    },
+    setContext(context) {
+      if (!context) {
+        return;
+      }
+      CONTEXT = context;
+      localStorage.setItem("context-app", context);
+    },
+    initContext(context) {
+      if (!localStorage.getItem("context-app")) {
+        window.setContext(context);
+      }
+    },
+    isDev() {
+      return window.getContext() == "dev";
+    },
+    toProd() {
+      window.setContext("prod");
+    },
+    toDev() {
+      window.setContext("dev");
+    },
+  });
+
   if (["prod", "production"].includes(window.CONTEXT)) {
     console.log = () => {};
     console.warn = () => {};
     console.error = () => {};
   }
 
-  window.getCoinKey = (coin) => coin.symbol || coin.name || coin.id || "";
-
-  window.loadUser = async (username, password) => {
-    try {
-      let user = [
-        {
-          name: "Jeffrey",
-          lastName: "Agudelo",
-          email: "jeffrey.agudelo@recurrent.com",
-        },
-      ];
-      if (Array.isArray(user)) {
-        user = user[0];
-      }
-      console.log(user);
-      localStorage.setItem("user", JSON.stringify(user));
-      return user;
-    } catch (err) {
-      console.error("Credenciales inválidas", err);
-      return null;
-    }
-  };
-
-  // Logout de usuario
   window["logoutUser"] = () => {
-    localStorage.removeItem("user");
-    window.location.href = routerHref({ view: "/" });
     delete window["currentUser"];
+    localStorage.removeItem("user");
+    window.location.href = href("@home");
   };
-
-  // TO DO: BORRAR
-  Object.assign(window, {
-    props: {
-      ChipSmall: {
-        size: "small",
-        variant: "filled",
-      },
-    },
-    style: {
-      ChipSmall: {
-        transform: "scale(0.8)",
-        fontSize: "smaller",
-      },
-      "Chip-right": {
-        position: "absolute",
-        right: "10px",
-      },
-    },
-  });
 }

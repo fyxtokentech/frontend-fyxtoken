@@ -1,5 +1,5 @@
 import React from "react";
-import { modelsFormat } from "@jeff-aporta/camaleon";
+import { getModelsFormat } from "@jeff-aporta/camaleon";
 
 // No hay iconos específicos de estado para posiciones abiertas generalmente,
 // pero podríamos añadir uno para el activo si fuera necesario.
@@ -11,7 +11,7 @@ const columns_investments = [
     headerName: "Beneficio proyectado",
     description:
       "Ganancia o pérdida potencial si la posición se cerrara ahora.",
-    ...modelsFormat.profit, // Formato beneficio/pérdida
+    ...getModelsFormat().profit, // Formato beneficio/pérdida
   },
   {
     field: "base_asset_symbol", // 1. Qué activo es
@@ -22,25 +22,25 @@ const columns_investments = [
     field: "amount_base", // 2. Cuánto tengo
     headerName: "Cantidad",
     description: "Cantidad del activo base que se posee.",
-    ...modelsFormat.numberGeneral,
+    ...getModelsFormat().numberGeneral,
   },
   {
     field: "position_value", // 3. Cuánto vale ahora
     headerName: "Valor Posición",
     description: "Valor total actual de la posición.",
-    ...modelsFormat.currentCoin, // Formato moneda
+    ...getModelsFormat().currentCoin, // Formato moneda
   },
   {
     field: "current_price", // 5. Precio actual de mercado
     headerName: "Precio Actual",
     description: "Precio de mercado actual del activo.",
-    ...modelsFormat.currentCoin, // Formato moneda
+    ...getModelsFormat().currentCoin, // Formato moneda
   },
   {
     field: "purchase_price", // 6. A cuánto compré (promedio)
     headerName: "Precio Compra",
     description: "Precio promedio al que se adquirió el activo.",
-    ...modelsFormat.currentCoin, // Formato moneda
+    ...getModelsFormat().currentCoin, // Formato moneda
   },
   {
     field: "pair", // 7. Par de trading asociado
@@ -60,7 +60,7 @@ const columns_investments = [
     description: "Fecha SQL.",
     inTable: false,
     exclude: true, // Decide si quieres excluirla o no
-    ...modelsFormat.datetime,
+    ...getModelsFormat().datetime,
   },
   {
     field: "id",

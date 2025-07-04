@@ -1,41 +1,56 @@
-import React, { useState } from "react";
-import { Button, Typography } from "@mui/material";
+import React, { useState, Component } from "react";
+import { Button, Typography, CircularProgress } from "@mui/material";
 import UpdateIcon from "@mui/icons-material/Cached";
-import { TooltipGhost, IconButtonWithTooltip } from "@jeff-aporta/camaleon";
 import PauseIcon from "@mui/icons-material/Pause";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
-import { fluidCSS } from "@jeff-aporta/camaleon";
+import HourglassBottomIcon from "@mui/icons-material/HourglassBottom";
+import {
+  fluidCSS,
+  TooltipGhost,
+  IconButtonWithTooltip,
+  showSuccess,
+  showWarning,
+  showError,
+  Design,
+  Layer,
+  AnimateComponent,
+  showPromise,
+} from "@jeff-aporta/camaleon";
 import { HTTPPUT_COINS_START, HTTPPUT_COINS_STOP } from "@api";
-import { showSuccess, showWarning, showError } from "@jeff-aporta/camaleon";
+import { driverPanelRobot } from "../../../bot.jsx";
+
+import { driverActionMain } from "../ActionMain.jsx";
+import { driverTables } from "@tables/tables.js";
+
+let SINGLETON_UPDATE_BUTTON;
+
+export const driverActionButtons = {
+  reRenderUpdateButton: () =>
+    SINGLETON_UPDATE_BUTTON && SINGLETON_UPDATE_BUTTON.forceUpdate(),
+};
 
 export default function ActionButtons({
-  update_available,
-  setUpdateAvailable,
-  setView,
   settingIcon,
-  currency,
-  coinsOperatingList,
-  coinsToOperate,
   onSellCoin,
-  coinsToDelete,
-  setErrorCoinOperate,
   actionInProcess,
   setActionInProcess,
 }) {
-  const { user_id } = window.currentUser;
-  const { getCoinKey } = window;
+  const user_id = window.currentUser.user_id;
   const [autoOpEnabled, setAutoOpEnabled] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
-  const hayMoneda = currency.current.trim();
-  const monedaYaOperando = coinsOperatingList.current.some(
-    (c) => getCoinKey(c) === currency.current
-  );
-  const monedasDisponibles = coinsOperatingList.current.length === 0;
-  const monedaEnBorrado = coinsToDelete.current.some(
-    (c) => getCoinKey(c) === currency.current
-  );
+  const monedaYaOperando = driverPanelRobot
+    .getCoinsOperating()
+    .some(
+      (c) => driverPanelRobot.getCoinKey(c) === driverPanelRobot.getCurrency()
+    );
+  const monedasDisponibles = driverPanelRobot.getCoinsOperating().length === 0;
+  const monedaEnBorrado = driverPanelRobot
+    .getCoinsToDelete()
+    .some(
+      (c) => driverPanelRobot.getCoinKey(c) === driverPanelRobot.getCurrency()
+    );
   const pauseDisabled = [
-    !hayMoneda,
+    !driverPanelRobot.getCurrency(),
     !monedaYaOperando,
     monedaEnBorrado,
     actionInProcess,
@@ -44,7 +59,7 @@ export default function ActionButtons({
   return (
     <div className="inline-flex align-end col-direction gap-10px">
       <div className="flex">
-        <UpdateButton {...{ update_available, setUpdateAvailable }} />
+        <UpdateButton />
         {settingIcon()}
       </div>
       <div className="flex wrap gap-10px">
@@ -70,10 +85,7 @@ export default function ActionButtons({
             size="small"
             sx={{ width: 80 }}
             onClick={async () => {
-              console.log("isPaused", isPaused);
-              const coinObj = coinsToOperate.current.find(
-                (c) => getCoinKey(c) === currency.current
-              );
+              const coinObj = driverPanelRobot.findCurrencyInCoinsToOperate();
               if (!coinObj) {
                 return;
               }
@@ -82,7 +94,6 @@ export default function ActionButtons({
                 await HTTPPUT_COINS_STOP({
                   user_id,
                   id_coin: coinObj.id,
-                  setError: setErrorCoinOperate,
                   successful: () => {
                     showSuccess(`Se detuvo (${coinObj.symbol})`);
                   },
@@ -96,7 +107,6 @@ export default function ActionButtons({
                 await HTTPPUT_COINS_START({
                   user_id,
                   id_coin: coinObj.id,
-                  setError: setErrorCoinOperate,
                   successful: () => {
                     showSuccess(`Se reanudo (${coinObj.symbol})`);
                   },
@@ -144,7 +154,7 @@ export default function ActionButtons({
     return (
       <TooltipGhost
         title={(() => {
-          if (!hayMoneda) {
+          if (!driverPanelRobot.existsCurrency()) {
             return "Seleccione una moneda";
           }
           if (monedasDisponibles) {
@@ -165,7 +175,7 @@ export default function ActionButtons({
         <div>
           <Detener
             disabled={
-              !hayMoneda ||
+              !driverPanelRobot.existsCurrency() ||
               monedasDisponibles ||
               !monedaYaOperando ||
               monedaEnBorrado ||
@@ -181,7 +191,7 @@ export default function ActionButtons({
     return (
       <TooltipGhost
         title={(() => {
-          if (!hayMoneda) {
+          if (!driverPanelRobot.existsCurrency()) {
             return "Seleccione una moneda";
           }
           if (monedaYaOperando) {
@@ -195,7 +205,11 @@ export default function ActionButtons({
       >
         <div>
           <Operar
-            disabled={!hayMoneda || monedaYaOperando || actionInProcess}
+            disabled={
+              !driverPanelRobot.existsCurrency() ||
+              monedaYaOperando ||
+              actionInProcess
+            }
           />
         </div>
       </TooltipGhost>
@@ -209,42 +223,43 @@ export default function ActionButtons({
           color="ok"
           size="small"
           onClick={async () => {
-            if (!currency.current.trim()) {
+            if (!driverPanelRobot.getCurrency()) {
               return;
             }
-            const coinObj = coinsToOperate.current.find(
-              (c) => getCoinKey(c) === currency.current
-            );
+            const coinObj = driverPanelRobot.findCurrencyInCoinsToOperate();
             if (!coinObj) {
               return;
             }
             setActionInProcess(true);
 
             try {
-              const putResult = await HTTPPUT_COINS_START({
-                id_coin: coinObj.id,
-                setError: setErrorCoinOperate,
-                successful: () => {
-                  showSuccess(`Se empieza a operar (${coinObj.symbol})`);
-                },
-                failure: () => {
-                  showWarning(`Algo salió mal al operar en ${coinObj.symbol}`);
-                },
-                willEnd,
-              });
-              // refresh operating coins list and UI
-              coinsOperatingList.current = [
-                ...coinsOperatingList.current,
-                coinObj,
-              ];
+              await showPromise(
+                `Solicitando al backend inicio de operación (${coinObj.symbol})`,
+                new Promise((resolve, reject) => {
+                  HTTPPUT_COINS_START({
+                    id_coin: coinObj.id+1000,
+                    willEnd,
+                    successful: (json, info) => {
+                      driverPanelRobot.getCoinsOperating().push(coinObj);
+                      resolve(`Se empieza a operar (${coinObj.symbol})`);
+                    },
+                    failure: (json, info, rejectPromise) => {
+                      rejectPromise(
+                        `Algo salió mal al operar en ${coinObj.symbol}`,
+                        reject,
+                        { json, info }
+                      );
+                    },
+                  });
+                })
+              );
             } catch (err) {
               showError(`Error al iniciar operaración en: ${coinObj.symbol}`);
-              willEnd();
             }
 
             function willEnd() {
               setActionInProcess(false);
-              setUpdateAvailable((prev) => !prev);
+              driverPanelRobot.setUpdateAvailable((prev) => !prev);
             }
           }}
         >
@@ -263,7 +278,7 @@ export default function ActionButtons({
         size="small"
         onClick={() => {
           setActionInProcess(true);
-          onSellCoin(currency.current);
+          onSellCoin(driverPanelRobot.getCurrency());
         }}
       >
         <small>Detener</small>
@@ -272,34 +287,81 @@ export default function ActionButtons({
   }
 }
 
-function UpdateButton({ update_available, setUpdateAvailable, ...rest_props }) {
-  return (
-    <IconButtonWithTooltip
-      {...rest_props}
-      title={() =>
-        update_available ? "Actualizar" : "Espera para volver a actualizar"
-      }
-      icon={
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
+class UpdateButton extends Component {
+  componentDidMount() {
+    SINGLETON_UPDATE_BUTTON = this;
+    driverPanelRobot.addLinkUpdateAvailable(this);
+  }
+  componentWillUnmount() {
+    driverPanelRobot.removeLinkUpdateAvailable(this);
+  }
+  render() {
+    const updateAvailable = driverPanelRobot.getUpdateAvailable();
+    if (!updateAvailable) {
+      setTimeout(() => {
+        this.forceUpdate();
+      }, 1000 / 10);
+    }
+    return (
+      <Design>
+        <IconButtonWithTooltip
+          title={() =>
+            ["Espera para volver a actualizar", "Actualizar"][+updateAvailable]
+          }
+          icon={
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+              }}
+            >
+              <UpdateIcon />
+              <Typography variant="caption" color="text.secondary">
+                <small>Actualizar</small>
+              </Typography>
+            </div>
+          }
+          disabled={!updateAvailable}
+          onClick={() => {
+            driverPanelRobot.setUpdateAvailable(false);
+            driverActionMain.updateViewTable();
+            driverTables.refetch(true);
           }}
-        >
-          <UpdateIcon />
-          <Typography variant="caption" color="text.secondary">
-            <small>Actualizar</small>
-          </Typography>
-        </div>
-      }
-      disabled={!update_available}
-      onClick={() => {
-        setUpdateAvailable(false);
-        setTimeout(() => {
-          setUpdateAvailable(true);
-        }, window["SECONDS_TO_UPDATE_AGAIN"] * 1000);
-      }}
-    />
-  );
+        />
+        {!updateAvailable &&
+          (() => {
+            const PercentUpdateButton = class extends AnimateComponent {
+              render() {
+                if (driverPanelRobot.getUpdateAvailable()) {
+                  driverPanelRobot.reRenderUpdateButton();
+                  return <></>;
+                }
+                return (
+                  <>
+                    <Layer centercentralized ghost>
+                      <CircularProgress
+                        color="complement"
+                        variant="determinate"
+                        value={
+                          100 * driverPanelRobot.getPercentToUpdateAvailable()
+                        }
+                      />
+                    </Layer>
+                    <Layer centercentralized ghost>
+                      <HourglassBottomIcon
+                        fontSize="small"
+                        color="complement"
+                      />
+                    </Layer>
+                  </>
+                );
+              }
+            };
+
+            return <PercentUpdateButton frameRate={10} />;
+          })()}
+      </Design>
+    );
+  }
 }

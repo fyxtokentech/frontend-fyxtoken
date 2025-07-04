@@ -1,128 +1,193 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { Component } from "react";
 
 import { Main } from "@theme/main";
-import { DivM, driverParams } from "@jeff-aporta/camaleon";
+import {
+  DivM,
+  driverParams,
+  getComponentsQuery,
+  subscribeParam,
+  showError,
+  showInfo,
+  clamp,
+  DriverComponent,
+} from "@jeff-aporta/camaleon";
 
 import { HTTPGET_COINS_BY_USER } from "@api";
+import { driverTables } from "@tables/tables.js";
+import { driverCoinsOperating } from "./components/ActionMain/components/CoinsOperating";
 
-import { ActionMain } from "./ActionMain/ActionMain";
-import Settings from "./Settings/Settings";
 import { Typography } from "@mui/material";
 import dayjs from "dayjs";
+import { HTTPGET_TRANSACTION_MOST_RECENT } from "src/app/api";
 
-export default function () {
-  initParams();
-  return <PanelRobot />;
-}
+let SINGLETON;
+let currency;
+let coinsOperatingList = [];
+let coinsToDelete = [];
+let update_available = true;
+let loadingCoinsToOperate = true;
 
-//Iniciar parametros
-function initParams() {
-  if (!driverParams.get("period")) {
-    driverParams.set("period", "most_recent");
-  }
-  if (!driverParams.get("id_coin")) {
-    driverParams.set("id_coin", 1);
-  }
-}
+const ONLY_COINS_ACTIVE = (coin) => coin.status === "A";
 
-function PanelRobot() {
-  const { user_id } = window["currentUser"];
-  
+const SECONDS_TO_UPDATE_AGAIN = 15000;
 
-  const [viewTable, setViewTable] = useState(
-    driverParams.get("view-table") || "operations"
-  );
-  const [view, setView] = useState(driverParams.get("action-id") || "main");
+export default () => <PanelRobot />;
 
-  const [operationTrigger, setOperationTrigger] = useState(null);
-  const currency = useRef(driverParams.get("coin") || "");
-
-  const [update_available, setUpdateAvailable] = useState(true);
-
-  // Hook para forzar renderizado
-  const [, forceUpdate] = useState({}); // Fuerza el renderizado
-
-  const coinsToOperate = useRef([]); // Lista de monedas disponibles para operar
-  const coinsOperatingList = useRef([]); // Lista de monedas en operación
-  const coinsToDelete = useRef([]); // Lista de monedas en proceso de eliminación
-
-  // Efecto de carga de monedas disponibles
-  const [loadingCoinToOperate, setLoadingCoinToOperate] = useState(true);
-  // Error al cargar monedas disponibles
-  const [errorCoinOperate, setErrorCoinOperate] = useState(null);
-
-  // Sync view and viewTable to URL params
-  useEffect(() => {
-    driverParams.set("action-id", view);
-    driverParams.set("view-table", viewTable);
-  }, [view, viewTable]);
-
-  useEffect(() => {
-    (async () => {
-      if (coinsToOperate.current.length === 0) {
-        await HTTPGET_COINS_BY_USER({
-          setError: setErrorCoinOperate,
-          setApiData: (data) => {
-            coinsToOperate.current = data;
-            const paramCoin = driverParams.get("coin");
-            if (!paramCoin && coinsToOperate.current.length > 0) {
-              const first = coinsToOperate.current[0];
-              const key = window.getCoinKey(first);
-              currency.current = key;
-              driverParams.set("coin", key);
-              driverParams.set("id_coin", first.id);
-            } else {
-              currency.current = paramCoin;
-            }
-            coinsOperatingList.current = data.filter(
-              (coin) => coin.status === "A"
-            );
-          },
-        });
-        setLoadingCoinToOperate(false);
-      }
-    })();
-  }, []);
-
-  return (
-    <Main h_init="20px" h_fin="300px">
-      <DivM>
-        <Typography variant="h2" className="color-bg-opposite">
-          Panel Robot
-        </Typography>
-        <br />
-        {(() => {
-          switch (view) {
-            case "main":
-            default:
-              return (
-                <ActionMain
-                  {...{
-                    currency,
-                    update_available,
-                    setUpdateAvailable,
-                    setViewTable,
-                    setView,
-                    viewTable,
-                    setOperationTrigger,
-                    operationTrigger,
-                    forceUpdate,
-                    coinsOperatingList,
-                    coinsToDelete,
-                    coinsToOperate,
-                    loadingCoinToOperate,
-                    setLoadingCoinToOperate,
-                    errorCoinOperate,
-                    setErrorCoinOperate,
-                    user_id,
-                  }}
-                />
-              );
-            case "settings":
-              return <Settings setView={setView} />;
+export const driverPanelRobot = DriverComponent({
+  panelRobot: {
+    isComponent: true,
+  },
+  timeUpdateAvailable: {
+    value: -1,
+  },
+  updateAvailable: {
+    value: true,
+    getPercentTo() {
+      const diff = Date.now() - this.getTimeUpdateAvailable();
+      return clamp(diff / SECONDS_TO_UPDATE_AGAIN, 0, 1);
+    },
+    set(newValue, { setValue }) {
+      if (newValue == false) {
+        this.setTimeUpdateAvailable(Date.now());
+        setTimeout(() => {
+          if (
+            Date.now() - this.getTimeUpdateAvailable() >
+            SECONDS_TO_UPDATE_AGAIN
+          ) {
+            setValue(true);
+            this.setTimeUpdateAvailable(Date.now());
           }
-        })()}
-      </DivM>
-    </Main>
-  );
+        }, SECONDS_TO_UPDATE_AGAIN + 10);
+      }
+    },
+  },
+  coinsToOperate: {
+    value: [],
+    findCurrencyIn(props, { getValue }) {
+      return getValue().find(
+        (c) => driverPanelRobot.getCoinKey(c) === driverPanelRobot.getCurrency()
+      );
+    },
+
+    findKeyIn([symbol], { getValue }) {
+      return getValue().find((c) => driverPanelRobot.getCoinKey(c) === symbol);
+    },
+
+    mapToKeys(props, { getValue }) {
+      return getValue().map(driverPanelRobot.getCoinKey);
+    },
+  },
+  coinsOperating: {
+    value: [],
+
+    filterExcludeId([id], { getValue, setValue }) {
+      setValue(getValue().filter((c) => c.id !== id));
+    },
+  },
+  coinsToDelete: {
+    value: [],
+    filterExcludeIdOn([id], { getValue, setValue }) {
+      setValue(getValue().filter((c) => c.id !== id));
+    },
+    someKey([symbol], { getValue }) {
+      return getValue().some((c) => driverPanelRobot.getCoinKey(c) === symbol);
+    },
+  },
+  currency: {
+    nameParam: "coin",
+  },
+  loadingCoinsToOperate: {
+    value: true,
+  },
+  getCoinKey: (coin) => coin.symbol || coin.name || coin.id || "-",
+  viewBot: {
+    nameParam: "view_bot",
+    initParam: "main",
+    setToMain(props, { setValue }) {
+      setValue("main");
+      driverTables.setViewTable(driverTables.TABLE_OPERATIONS);
+    },
+    setToSettings(props, { setValue }) {
+      setValue("settings");
+    },
+  },
+  idCoin: {
+    nameParam: "id_coin",
+    initParam: 1,
+  },
+
+  loadCoins: async () => {
+    await HTTPGET_COINS_BY_USER({
+      successful: (coinsByUser) => {
+        coinsByUser = coinsByUser.sort((a, b) => a.id - b.id);
+        driverPanelRobot.setCoinsToOperate(coinsByUser);
+        const coinsToOperate = driverPanelRobot.getCoinsToOperate();
+        const paramCoin = driverPanelRobot.getCurrency();
+        if (!paramCoin && coinsToOperate.length > 0) {
+          const first = coinsToOperate[0];
+          const key = driverPanelRobot.getCoinKey(first);
+          driverPanelRobot.setCurrency(key);
+          driverPanelRobot.setIdCoin(first.id);
+        } else {
+          driverPanelRobot.setCurrency(paramCoin);
+        }
+        driverPanelRobot.setCoinsOperating(
+          coinsByUser.filter(ONLY_COINS_ACTIVE)
+        );
+      },
+    });
+    driverPanelRobot.setLoadingCoinsToOperate(false);
+  },
+});
+
+class PanelRobot extends Component {
+  constructor(props) {
+    super(props);
+    subscribeParam(
+      {
+        view_table: () => {
+          driverPanelRobot.updatePanelRobot();
+        },
+      },
+      this
+    );
+    driverPanelRobot.addLinkViewBot(this);
+    driverPanelRobot.setPanelRobot(this);
+  }
+
+  componentDidMount() {
+    driverPanelRobot.loadCoins();
+    this.addParamListener();
+  }
+
+  componentWillUnmount() {
+    this.removeParamListener();
+  }
+
+  render() {
+    const {
+      ActionMain: { default: ActionMainComponent },
+      Settings: { default: SettingsComponent },
+    } = getComponentsQuery();
+
+    return (
+      <Main h_init="20px" h_fin="300px">
+        <DivM>
+          <Typography variant="h2" className="color-bg-opposite">
+            Panel Robot
+          </Typography>
+          <br />
+          {(() => {
+            switch (driverPanelRobot.getViewBot()) {
+              case "main":
+              default:
+                return <ActionMainComponent />;
+              case "settings":
+                return <SettingsComponent />;
+            }
+          })()}
+        </DivM>
+      </Main>
+    );
+  }
 }

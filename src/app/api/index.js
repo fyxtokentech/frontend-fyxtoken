@@ -1,12 +1,8 @@
-import {
-  setURLMapAPI,
-  IS_LOCAL,
-} from "@jeff-aporta/camaleon";
+import { setURLMapAPI, IS_LOCAL } from "@jeff-aporta/camaleon";
 
 setURLMapAPI({
   getContext: () => {
-    const { CONTEXT } = window;
-    const RETURN = IS_LOCAL && CONTEXT === "dev" ? "local" : "web";
+    const RETURN = IS_LOCAL && window.isDev() ? "local" : "web";
     return RETURN;
   },
   local: {
@@ -22,7 +18,7 @@ setURLMapAPI({
 export const httpdebug = {
   newfetch: ({ url }) => console.log(`NEW fetching URL: ${url}`),
   fetchcached: ({ url }) => console.log(`CACHED URL: ${url}`),
-  willStart: (props)=>console.log(`[request] Enviando:`, props),
+  willStart: (props) => console.log(`[request] Enviando:`, props),
 };
 
 export * from "./GET.js";

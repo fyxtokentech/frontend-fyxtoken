@@ -19,10 +19,19 @@ assignMapManagement({
   "@wallet": {
     view: "/users/wallet",
     params: {
-      "action-id": "investment",
+      view: "investment",
     },
   },
   "@home": "/",
+  "@bot": {
+    view: "/dev/bot",
+    params: {
+      view_bot: "main",
+      period: "most_recent",
+      id_coin: 1,
+      view_table: "operations",
+    },
+  },
 });
 defaultUseViewId(true);
 initStartApp();

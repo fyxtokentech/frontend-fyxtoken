@@ -37,92 +37,114 @@ import {
 import mock_transaction from "./mock-transaction.json";
 import columns_transaction from "./columns-transaction.jsx";
 
-import mock_operation from "@tables/operations/mock-operation.json";
-import columns_operation from "@tables/operations/columns-operation.jsx";
 import dayjs from "dayjs";
 import { HTTPGET_TRANSACTIONS, HTTPGET_OPERATION_ID } from "@api";
-import { showError, driverParams } from "@jeff-aporta/camaleon";
+import { showError, driverParams, IS_GITHUB } from "@jeff-aporta/camaleon";
 import { Button } from "@mui/material";
 import DisabledByDefaultIcon from "@mui/icons-material/DisabledByDefault";
 
+import { driverTables } from "../tables.js";
+
 let id_operation;
-let _data_;
+let rows;
+let loading = false;
+let SINGLETON;
+
+let mock_default = IS_GITHUB ? mock_transaction : [];
+
+const driverTableTransactions = {
+  getRows() {
+    return rows || mock_default;
+  },
+  setRows(newRows) {
+    rows = newRows;
+  },
+  findNameCoin() {
+    const { name_coin } =
+      driverTableTransactions.getRows().find((m) => m["name_coin"]) ?? {};
+    return name_coin;
+  },
+  getLoading() {
+    return loading;
+  },
+  setLoading(newLoading) {
+    loading = newLoading;
+    driverTableTransactions.forceUpdate();
+  },
+  forceUpdate() {
+    if (!SINGLETON) {
+      setTimeout(() => driverTableTransactions.forceUpdate(), 100);
+      return;
+    }
+    SINGLETON.forceUpdate();
+  },
+};
 
 function updateIDOperation() {
-  ({ id_operation = driverParams.get("id_operation") } =
-    window["operation-row"] ?? {});
+  ({ id_operation = driverParams.get("id_operation")[0] } =
+    driverTables.getOperationRow() || {});
 }
 
-export default class TableTransactions extends Component {
-  constructor(props) {
-    super(props);
+export default driverTables.newTable({
+  name_table: driverTables.TABLE_TRANSACTIONS,
+  user_id_required: true,
+  paramsKeys: ["id_operation"],
+  init() {
     updateIDOperation();
-    _data_ = null;
-    this.state = {
-      loading: true,
-      apiData: [],
-      error: null,
-    };
-  }
-
+  },
   componentDidMount() {
-    const { setViewTable } = this.props;
-    const { IS_GITHUB_IO } = global;
-    (async () => {
-      const { user_id } = window["currentUser"] ?? {};
-      const failure = (error, ...rest) => {
-        showError(error, ...rest);
-        this.setState({ error });
-      };
-      if (!window["operation-row"] && id_operation) {
-        await HTTPGET_OPERATION_ID({
-          operationID: id_operation,
-          success: ([data]) => {
-            window["operation-row"] = data;
-            updateIDOperation();
-          },
-          failure,
-        });
-      }
-
-      if (!user_id || !id_operation) {
-        showError("No hay usuario ni operación seleccionada");
-        if (!id_operation) {
-          const t = "operations";
-          setTimeout(() => setViewTable(t), 2000);
-        }
-        return;
-      }
-
-      await HTTPGET_TRANSACTIONS({
-        id_operation,
-        mock_default: IS_GITHUB_IO ? mock_transaction : [],
-        successful: (data) => {
-          _data_ ??= data;
+    SINGLETON = this;
+  },
+  end_fetch() {
+    driverTableTransactions.setLoading(false);
+  },
+  start_fetch() {
+    driverTableTransactions.setLoading(true);
+  },
+  async prefetch({ id_operation }) {
+    if (!driverTables.getOperationRow() && id_operation) {
+      await HTTPGET_OPERATION_ID({
+        operationID: id_operation,
+        successful: ([data]) => {
+          driverTables.setOperationRow(data);
+          updateIDOperation();
         },
-        failure,
       });
+    }
+  },
+  async fetchData({ id_operation, user_id }) {
+    await HTTPGET_TRANSACTIONS({
+      id_operation,
+      mock_default,
+      successful: (data) => {
+        driverTableTransactions.setRows(data);
+      },
+      checkErrors: () => {
+        if (!user_id) {
+          return toOperation("No hay usuario seleccionado");
+        }
+        if (!id_operation) {
+          return toOperation("No hay operación seleccionada");
+        }
+      },
+    });
 
-      this.setState({ apiData: _data_ ?? this.state.apiData, loading: false });
-    })();
-  }
-
+    function toOperation(msg) {
+      driverTables.setViewTable(driverTables.TABLE_OPERATIONS);
+      return msg;
+    }
+  },
   render() {
     const {
       useOperation = true,
-      operationTrigger,
-      setViewTable,
       showDateRangeControls = false,
       pretable,
       data,
-      columns_config: propColumns,
+      columns_config = columns_transaction(),
       ...rest
     } = this.props;
-    const { loading, apiData, error } = this.state;
-    const { IS_GITHUB_IO } = global;
-    const content = apiData ?? (IS_GITHUB_IO ? mock_transaction : []).content;
-    const columns_config = propColumns ?? [...columns_transaction.config];
-    const { name_coin } = content.find((m) => m["name_coin"]) ?? {};
+
+    const content = driverTableTransactions.getRows();
 
     return (
       <div className="p-relative">
@@ -132,27 +154,17 @@ export default class TableTransactions extends Component {
         <br />
         <PrefixUseOperation
           useOperation={useOperation}
-          setViewTable={setViewTable}
           columns_config={columns_config}
-          loading={loading}
-          operationTrigger={operationTrigger}
-          name_coin={name_coin}
         />
         <br />
         <AutoSkeleton loading={loading} h="50vh">
           {pretable}
           <DynTable {...rest} columns={columns_config} rows={content} />
-
-          {error && (
-            <Alert severity="error" className="mt-10px">
-              {error}
-            </Alert>
-          )}
         </AutoSkeleton>
       </div>
     );
-  }
-}
+  },
+});
 
 function CaptionOperation(props) {
   return (
@@ -165,18 +177,16 @@ function CaptionOperation(props) {
   );
 }
 
-function PrefixUseOperation({
-  useOperation,
-  setViewTable,
-  columns_config,
-  loading,
-  operationTrigger,
-  name_coin,
-}) {
+function PrefixUseOperation({ useOperation, columns_config }) {
+  const name_coin = driverTableTransactions.findNameCoin();
+
   if (!useOperation) {
     return null;
   }
   Informacion({ columns_config });
+
+  const loading = driverTableTransactions.getLoading();
+
   return (
     <>
       <div
@@ -189,7 +199,9 @@ function PrefixUseOperation({
             color="error"
             size="small"
             endIcon={<DisabledByDefaultIcon />}
-            onClick={() => setViewTable("operations")}
+            onClick={() =>
+              driverTables.setViewTable(driverTables.TABLE_OPERATIONS)
+            }
           >
             Cerrar Transacciones
           </Button>
@@ -199,31 +211,26 @@ function PrefixUseOperation({
     </>
   );
 
+  function date2Label(date) {
+    if (date.isValid()) {
+      return date.format("YYYY-MM-DD HH:mm");
+    }
+    return "---";
+  }
+
   function Info() {
     const rowData = (() => {
-      if (window["operation-row"]) {
-        return window["operation-row"];
-      }
-      if (operationTrigger) {
-        return operationTrigger;
+      const row = driverTables.getOperationRow();
+      if (row) {
+        return row;
       }
       return { id_operation: id_operation, name_coin };
     })();
 
     const startDate = dayjs(rowData.start_date_operation);
     const endDate = dayjs(rowData.end_date_operation);
-    const startLabel = (() => {
-      if (startDate.isValid()) {
-        return startDate.format("YYYY-MM-DD HH:mm");
-      }
-      return "---";
-    })();
-    const endLabel = (() => {
-      if (endDate.isValid()) {
-        return endDate.format("YYYY-MM-DD HH:mm");
-      }
-      return "---";
-    })();
+    const startLabel = date2Label(startDate);
+    const endLabel = date2Label(endDate);
 
     return (
       <>

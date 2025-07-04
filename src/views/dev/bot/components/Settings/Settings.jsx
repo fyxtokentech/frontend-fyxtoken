@@ -25,7 +25,14 @@ import { AutoView } from "./tabs/Auto";
 import { CandlestickView } from "./tabs/Candle";
 import { AutomatizacionView } from "./tabs/Auto";
 
-export default function Settings({ setView }) {
+import { driverPanelRobot } from "../../bot.jsx";
+
+export const driverSettings = {
+  setViewSetting: (view) => driverParams.set("view_setting_bot", view),
+  getViewSetting: () => driverParams.get("view_setting_bot")[0] || "apis",
+};
+
+export default function Settings() {
   const views = [
     { id: "apis", label: "APIs", icon: <ApiIcon /> },
     {
@@ -36,12 +43,12 @@ export default function Settings({ setView }) {
     { id: "rsi", label: "RSI", icon: <ShowChartIcon /> },
     { id: "candlestick", label: "Candlestick", icon: <CandlestickChartIcon /> },
   ];
-  const initialView = driverParams.get("view-setting") || "apis";
+  const initialView = driverSettings.getViewSetting();
   const [selectedViewSetting, setSelectedViewSetting] = useState(initialView);
 
   useEffect(() => {
     if (!views.find((v) => v.id === initialView)) {
-      driverParams.set("view-setting", "apis");
+      driverSettings.setViewSetting("apis");
       setSelectedViewSetting("apis");
     } else {
       setSelectedViewSetting(initialView);
@@ -49,7 +56,7 @@ export default function Settings({ setView }) {
   }, []);
 
   const handleSelect = (id) => {
-    driverParams.set("view-setting", id);
+    driverSettings.setViewSetting(id);
     setSelectedViewSetting(id);
   };
   const drawerWidth = 240;
@@ -65,7 +72,7 @@ export default function Settings({ setView }) {
           color="error"
           size="small"
           endIcon={<DisabledByDefaultIcon />}
-          onClick={() => setView("main")}
+          onClick={() => driverPanelRobot.setToMainViewBot()}
         >
           Cerrar configuración
         </Button>

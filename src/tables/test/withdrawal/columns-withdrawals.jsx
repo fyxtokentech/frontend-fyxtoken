@@ -1,5 +1,5 @@
 import React from "react";
-import { modelsFormat } from "@jeff-aporta/camaleon";
+import { getModelsFormat } from "@jeff-aporta/camaleon";
 
 // Importar iconos necesarios
 import StatusOkIcon from "@mui/icons-material/CheckCircleOutline";
@@ -36,19 +36,19 @@ const columns_withdrawals = [
     field: "amount", // 2. Cuánto se retiró
     headerName: "Monto",
     description: "Cantidad de moneda retirada.",
-    ...modelsFormat.currentCoin, // Formato de moneda
+    ...getModelsFormat().currentCoin, // Formato de moneda
   },
   {
     field: "fee", // 3. Comisión por el retiro
     headerName: "Comisión",
     description: "Comisión cobrada por el retiro.",
-    ...modelsFormat.currentCoin, // Formato de moneda
+    ...getModelsFormat().currentCoin, // Formato de moneda
   },
   {
     field: "withdrawal_date", // 4. Fecha de procesamiento
     headerName: "Fecha de Retiro",
     description: "Fecha y hora en que se procesó efectivamente el retiro.",
-    ...modelsFormat.dateTime,
+    ...getModelsFormat().dateTime,
   },
   {
     field: "destination_address", // 5. Dirección de destino
@@ -99,7 +99,7 @@ const columns_withdrawals = [
     headerName: "Fecha Creación",
     description: "Fecha y hora en que se registró la solicitud de retiro.",
     inTable: false,
-    ...modelsFormat.dateTime,
+    ...getModelsFormat().dateTime,
   },
 ];
 

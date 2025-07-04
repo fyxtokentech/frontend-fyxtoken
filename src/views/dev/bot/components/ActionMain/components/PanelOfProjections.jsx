@@ -14,7 +14,7 @@ import { AutoSkeleton } from "@components/controls";
 import { fluidCSS } from "@jeff-aporta/camaleon";
 
 import { TooltipGhost } from "@jeff-aporta/camaleon";
-import { getThemeLuminance, modelsFormat } from "@jeff-aporta/camaleon";
+import { getThemeLuminance, getNumberFormat } from "@jeff-aporta/camaleon";
 import { getBalance } from "./PanelOfInsertMoney";
 
 export const panelProjectionsState = {
@@ -203,7 +203,7 @@ class PriceProjectionCard extends Component {
           </Typography>
           <div className="flex align-center gap-5px">
             <TooltipGhost
-              title={`Actual USD: ${modelsFormat.format.number.toCoinDifference(
+              title={`Actual USD: ${getNumberFormat().toCoinDifference(
                 currentPrice,
                 priceProjection
               )}`}
@@ -219,7 +219,7 @@ class PriceProjectionCard extends Component {
               </span>
             </TooltipGhost>
             <TooltipGhost
-              title={`Proyectado USD: ${modelsFormat.format.number.toCoinDifference(
+              title={`Proyectado USD: ${getNumberFormat().toCoinDifference(
                 priceProjection,
                 currentPrice
               )}`}
@@ -261,7 +261,7 @@ class PriceCard extends Component {
           <span className="nowrap flex align-center">
             {icon && <>{icon}&nbsp;&nbsp;</>}
             {value != null
-              ? modelsFormat.format.number.toCoinDifference(value, value2)
+              ? getNumberFormat().toCoinDifference(value, value2)
               : "---"}
           </span>
         </Typography>

@@ -2,6 +2,46 @@ import { MAKE_GET, AUTO_PARAMS } from "@jeff-aporta/camaleon";
 
 import { httpdebug } from "./index.js";
 
+// http://localhost:8000/transactions/most_recent/user/{user_id}/coin/{id_coin}
+export async function HTTPGET_TRANSACTION_MOST_RECENT({
+  user_id,
+  id_coin,
+  ...rest
+}) {
+  ({ user_id, id_coin } = AUTO_PARAMS({ user_id, id_coin }));
+  return await MAKE_GET({
+    ...rest,
+    ...httpdebug,
+    service: "robot_backend",
+    buildEndpoint: ({ genpath }) =>
+      genpath([
+        "transactions",
+        "most_recent",
+        "user",
+        user_id,
+        "coin",
+        id_coin,
+      ]),
+  });
+}
+
+export async function HTTPGET_BALANCECOIN({ user_id, id_coin, ...rest } = {}) {
+  return new Promise((resolve, reject) => {
+    HTTPGET_TRANSACTION_MOST_RECENT({
+      ...rest,
+      user_id,
+      id_coin,
+      successful: ([transaction]) => {
+        let { total = 0 } = transaction;
+        resolve(total);
+      },
+      failure: (err) => {
+        resolve(0);
+      },
+    });
+  });
+}
+
 export async function HTTPGET_OPERATION_ID({ operationID, ...rest }) {
   return await MAKE_GET({
     ...rest,

@@ -92,7 +92,7 @@ export default class PanelOfInsertMoney extends React.Component {
 
   handleInvest() {
     this.setState({ updating: true });
-    const coin_id = driverParams.get("id_coin");
+    const coin_id = driverParams.get("id_coin")[0];
     HTTPPUT_USEROPERATION_INVESTMEN({
       coin_id,
       new_value: vars_PanelOfInsertMoney.inputValue,

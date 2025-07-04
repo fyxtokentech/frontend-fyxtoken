@@ -5,21 +5,31 @@ import TrendingDownIcon from "@mui/icons-material/TrendingDown";
 import TrendingFlatIcon from "@mui/icons-material/TrendingFlat";
 import CurrencyExchangeIcon from "@mui/icons-material/CurrencyExchange";
 
-import { Typography, Grid, Chip, TextField, Slider } from "@mui/material";
-
-import { fluidCSS } from "@jeff-aporta/camaleon";
-import { getThemeLuminance } from "@jeff-aporta/camaleon";
+import {
+  Typography,
+  Grid,
+  Chip,
+  TextField,
+  Slider,
+  LinearProgress,
+} from "@mui/material";
 
 import {
+  fluidCSS,
+  getThemeLuminance,
+  clamp,
+  map,
   IconButtonWithTooltip,
   TooltipGhost,
-  genSelectFast,
   PaperP,
   driverParams,
+  subscribeParam,
+  AnimateComponent,
+  DriverComponent,
 } from "@jeff-aporta/camaleon";
 
 import { AutoSkeleton } from "@components/controls";
-import { HTTPGET_COINS_METRICS } from "@api";
+import { HTTPGET_COINS_METRICS, HTTPGET_BALANCECOIN } from "@api";
 
 import ActionButtons from "./ActionButtons";
 import CoinsOperating from "./CoinsOperating";
@@ -31,18 +41,93 @@ import PanelOfProjections from "./PanelOfProjections";
 
 import { vars_PanelOfInsertMoney } from "./PanelOfInsertMoney";
 import { panelProjectionsState } from "./PanelOfProjections";
+import { driverPanelRobot } from "../../../bot.jsx";
+
+export const driverPanelBalance = DriverComponent({
+  panelBalance: {
+    isComponent: true,
+  },
+  transactionMostRecent: {
+    value: 0,
+  },
+});
+
+class TimeCount extends AnimateComponent {
+  render() {
+    const minutos = 5;
+    const segundos = minutos * 60;
+    const msSteep = segundos * 1000;
+    const desfaceSeconds = 10 * 1000;
+    const timePercent = clamp(
+      ((Date.now() - desfaceSeconds) % msSteep) / msSteep,
+      0,
+      1
+    );
+    if (this.pastPercent && this.pastPercent > timePercent) {
+      setTimeout(driverPanelRobot.updatePanelRobot);
+    }
+    this.pastPercent = timePercent;
+    return (
+      <>
+        <div align="right">
+          <Typography variant="caption" color="contrastpaper">
+            {seconds2Time(Math.floor(map(timePercent, 0, 1, 0, segundos)), {
+              HH: false,
+            })}{" "}
+            / {seconds2Time(segundos, { HH: false })}
+          </Typography>
+        </div>
+        <LinearProgress
+          color="secondary"
+          variant="determinate"
+          value={timePercent * 100}
+        />
+      </>
+    );
+  }
+}
+
+function seconds2Time(seconds, { HH = true, MM = true, SS = true } = {}) {
+  if (HH) {
+    HH = Math.floor(seconds / 3600);
+  }
+  if (MM) {
+    MM = Math.floor((seconds % 3600) / 60);
+  }
+  if (SS) {
+    SS = seconds % 60;
+  }
+  return [HH, MM, SS]
+    .filter((v) => typeof v == "number")
+    .map((v) => v.toString().padStart(2, "0"))
+    .join(":");
+}
 
 export default class PanelBalance extends Component {
   constructor(props) {
     super(props);
-
     this.state = {};
+    subscribeParam(
+      { "id_coin, coin": () => driverPanelRobot.updatePanelRobot() },
+      this
+    );
+    driverPanelBalance.setPanelBalance(this);
+  }
+
+  componentDidMount() {
+    this.addParamListener();
+    driverPanelRobot.addLinkLoadingCoinsToOperate(this);
+  }
+
+  componentWillUnmount() {
+    this.removeParamListener();
+    driverPanelRobot.removeLinkLoadingCoinsToOperate(this);
   }
 
   settingIcon = () => (
     <IconButtonWithTooltip
       title="Configurar"
-      onClick={() => this.props.setView("settings")}
+      onClick={() => driverPanelRobot.setToSettingsViewBot()}
       icon={
         <div className="flex col-direction align-center">
           <SettingsIcon />
@@ -55,97 +140,54 @@ export default class PanelBalance extends Component {
   );
 
   render() {
-    const {
-      currency,
-      update_available,
-      setUpdateAvailable,
-      setView,
-      coinsOperatingList,
-      coinsToOperate,
-      loadingCoinToOperate,
-      coinsToDelete,
-      errorCoinOperate,
-      setErrorCoinOperate,
-      onSellCoin,
-      deletionTimers,
-      setDeletionTimers,
-      viewTable,
-      setViewTable,
-    } = this.props;
+    const { onSellCoin, deletionTimers, setDeletionTimers } = this.props;
     // Usar los estados globales en vez del state local
     const { actionInProcess } = vars_PanelOfInsertMoney;
     const flatNumber = 12345;
     const roi = 0;
-    const balanceUSDT = 10000; // Example USDT balance
-    const balanceCoin = 2.5; // Example coin balance
 
-    const hayMoneda = currency.current.trim() && !loadingCoinToOperate;
+    const hayMoneda = [
+      driverPanelRobot.existsCurrency(),
+      !driverPanelRobot.getLoadingCoinsToOperate(),
+    ].every(Boolean);
 
     return (
-      <div key={currency.current}>
+      <div key={driverPanelRobot.getCurrency()}>
+        <TimeCount frameRate={1} />
         <PaperP elevation={0}>
           <div className={`flex wrap space-between gap-10px`}>
-            <PanelCoinSelected
-              {...{
-                currency,
-                coinsToOperate,
-                coinsToDelete,
-                loadingCoinToOperate,
-                errorCoinOperate,
-                setErrorCoinOperate,
-                coinsOperatingList,
-                setUpdateAvailable,
-                viewTable,
-                setViewTable,
-                balanceUSDT,
-                balanceCoin,
-              }}
-            />
+            <PanelCoinSelected />
             <PanelOfProjections flatNumber={flatNumber} />
             <PanelOfInsertMoney
               setInputValue={(value) => {
                 vars_PanelOfInsertMoney.inputValue = value;
-                this.forceUpdate();
+                driverPanelRobot.updatePanelRobot();
               }}
               setSliderExp={(exp) => {
                 vars_PanelOfInsertMoney.sliderExp = exp;
-                this.forceUpdate();
+                driverPanelRobot.updatePanelRobot();
               }}
             />
             <ActionButtons
-              {...{
-                update_available,
-                setUpdateAvailable,
-                setView,
-                settingIcon: this.settingIcon,
-                currency,
-                coinsOperatingList,
-                coinsToOperate,
-                onSellCoin,
-                coinsToDelete,
-                setErrorCoinOperate,
-                actionInProcess,
-                setActionInProcess: (value) =>
-                  this.setState({ actionInProcess: value }),
-              }}
+              settingIcon={this.settingIcon}
+              onSellCoin={onSellCoin}
+              actionInProcess={actionInProcess}
+              setActionInProcess={(value) =>
+                this.setState({ actionInProcess: value })
+              }
             />
           </div>
           {hayMoneda && (
             <>
               <br />
               <CoinsOperating
-                {...{
-                  coinsOperatingList,
-                  coinsToDelete,
-                  deletionTimers,
-                  setDeletionTimers,
-                  onExternalDeleteRef: window.onSellCoinRef,
-                  setErrorCoinOperate,
-                  setUpdateAvailable,
-                  actionInProcess,
-                  setActionInProcess: (value) =>
-                    this.setState({ actionInProcess: value }),
-                }}
+                deletionTimers={deletionTimers}
+                setDeletionTimers={setDeletionTimers}
+                onExternalDeleteRef={window.onSellCoinRef}
+                actionInProcess={actionInProcess}
+                setActionInProcess={(value) =>
+                  this.setState({ actionInProcess: value })
+                }
               />
             </>
           )}
@@ -156,7 +198,7 @@ export default class PanelBalance extends Component {
 }
 
 window.fetchMetrics = async function (setState = () => 0) {
-  const id_coin = driverParams.get("id_coin");
+  const id_coin = driverParams.get("id_coin")[0];
   if (!id_coin) return;
   await HTTPGET_COINS_METRICS({
     id_coin,
@@ -171,6 +213,11 @@ window.fetchMetrics = async function (setState = () => 0) {
       changeValueInsertMoney(data.default_usdt_buy);
     },
   });
+  try {
+    driverPanelBalance.setTransactionMostRecent(await HTTPGET_BALANCECOIN());
+  } catch (e) {
+    console.error(e);
+  }
 };
 
 window.calculateTimeToUpdate = function () {

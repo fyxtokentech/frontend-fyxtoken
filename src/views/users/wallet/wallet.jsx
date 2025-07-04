@@ -24,17 +24,17 @@ export default function () {
 }
 
 function Wallet() {
-  if (!driverParams.get("action-id")) {
-    driverParams.set("action-id", "investment", { reload: 500 });
+  if (!driverParams.get("view_wallet")[0]) {
+    driverParams.set("view_wallet", "investment", { reload: 500 });
   }
 
   const [actionSelected, setActionSelected] = useState(
-    driverParams.get("action-id") ?? "investment"
+    driverParams.get("view_wallet")[0] ?? "investment"
   );
 
   useEffect(() => {
     setActionSelected(
-      actionSelected ?? driverParams.get("action-id") ?? "investment"
+      actionSelected ?? driverParams.get("view_wallet")[0] ?? "investment"
     );
   }, []);
 
@@ -146,21 +146,21 @@ function Wallet() {
         >
           <WalletAction
             startIcon={<i className="fa-solid fa-money-bill-trend-up" />}
-            action_id="investment"
+            view="investment"
             refcontainer={refcontainer}
           >
             Inversión
           </WalletAction>
           <WalletAction
             startIcon={<i className="fa-solid fa-money-bill-transfer" />}
-            action_id="movements"
+            view="movements"
             refcontainer={refcontainer}
           >
             Movimientos
           </WalletAction>
           <WalletAction
             startIcon={<i className="fa-solid fa-wallet" />}
-            action_id="withdrawal"
+            view="withdrawal"
             refcontainer={refcontainer}
           >
             Retiros
@@ -170,7 +170,7 @@ function Wallet() {
     );
 
     function WalletAction(props) {
-      const { action_id, children, refcontainer } = props;
+      const { view, children, refcontainer } = props;
       return (
         <div
           className={fluidCSS()
@@ -181,7 +181,7 @@ function Wallet() {
         >
           <Tooltip
             title={
-              (actionSelected == action_id
+              (actionSelected == view
                 ? "Visualizando panel "
                 : "Visualizar panel de ") + children
             }
@@ -204,10 +204,10 @@ function Wallet() {
                       behavior: "smooth",
                     });
                   }
-                  driverParams.set("action-id", action_id);
-                  setActionSelected(action_id);
+                  driverParams.set("view_wallet", view);
+                  setActionSelected(view);
                 }}
-                disabled={actionSelected == action_id}
+                disabled={actionSelected == view}
               />
             </div>
           </Tooltip>

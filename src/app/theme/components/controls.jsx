@@ -30,10 +30,12 @@ export function AutoSkeleton({ loading, w = "100%", h = "5vh", ...rest }) {
   if (loading == null || loading == undefined) {
     return <></>;
   }
-  return loading ? (
-    <Skeleton style={{ height: h, width: `max(100px, ${w})` }} />
-  ) : (
-    <div {...rest} />
+  return (
+    <div className={loading ? "titiling pointer-waiting" : ""}>
+      <div className={loading ? "ghost filtering halfgray brightness-1-5" : ""}>
+        <div {...rest} />
+      </div>
+    </div>
   );
 }
 

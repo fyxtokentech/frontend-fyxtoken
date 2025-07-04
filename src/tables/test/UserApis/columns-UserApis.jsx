@@ -1,5 +1,5 @@
 import React from "react";
-import { modelsFormat } from "@jeff-aporta/camaleon";
+import { getModelsFormat } from "@jeff-aporta/camaleon";
 
 // Importar iconos necesarios
 import StatusOkIcon from "@mui/icons-material/CheckCircleOutline"; // Para Active
@@ -46,13 +46,13 @@ const columns_user_apis = [
     field: "last_used", // 4. Cuándo se usó por última vez
     headerName: "Último Uso",
     description: "Fecha y hora del último uso registrado de la clave API.",
-    ...modelsFormat.datetime,
+    ...getModelsFormat().datetime,
   },
   {
     field: "activation_date", // 5. Fecha de activación de la clave API
     headerName: "Fecha Activación",
     description: "Fecha y hora en que la clave API fue activada.",
-    ...modelsFormat.datetime,
+    ...getModelsFormat().datetime,
   },
   {
     field: "user_id", // 6. A quién pertenece (menos relevante si el usuario ve sus propias claves)
@@ -73,7 +73,7 @@ const columns_user_apis = [
     description: "Fecha SQL.",
     inTable: false, // Oculta porque 'exclude: true'
     exclude: true, // No relevante para mostrar directamente en tabla
-    ...modelsFormat.datetime,
+    ...getModelsFormat().datetime,
   },
 ];
 

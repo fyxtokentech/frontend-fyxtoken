@@ -47,7 +47,6 @@ export default function () {
 
 function WelcomePage() {
   const palette = getSelectedPalette();
-  console.log(palette);
   return (
     <Main bgtype="default">
       <div className="welcome-page">

@@ -42,7 +42,7 @@ export function RSIView() {
   // Cargar configuración inicial
   useEffect(() => {
     const { user_id } = window.currentUser;
-    const id_coin = driverParams.get("id_coin");
+    const id_coin = driverParams.get("id_coin")[0];
     if (!user_id || !id_coin) {
       return;
     }
@@ -84,7 +84,7 @@ export function RSIView() {
 
   const handleSave = async () => {
     const { user_id } = window.currentUser;
-    const id_coin = driverParams.get("id_coin");
+    const id_coin = driverParams.get("id_coin")[0];
     if (!user_id || !id_coin) {
       return;
     }

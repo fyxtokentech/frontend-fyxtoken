@@ -1,3 +1,4 @@
+import React, { Component } from "react";
 import {
   IconButton,
   Paper,
@@ -9,7 +10,12 @@ import {
 } from "@mui/material";
 import TransactionsIcon from "@mui/icons-material/PriceChange";
 
-import { DynTable, driverParams } from "@jeff-aporta/camaleon";
+import {
+  DynTable,
+  driverParams,
+  Delayer,
+  DriverComponent,
+} from "@jeff-aporta/camaleon";
 
 import mock_operation from "./mock-operation.json";
 import columns_operation from "./columns-operation.jsx";
@@ -17,192 +23,94 @@ import columns_operation from "./columns-operation.jsx";
 import { HTTPGET_USEROPERATION_PERIOD } from "@api";
 
 import { AutoSkeleton, DateRangeControls } from "@components/controls";
-import React, { Component } from "react";
+
 import dayjs from "dayjs";
 
 import FilterAltIcon from "@mui/icons-material/FilterAlt";
-import { showError } from "@jeff-aporta/camaleon";
+import {
+  showError,
+  IS_GITHUB,
+  subscribeParam,
+  showInfo,
+} from "@jeff-aporta/camaleon";
+import { driverTables } from "../tables.js";
 
-const tableOperationsState = {
-  tableData: [],
-};
+let rows = [];
 
-const { IS_GITHUB_IO } = global;
+let mock_default = IS_GITHUB ? mock_operation : [];
 
-let _TableOperations_;
+export const driverTableOperations = DriverComponent({
+  tableOperations: {
+    isComponent: true,
+  },
+  buttonApplyFilter: {
+    isComponent: true,
+  },
+  tableData: {
+    value: mock_default,
+  },
+  filterApply: {
+    value: false,
+  },
+  loading: {
+    value: true,
+  },
+});
 
-export function updateTableOperations() {
-  _TableOperations_.invokeFetch();
-}
-
-export default class TableOperations extends Component {
-  constructor(props) {
-    super(props);
-    this.delay = -1;
-    this.loadingTableOperation = null;
-    Object.assign(tableOperationsState, {
-      filterApply: false,
+export default driverTables.newTable({
+  name_table: driverTables.TABLE_OPERATIONS,
+  user_id_required: true,
+  paramsKeys: ["start_date", "end_date"],
+  allParamsRequiredToFetch: true,
+  driver: driverTableOperations,
+  init() {},
+  start_fetch() {
+    this.getDriver().setFilterApply(false);
+  },
+  end_fetch({ error }) {
+    this.getDriver().setLoading(false);
+  },
+  fetchError() {
+    this.getDriver().setTableData([]);
+  },
+  async fetchData({ user_id, start_date, end_date }) {
+    await HTTPGET_USEROPERATION_PERIOD({
+      start_date,
+      end_date,
+      // ---------------------
+      successful: (data) => {
+        this.getDriver().setTableData(data);
+      },
+      mock_default,
+      checkErrors: () => {
+        if (!user_id) {
+          return "No hay usuario seleccionado";
+        }
+        if (!start_date || !end_date) {
+          return "No se ha seleccionado un rango de fechas";
+        }
+      },
     });
-    this.state = tableOperationsState;
-  }
-
-  updateDatas = () => {
-    let [start, end] = driverParams.gets("start_date", "end_date");
-    this.updateState({
-      filterApply: true,
-      dateRangeInit: dayjs(start),
-      dateRangeFin: dayjs(end),
-    });
-  };
-
-  setFilterApply = (apply) => this.updateState({ filterApply: apply });
-
-  updateState(state) {
-    Object.assign(tableOperationsState, state);
-    this.setState(tableOperationsState);
-  }
-
-  setError = (error) => {
-    this.updateState({ error });
-    showError(error);
-  };
-  setTableData = (tableData) => {
-    this.updateState({ tableData });
-    setTimeout(() => {
-      this.forceUpdate();
-    });
-  };
-
-  componentDidMount() {
-    this.updateDatas();
-    this.invokeFetch();
-    _TableOperations_ = this;
-  }
-
-  componentDidUpdate(prevProps, prevState) {
-    const { viewTable } = this.props;
-    if (prevProps.viewTable !== viewTable) {
-      this.invokeFetch();
-    }
-    // enable filterApply when date range changes, safely handle null dates
-    let { dateRangeInit: prevInit, dateRangeFin: prevFin } = prevState;
-    let { dateRangeInit: currInit, dateRangeFin: currFin } = this.state;
-    prevInit = dayjs(prevInit);
-    prevFin = dayjs(prevFin);
-    currInit = dayjs(currInit);
-    currFin = dayjs(currFin);
-    const initChanged = (() => {
-      if (prevInit && currInit) {
-        return !prevInit.isSame(currInit);
-      }
-      return prevInit !== currInit;
-    })();
-    const finChanged = (() => {
-      if (prevFin && currFin) {
-        return !prevFin.isSame(currFin);
-      }
-      return prevFin !== currFin;
-    })();
-  }
-
-  async fetchData({ dateRangeInit, dateRangeFin }) {
-    const { user_id } = window["currentUser"];
-    if (Date.now() - this.delay < 1000) {
-      console.log(
-        "Fetch cancelado, tiempo de espera",
-        (Date.now() - this.delay) / 1000
-      );
-      return;
-    }
-    this.delay = Date.now();
-    this.loadingTableOperation = true;
-    const { IS_GITHUB_IO } = global;
-    if (!user_id || !dateRangeInit || !dateRangeFin) {
-      console.log("Fetch cancelado (faltan parámetros)", {
-        user_id,
-        dateRangeInit,
-        dateRangeFin,
-      });
-      return;
-    }
-    try {
-      await HTTPGET_USEROPERATION_PERIOD({
-        start_date: dayjs(dateRangeInit).format("YYYY-MM-DD"),
-        end_date: dayjs(dateRangeFin).format("YYYY-MM-DD"),
-        // ---------------------
-        setError: this.setError,
-        setLoading: (value) => {
-          this.loadingTableOperation = value;
-        },
-        setApiData: (data) => {
-          const parsed = data;
-          tableOperationsState.tableData = parsed;
-          this.setTableData(tableOperationsState.tableData);
-        },
-        mock_default: IS_GITHUB_IO ? mock_operation : [],
-        checkErrors: () => {
-          if (!user_id) {
-            return "No hay usuario seleccionado";
-          }
-          if (!dateRangeInit || !dateRangeFin) {
-            return "No se ha seleccionado un rango de fechas";
-          }
-        },
-      });
-    } catch (e) {
-      console.error(e);
-      this.setError(e.message || e);
-      showError(e.message || e);
-      this.setTableData([]);
-    } finally {
-      this.loadingTableOperation = false;
-      this.delay = Date.now();
-      this.forceUpdate();
-    }
-  }
-
-  invokeFetch() {
-    const { dateRangeInit, dateRangeFin } = this.state;
-    this.fetchData({
-      dateRangeInit,
-      dateRangeFin,
-    });
-  }
-
-  handleInitChange = (dateRangeInit) => {
-    this.updateState({ dateRangeInit });
-    if (dateRangeInit && typeof dateRangeInit.format === "function") {
-      driverParams.set("start_date", dateRangeInit.format("YYYY-MM-DD"));
-    }
-  };
-
-  handleFinChange = (dateRangeFin) => {
-    this.updateState({ dateRangeFin });
-    if (dateRangeFin && typeof dateRangeFin.format === "function") {
-      driverParams.set("end_date", dateRangeFin.format("YYYY-MM-DD"));
-    }
-  };
-
+  },
   render() {
-    const {
-      useForUser,
-      setOperationTrigger,
-      data,
-      columns_config,
-      setViewTable,
-      ...rest
-    } = this.props;
+    const { useForUser, data, ...rest } = this.props;
     const { user_id } = window["currentUser"];
-    const { dateRangeInit, dateRangeFin, error, filterApply } = this.state;
-    const { tableData } = tableOperationsState;
-    const loading = this.loadingTableOperation;
 
-    const base = user_id ? tableData : data?.content ?? [];
+    const columns_config = columns_operation();
+
+    const DRIVER = this.getDriver();
+
+    console.log("loading", this.getDriver().getLoading());
+
+    let [start_date, end_date] = driverParams.get("start_date", "end_date");
+
+    const base = user_id ? DRIVER.getTableData() : data?.content ?? [];
+
     const processedContent = Array.isArray(base)
       ? base.map((item) => ({ ...item, name_coin: item.name_coin ?? "FYX" }))
       : [];
 
-    let finalColumns = columns_config ?? [...columns_operation.config];
+    let finalColumns = [...columns_config];
 
     if (useForUser) {
       finalColumns = [
@@ -222,12 +130,11 @@ export default class TableOperations extends Component {
                 <IconButton
                   size="small"
                   onClick={() => {
-                    const table = "transactions";
-                    driverParams.set("id_operation", row.id_operation);
-                    window["operation-row"] = row;
-                    driverParams.set("view-table", table);
-                    setOperationTrigger(row);
-                    setViewTable(table);
+                    DRIVER.setOperationRow(row);
+                    driverParams.set({
+                      id_operation: row.id_operation,
+                    });
+                    driverTables.setViewTable(driverTables.TABLE_TRANSACTIONS);
                   }}
                 >
                   <Badge
@@ -242,7 +149,7 @@ export default class TableOperations extends Component {
             </Tooltip>
           ),
         },
-        ...columns_operation.config,
+        ...columns_config,
       ];
     }
 
@@ -264,32 +171,57 @@ export default class TableOperations extends Component {
             </Typography>
             <div
               className={`flex align-center justify-space-between flex-wrap gap-10px ${
-                loading ? "" : "mh-10px"
+                ["mh-10px", ""][+DRIVER.getLoading()]
               }`}
             >
-              <DateRangeControls
-                loading={loading}
-                dateRangeInit={dateRangeInit}
-                dateRangeFin={dateRangeFin}
-                setDateRangeInit={this.handleInitChange}
-                setDateRangeFin={this.handleFinChange}
-                willPeriodChange={(period) => this.setFilterApply(true)}
-              />
-              <Button
-                variant="contained"
-                size="small"
-                onClick={() => {
-                  this.invokeFetch();
-                  this.setFilterApply(false);
-                }}
-                disabled={loading || !this.state.filterApply}
-                sx={{ mt: 1, mb: 1 }}
-                startIcon={<FilterAltIcon />}
-              >
-                Aplicar filtros
-              </Button>
+              <DateRangeControls loading={DRIVER.getLoading()} />
+              {(() => {
+                const ButtonFilter = class extends Component {
+                  constructor(props) {
+                    super(props);
+                    subscribeParam(
+                      {
+                        "start_date, end_date": () => {
+                          DRIVER.setFilterApply(true);
+                        },
+                      },
+                      this
+                    );
+                  }
+
+                  componentDidMount() {
+                    DRIVER.addLinkFilterApply(this);
+                    this.addParamListener();
+                  }
+
+                  componentWillUnmount() {
+                    DRIVER.removeLinkFilterApply(this);
+                    this.removeParamListener();
+                  }
+
+                  render() {
+                    return (
+                      <Button
+                        variant="contained"
+                        size="small"
+                        onClick={() => {
+                          driverTables.refetch(true);
+                        }}
+                        disabled={
+                          DRIVER.getLoading() || !DRIVER.getFilterApply()
+                        }
+                        sx={{ mt: 1, mb: 1 }}
+                        startIcon={<FilterAltIcon />}
+                      >
+                        Aplicar filtros
+                      </Button>
+                    );
+                  }
+                };
+                return <ButtonFilter />;
+              })()}
             </div>
-            <AutoSkeleton loading={loading} h="auto">
+            <AutoSkeleton loading={DRIVER.getLoading()} h="auto">
               <div style={{ width: "100%", overflowX: "auto" }}>
                 <DynTable
                   {...rest}
@@ -305,5 +237,5 @@ export default class TableOperations extends Component {
         )}
       </>
     );
-  }
-}
+  },
+});

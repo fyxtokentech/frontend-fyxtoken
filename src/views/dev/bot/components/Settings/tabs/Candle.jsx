@@ -78,7 +78,7 @@ export function CandlestickView() {
   useEffect(() => {
     (async () => {
       const { user_id } = window.currentUser;
-      const id_coin = driverParams.get("id_coin");
+      const id_coin = driverParams.get("id_coin")[0];
       if (!user_id || !id_coin) {
         return;
       }
@@ -130,7 +130,7 @@ export function CandlestickView() {
 
   const handleSave = async () => {
     const { user_id } = window.currentUser;
-    const id_coin = driverParams.get("id_coin");
+    const id_coin = driverParams.get("id_coin")[0];
     if (!user_id || !id_coin) {
       return;
     }

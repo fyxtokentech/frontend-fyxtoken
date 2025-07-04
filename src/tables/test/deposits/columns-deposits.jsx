@@ -1,5 +1,5 @@
 import React from "react";
-import { modelsFormat } from "@jeff-aporta/camaleon";
+import { getModelsFormat } from "@jeff-aporta/camaleon";
 
 // Importar iconos necesarios
 import StatusOkIcon from "@mui/icons-material/CheckCircleOutline";
@@ -30,13 +30,13 @@ const columns_deposits = [
     field: "amount", // 2. Cuánto se depositó
     headerName: "Monto",
     description: "Cantidad de moneda depositada.",
-    ...modelsFormat.currentCoin, // Formato de moneda (usando el existente como referencia)
+    ...getModelsFormat().currentCoin, // Formato de moneda (usando el existente como referencia)
   },
   {
     field: "deposit_date", // Nueva columna de fecha de depósito
     headerName: "Fecha de Depósito",
     description: "Fecha y hora en que se procesó efectivamente el depósito.",
-    ...modelsFormat.datetime,
+    ...getModelsFormat().datetime,
   },
   {
     field: "user_id", // 3. Quién lo hizo (relevante si es vista admin)
@@ -72,7 +72,7 @@ const columns_deposits = [
       "Fecha y hora en que se registró el depósito (generado automáticamente).",
     inTable: false, // Oculta porque 'exclude: true'
     exclude: true, // No relevante para el usuario final
-    ...modelsFormat.datetime, // Formato de fecha y hora
+    ...getModelsFormat().datetime, // Formato de fecha y hora
   },
 ];
 

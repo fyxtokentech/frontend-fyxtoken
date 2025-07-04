@@ -26,7 +26,7 @@ function CountdownRedirect({ message }) {
       const timer = setTimeout(() => setCounter((prev) => prev - 1), 1000);
       return () => clearTimeout(timer);
     }
-    window.location.href = href({ view: "/" });
+    window.location.href = href("@home");
   }, [counter]);
 
   return (

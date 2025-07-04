@@ -1,5 +1,5 @@
 import React from "react";
-import { modelsFormat } from "@jeff-aporta/camaleon";
+import { getModelsFormat } from "@jeff-aporta/camaleon";
 
 // Importar iconos necesarios
 import StatusOkIcon from "@mui/icons-material/CheckCircleOutline"; // Para Completed
@@ -23,7 +23,7 @@ const columns_sales = [
     field: "profit", // 2. Beneficio/Pérdida (Importante para el usuario)
     headerName: "Beneficio",
     description: "Ganancia o pérdida obtenida en la venta.",
-    ...modelsFormat.profit, // Formato especial para beneficio/pérdida
+    ...getModelsFormat().profit, // Formato especial para beneficio/pérdida
   },
   {
     inTable: false, // Oculto ya que siempre es Venta en esta tabla
@@ -47,26 +47,26 @@ const columns_sales = [
     field: "amount_base", // 5. Cuánto se vendió del activo base
     headerName: "Cantidad Vendida",
     description: "Cantidad del activo base que se vendió.",
-    ...modelsFormat.numberGeneral, // Formato número general
+    ...getModelsFormat().numberGeneral, // Formato número general
   },
   {
     field: "amount_quote", // 6. Cuánto se recibió de la moneda cotización
     headerName: "Monto Recibido",
     description:
       "Cantidad de la moneda de cotización (USDT) recibida por la venta.",
-    ...modelsFormat.currentCoin, // Formato moneda
+    ...getModelsFormat().currentCoin, // Formato moneda
   },
   {
     field: "execution_price", // 7. A qué precio se ejecutó
     headerName: "Precio Venta",
     description: "Precio unitario al que se ejecutó la orden de venta.",
-    ...modelsFormat.currentCoin, // Formato moneda
+    ...getModelsFormat().currentCoin, // Formato moneda
   },
   {
     field: "execution_date", // 8. Cuándo se ejecutó
     headerName: "Fecha Ejecución",
     description: "Fecha y hora en que se completó la orden de venta.",
-    ...modelsFormat.datetime, // Formato fecha y hora
+    ...getModelsFormat().datetime, // Formato fecha y hora
   },
   {
     field: "user_id", // 9. ID Usuario (Menos relevante en la vista personal)
@@ -87,7 +87,7 @@ const columns_sales = [
     description: "Fecha SQL.",
     exclude: true, // No relevante para el usuario
     inTable: false, // Asegurarse que no se muestre
-    ...modelsFormat.datetime,
+    ...getModelsFormat().datetime,
   },
   {
     field: "name_coin",

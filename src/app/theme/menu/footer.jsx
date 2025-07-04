@@ -109,14 +109,7 @@ function FooterNavSection() {
               >
                 Panel Resumen
               </NavigationLink>
-              <NavigationLink
-                color="inherit"
-                underline="hover"
-                to={{
-                  view: "/dev/bot",
-                  params: { "action-id": "main" },
-                }}
-              >
+              <NavigationLink color="inherit" underline="hover" to="@bot">
                 Panel robot
               </NavigationLink>
             </Box>
