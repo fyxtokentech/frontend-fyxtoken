@@ -130,7 +130,7 @@ export default driverTables.newTable({
                 <IconButton
                   size="small"
                   onClick={() => {
-                    DRIVER.setOperationRow(row);
+                    driverTables.setOperationRow(row);
                     driverParams.set({
                       id_operation: row.id_operation,
                     });
