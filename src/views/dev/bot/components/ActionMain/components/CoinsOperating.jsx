@@ -5,7 +5,12 @@ import PendingIcon from "@mui/icons-material/Pending";
 import CircularProgress from "@mui/material/CircularProgress";
 
 import { Tooltip, Chip, Autocomplete, TextField } from "@mui/material";
-import { PaperP, HTTP_IS_ERROR, showPromise, sleep } from "@jeff-aporta/camaleon";
+import {
+  PaperP,
+  HTTP_IS_ERROR,
+  showPromise,
+  sleep,
+} from "@jeff-aporta/camaleon";
 import {
   HTTPGET_USEROPERATION_OPEN,
   HTTPPOST_EXCHANGE_SELL,
@@ -66,7 +71,6 @@ export default class CoinsOperating extends Component {
     event.preventDefault();
     driverPanelRobot.getCoinsToDelete().push(coin);
     driverCoinsOperating.setActionInProcess(true);
-    driverPanelRobot.setUpdateAvailable((prev) => !prev);
     this.deleteCoinFromAPI(coin);
   }
 
@@ -82,24 +86,30 @@ export default class CoinsOperating extends Component {
         const operationOpen = {};
         await showPromise(
           `Buscando operación abierta para cerrar (${coin.symbol})`,
-          new Promise((resolve, reject) => {
+          (resolve, reject) => {
             HTTPGET_USEROPERATION_OPEN({
               id_coin: coin.id,
               successful: ([data], info) => {
+                console.log(data)
                 Object.assign(operationOpen, data);
-                resolve("Se encontró operación abierta");
+                resolve();
               },
-              failure: (json, info) => {
-                const txt = `Algo salió mal al encontrar operación abierta en: ${coin.symbol}`;
-                console.error(txt, { json, info });
-                reject(txt);
+              failure: (json, info, rejectPromise) => {
+                rejectPromise(
+                  {
+                    message: `No hay operación abierta ${coin.symbol}`,
+                    type: "info",
+                  },
+                  reject,
+                  { json, info }
+                );
               },
             });
-          })
+          }
         );
         const { id_operation } = operationOpen;
         if (!id_operation) {
-          return showWarning(
+          return console.warn(
             `No se encontro la operacion abierta en ${coin.symbol}`,
             {
               operationOpen,
@@ -107,62 +117,55 @@ export default class CoinsOperating extends Component {
             }
           );
         }
-        await showPromise(
-          "Vendiendo por exchange",
-          new Promise((resolve, reject) => {
-            HTTPPOST_EXCHANGE_SELL({
-              id_operation,
-              willEnd,
-              successful: (json, info) => {
-                driverPanelRobot.filterExcludeIdCoinsOperating([coin.id]);
-                resolve(`Vendido por exchange (${coin.symbol})`);
-              },
-              failure: (json, info) => {
-                const txt = `Algo salió mal al vender por exchange con ${coin.symbol}`;
-                console.error(txt, {
-                  json,
-                  info,
-                  coin,
-                });
-                reject(txt);
-              },
-            });
-          })
-        );
+        await showPromise("Vendiendo por exchange", (resolve, reject) => {
+          HTTPPOST_EXCHANGE_SELL({
+            id_operation,
+            willEnd,
+            successful: (json, info) => {
+              resolve(`Vendido por exchange (${coin.symbol})`);
+            },
+            failure: (json, info, rejectPromise) => {
+              rejectPromise(
+                `Algo salió mal al vender por exchange con ${coin.symbol}`,
+                reject,
+                { json, info }
+              );
+            },
+          });
+        });
       }
 
       async function coinStop() {
         await showPromise(
-          "Desactivando moneda",
-          new Promise((resolve, reject) => {
+          `Solicitando al backend fin de operación (${coin.symbol})`,
+          (resolve, reject) => {
             HTTPPUT_COINS_STOP({
               id_coin: coin.id,
               willEnd,
               successful: (json, info) => {
                 resolve(`Se desactivó (${coin.symbol})`);
+                driverPanelRobot.filterExcludeIdCoinsOperating(coin.id);
               },
-              failure: (json, info) => {
-                const txt = `Algo salió mal al desactivar (${coin.symbol})`;
-                console.error(txt, {
-                  json,
-                  info,
-                });
-                reject(txt);
+              failure: (json, info, rejectPromise) => {
+                rejectPromise(
+                  `Algo salió mal al desactivar (${coin.symbol})`,
+                  reject,
+                  { json, info }
+                );
               },
             });
-          })
+          }
         );
       }
     } catch (err) {
-      showError(`Error deteniendo ${coin.symbol}`, err);
+      return console.log(`Error deteniendo ${coin.symbol}`, err);
     }
 
     willEnd();
 
     function willEnd() {
       setActionInProcess(false);
-      driverPanelRobot.setUpdateAvailable((prev) => !prev);
-      driverPanelRobot.filterExcludeIdOnCoinsToDelete([coin.id]);
+      driverPanelRobot.filterExcludeIdOnCoinsToDelete(coin.id);
       driverCoinsOperating.forceUpdate();
     }
   }

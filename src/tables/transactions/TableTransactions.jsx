@@ -24,14 +24,18 @@ import ApiIcon from "@mui/icons-material/Api";
 import MonetizationOnIcon from "@mui/icons-material/MonetizationOn";
 import InfoIcon from "@mui/icons-material/Info";
 import AccountTreeIcon from "@mui/icons-material/AccountTree";
-import { AutoSkeleton } from "@components/controls";
 
-import { DialogSimple } from "@jeff-aporta/camaleon";
 import {
   DynTable,
+  InfoDialog,
   genAllColumns,
   rendersTemplate,
   exclude,
+  showError,
+  driverParams,
+  IS_GITHUB,
+  DriverComponent,
+  WaitSkeleton
 } from "@jeff-aporta/camaleon";
 
 import mock_transaction from "./mock-transaction.json";
@@ -39,85 +43,66 @@ import columns_transaction from "./columns-transaction.jsx";
 
 import dayjs from "dayjs";
 import { HTTPGET_TRANSACTIONS, HTTPGET_OPERATION_ID } from "@api";
-import { showError, driverParams, IS_GITHUB } from "@jeff-aporta/camaleon";
 import { Button } from "@mui/material";
 import DisabledByDefaultIcon from "@mui/icons-material/DisabledByDefault";
 
 import { driverTables } from "../tables.js";
 
-let id_operation;
-let rows;
-let loading = false;
-let SINGLETON;
-
-let mock_default = IS_GITHUB ? mock_transaction : [];
-
-const driverTableTransactions = {
-  getRows() {
-    return rows || mock_default;
+const driverTableTransactions = DriverComponent({
+  tableTransactions: {
   },
-  setRows(newRows) {
-    rows = newRows;
+  rows: {
+    value: IS_GITHUB ? mock_transaction : [],
   },
-  findNameCoin() {
-    const { name_coin } =
-      driverTableTransactions.getRows().find((m) => m["name_coin"]) ?? {};
-    return name_coin;
+  nameCoin: {
+    find() {
+      const { name_coin } = this.getRows().find((m) => m["name_coin"]) ?? {};
+      return name_coin;
+    },
   },
-  getLoading() {
-    return loading;
+  idOperation: {
+    nameParam: "id_operation",
+    update({setValue}) {
+      const {
+        id_operation = this.getIdOperation(), //
+      } = driverTables.getOperationRow() || {};
+      setValue(id_operation);
+    },
   },
-  setLoading(newLoading) {
-    loading = newLoading;
-    driverTableTransactions.forceUpdate();
+  loading: {
+    value: false,
   },
-  forceUpdate() {
-    if (!SINGLETON) {
-      setTimeout(() => driverTableTransactions.forceUpdate(), 100);
-      return;
-    }
-    SINGLETON.forceUpdate();
-  },
-};
-
-function updateIDOperation() {
-  ({ id_operation = driverParams.get("id_operation")[0] } =
-    driverTables.getOperationRow() || {});
-}
+});
 
 export default driverTables.newTable({
   name_table: driverTables.TABLE_TRANSACTIONS,
   user_id_required: true,
   paramsKeys: ["id_operation"],
-  init() {
-    updateIDOperation();
+  allParamsRequiredToFetch: true,
+  driver: driverTableTransactions,
+  init({ driver }) {
+    console.log(driver)
+    driver.updateIdOperation();
   },
-  componentDidMount() {
-    SINGLETON = this;
-  },
-  end_fetch() {
-    driverTableTransactions.setLoading(false);
-  },
-  start_fetch() {
-    driverTableTransactions.setLoading(true);
-  },
-  async prefetch({ id_operation }) {
+  async prefetch({ id_operation }, { driver }) {
     if (!driverTables.getOperationRow() && id_operation) {
       await HTTPGET_OPERATION_ID({
         operationID: id_operation,
         successful: ([data]) => {
           driverTables.setOperationRow(data);
-          updateIDOperation();
+          driver.updateIdOperation();
         },
       });
     }
   },
-  async fetchData({ id_operation, user_id }) {
+  async fetchData({ id_operation, user_id }, { driver }) {
     await HTTPGET_TRANSACTIONS({
       id_operation,
-      mock_default,
       successful: (data) => {
-        driverTableTransactions.setRows(data);
+        if (!data) {
+          return toOperation("No hay transacciones");
+        }
+        driver.setRows(data);
       },
       checkErrors: () => {
         if (!user_id) {
@@ -134,7 +119,7 @@ export default driverTables.newTable({
       return msg;
     }
   },
-  render() {
+  render({ driver }) {
     const {
       useOperation = true,
       showDateRangeControls = false,
@@ -144,7 +129,7 @@ export default driverTables.newTable({
       ...rest
     } = this.props;
 
-    const content = driverTableTransactions.getRows();
+    const content = driver.getRows();
 
     return (
       <div className="p-relative">
@@ -157,10 +142,10 @@ export default driverTables.newTable({
           columns_config={columns_config}
         />
         <br />
-        <AutoSkeleton loading={loading} h="50vh">
+        <WaitSkeleton loading={driver.getLoading()}>
           {pretable}
           <DynTable {...rest} columns={columns_config} rows={content} />
-        </AutoSkeleton>
+        </WaitSkeleton>
       </div>
     );
   },
@@ -219,13 +204,7 @@ function PrefixUseOperation({ useOperation, columns_config }) {
   }
 
   function Info() {
-    const rowData = (() => {
-      const row = driverTables.getOperationRow();
-      if (row) {
-        return row;
-      }
-      return { id_operation: id_operation, name_coin };
-    })();
+    const rowData = driverTables.getOperationRow();
 
     const startDate = dayjs(rowData.start_date_operation);
     const endDate = dayjs(rowData.end_date_operation);
@@ -239,20 +218,20 @@ function PrefixUseOperation({ useOperation, columns_config }) {
           sx={{ flexWrap: "wrap", gap: "15px" }}
           className="mb-10px"
         >
-          <AutoSkeleton loading={loading} w="60%">
+          <WaitSkeleton loading={driverTableTransactions.getLoading()}>
             <Chip
               icon={<AccountTreeIcon />}
               label={`CLUSTER: ${rowData.id_operation}`}
               size="small"
             />
-          </AutoSkeleton>
-          <AutoSkeleton loading={loading} w="60%">
+          </WaitSkeleton>
+          <WaitSkeleton loading={driverTableTransactions.getLoading()}>
             <Chip
               icon={<MonetizationOnIcon />}
               label={`Moneda: ${rowData.name_coin}`}
               size="small"
             />
-          </AutoSkeleton>
+          </WaitSkeleton>
           <Chip
             icon={<PaidIcon />}
             label={`Invertido: ${
@@ -298,11 +277,8 @@ function Informacion({ columns_config }) {
       const { row } = params;
       return (
         <div style={{ textAlign: "center" }}>
-          <DialogSimple
-            placement="left"
-            button_text="Listo"
-            variant="div"
-            text={
+          <InfoDialog
+            description={
               <TableContainer component={Paper} style={{ width: "100%" }}>
                 <Table>
                   <TableHead>
@@ -337,19 +313,7 @@ function Informacion({ columns_config }) {
                 </Table>
               </TableContainer>
             }
-            title_text="Información"
-          >
-            <Tooltip placement="left" title="Información">
-              <Paper
-                className="circle d-center"
-                style={{ width: "30px", height: "30px" }}
-              >
-                <IconButton size="small">
-                  <InfoIcon />
-                </IconButton>
-              </Paper>
-            </Tooltip>
-          </DialogSimple>
+          />
         </div>
       );
     },

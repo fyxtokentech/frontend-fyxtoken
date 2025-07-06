@@ -1,7 +1,11 @@
 import React from "react";
 import { PaperP } from "@jeff-aporta/camaleon";
-import { AutoSkeleton } from "@components/controls";
-import { genSelectFast, driverParams } from "@jeff-aporta/camaleon";
+import {
+  genSelectFast,
+  driverParams,
+  WaitSkeleton,
+  idR,
+} from "@jeff-aporta/camaleon";
 import { fluidCSS } from "@jeff-aporta/camaleon";
 import { Typography } from "@mui/material";
 import { getCoinMetric } from "./PanelOfProjections";
@@ -147,10 +151,12 @@ class CoinSelectionOperate extends React.Component {
 
   componentDidMount() {
     driverPanelRobot.addLinkCurrency(this);
+    driverPanelRobot.addLinkCoinsToOperate(this);
   }
 
   componentWillUnmount() {
     driverPanelRobot.removeLinkCurrency(this);
+    driverPanelRobot.removeLinkCoinsToOperate(this);
   }
 
   render() {
@@ -158,14 +164,12 @@ class CoinSelectionOperate extends React.Component {
 
     return (
       <PaperP className="d-center">
-        <AutoSkeleton
-          loading={driverPanelRobot.getLoadingCoinsToOperate()}
-          w="200px"
-          h="48px"
-        >
+        <WaitSkeleton loading={driverPanelRobot.getLoadingCoinsToOperate()}>
           {genSelectFast([
             {
-              value: driverPanelRobot.getCurrency(),
+              value: () => {
+                return driverPanelRobot.getCurrency();
+              },
               onChange: (e, value) => {
                 driverPanelRobot.setCurrency(value);
                 driverTables.setViewTable(driverTables.TABLE_OPERATIONS);
@@ -175,7 +179,6 @@ class CoinSelectionOperate extends React.Component {
                 if (selected) {
                   driverPanelRobot.setIdCoin(selected.id);
                 }
-                driverPanelRobot.setUpdateAvailable((prev) => !prev);
                 driverTables.refetch();
               },
               name: "currency",
@@ -185,7 +188,7 @@ class CoinSelectionOperate extends React.Component {
               fem: true,
             },
           ])}
-        </AutoSkeleton>
+        </WaitSkeleton>
       </PaperP>
     );
   }

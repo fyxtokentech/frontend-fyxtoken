@@ -8,18 +8,19 @@ import CurrencyExchangeIcon from "@mui/icons-material/CurrencyExchange";
 import { Chip } from "@mui/material";
 import Typography from "@mui/material/Typography";
 
-import { PaperP } from "@jeff-aporta/camaleon";
-import { AutoSkeleton } from "@components/controls";
-
-import { fluidCSS } from "@jeff-aporta/camaleon";
-
-import { TooltipGhost } from "@jeff-aporta/camaleon";
-import { getThemeLuminance, getNumberFormat } from "@jeff-aporta/camaleon";
+import {
+  getThemeLuminance,
+  getNumberFormat,
+  TooltipGhost,
+  fluidCSS,
+  PaperP,
+  WaitSkeleton,
+} from "@jeff-aporta/camaleon";
 import { getBalance } from "./PanelOfInsertMoney";
 
 export const panelProjectionsState = {
   coinMetric: {},
-  loadingMetrics: false,
+  loadingMetrics: true,
   errorMetrics: null,
   priceProjectionValue: 0,
 };
@@ -59,8 +60,9 @@ export default class PanelOfProjections extends Component {
   fetchMetrics = async () => {
     await window.fetchMetrics((state) => {
       Object.assign(panelProjectionsState, state);
-      this.forceUpdate();
     });
+    panelProjectionsState.loadingMetrics = false;
+    this.forceUpdate();
   };
 
   componentDidMount() {
@@ -82,7 +84,7 @@ export default class PanelOfProjections extends Component {
   render() {
     const { flatNumber } = this.props;
 
-    const { coinMetric, loadingMetrics, errorMetrics } = panelProjectionsState;
+    const { coinMetric, errorMetrics } = panelProjectionsState;
 
     const {
       price_buy: priceBuy,
@@ -130,12 +132,10 @@ export default class PanelOfProjections extends Component {
               currentPrice={currentPrice}
               projectionColor={color}
               actualColor={color}
-              loading={loadingMetrics}
             />
             <ROICard
               roi={displayedRoi}
               isReal={hasReal}
-              loading={loadingMetrics}
               totalBought={totalBought}
               clase={clase}
               etiqueta={etiqueta}
@@ -144,14 +144,8 @@ export default class PanelOfProjections extends Component {
           <ProfitProjCard
             currentPrice={currentPrice}
             projectedPrice={projectedPrice}
-            loading={loadingMetrics}
             color={diffPrice > 0 ? "ok" : diffPrice < 0 ? "error" : "warning"}
           />
-          {errorMetrics && (
-            <Typography style={{ color: "red" }}>
-              Error: {errorMetrics}
-            </Typography>
-          )}
         </div>
       </PaperP>
     );
@@ -161,20 +155,8 @@ export default class PanelOfProjections extends Component {
 // Tarjetas de precios (proyección y actual)
 class PriceProjectionCard extends Component {
   render() {
-    const {
-      priceProjection,
-      currentPrice,
-      projectionColor,
-      actualColor,
-      loading,
-    } = this.props;
-    if (loading) {
-      return (
-        <PaperP elevation={3}>
-          <AutoSkeleton loading={true} w="50px" h="50px" />
-        </PaperP>
-      );
-    }
+    const { priceProjection, currentPrice, projectionColor, actualColor } =
+      this.props;
     return (
       <PaperP elevation={3} className="p-relative">
         <div className="flex col-direction">
@@ -214,7 +196,6 @@ class PriceProjectionCard extends Component {
                   value={currentPrice}
                   value2={priceProjection}
                   color={actualColor}
-                  loading={loading}
                 />
               </span>
             </TooltipGhost>
@@ -231,7 +212,6 @@ class PriceProjectionCard extends Component {
                   value2={currentPrice}
                   icon={getPriceProjectionIcon(priceProjection - currentPrice)}
                   color={projectionColor}
-                  loading={loading}
                 />
               </span>
             </TooltipGhost>
@@ -244,28 +224,23 @@ class PriceProjectionCard extends Component {
 
 class PriceCard extends Component {
   render() {
-    const { title, value, value2, icon, color, loading } = this.props;
-    if (loading) {
-      return (
-        <PaperP p_min={2} p_max={10} className="flex-col">
-          <AutoSkeleton loading width="100%" height="50px" />
-        </PaperP>
-      );
-    }
+    const { title, value, value2, icon, color } = this.props;
     return (
-      <PaperP p_min={2} p_max={10} className="flex-col">
-        <Typography color="text.secondary" variant="caption">
-          <small>{title}</small>
-        </Typography>
-        <Typography color={color} variant="caption">
-          <span className="nowrap flex align-center">
-            {icon && <>{icon}&nbsp;&nbsp;</>}
-            {value != null
-              ? getNumberFormat().toCoinDifference(value, value2)
-              : "---"}
-          </span>
-        </Typography>
-      </PaperP>
+      <WaitSkeleton loading={panelProjectionsState.loadingMetrics}>
+        <PaperP p_min={2} p_max={10} className="flex-col">
+          <Typography color="text.secondary" variant="caption">
+            <small>{title}</small>
+          </Typography>
+          <Typography color={color} variant="caption">
+            <span className="nowrap flex align-center">
+              {icon && <>{icon}&nbsp;&nbsp;</>}
+              {value != null
+                ? getNumberFormat().toCoinDifference(value, value2)
+                : "---"}
+            </span>
+          </Typography>
+        </PaperP>
+      </WaitSkeleton>
     );
   }
 }
@@ -299,19 +274,7 @@ class ProfitProjCard extends Component {
   }
 
   render() {
-    const { currentPrice, projectedPrice, loading, color } = this.props;
-    if (loading) {
-      return (
-        <PaperP
-          className={`flex ${fluidCSS()
-            .ltX(480, { width: "calc(33% - 5px)" })
-            .end()}`}
-          elevation={3}
-        >
-          <AutoSkeleton loading={true} w="100%" h="80px" />
-        </PaperP>
-      );
-    }
+    const { currentPrice, projectedPrice, color } = this.props;
     const projectedGainUSD = this.calculateProjectedGain(
       this.balance,
       currentPrice,
@@ -321,32 +284,34 @@ class ProfitProjCard extends Component {
     const labelTitle = "Beneficio estimado";
 
     return (
-      <PaperP
-        className={`flex ${fluidCSS()
-          .ltX(480, { width: "calc(33% - 5px)" })
-          .end()}`}
-        elevation={3}
-      >
-        <div className="flex col-direction gap-10px">
-          <TooltipGhost
-            title={
-              !!projectedGainUSD &&
-              `${labelTitle}: ${valueProfitProjected} USD por cada ${this.balance} USD`
-            }
-          >
-            <Typography
-              variant="caption"
-              color="text.secondary"
-              className="mb-5px nowrap"
+      <WaitSkeleton loading={panelProjectionsState.loadingMetrics}>
+        <PaperP
+          className={`flex ${fluidCSS()
+            .ltX(480, { width: "calc(33% - 5px)" })
+            .end()}`}
+          elevation={3}
+        >
+          <div className="flex col-direction gap-10px">
+            <TooltipGhost
+              title={
+                !!projectedGainUSD &&
+                `${labelTitle}: ${valueProfitProjected} USD por cada ${this.balance} USD`
+              }
             >
-              {labelTitle} ({this.balance} USD)
-            </Typography>
-            <Typography color={color}>
-              {["---", `${valueProfitProjected} USD`][+!!projectedGainUSD]}
-            </Typography>
-          </TooltipGhost>
-        </div>
-      </PaperP>
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                className="mb-5px nowrap"
+              >
+                {labelTitle} ({this.balance} USD)
+              </Typography>
+              <Typography color={color}>
+                {["---", `${valueProfitProjected} USD`][+!!projectedGainUSD]}
+              </Typography>
+            </TooltipGhost>
+          </div>
+        </PaperP>
+      </WaitSkeleton>
     );
   }
 
@@ -364,26 +329,7 @@ class ProfitProjCard extends Component {
 // Tarjeta de ROI
 class ROICard extends Component {
   render() {
-    const {
-      roi,
-      isReal = false,
-      loading,
-      totalBought,
-      clase,
-      etiqueta,
-    } = this.props;
-    if (loading) {
-      return (
-        <PaperP
-          className={`d-center ${fluidCSS()
-            .ltX(480, { width: "calc(33% - 5px)" })
-            .end()}`}
-          elevation={3}
-        >
-          <AutoSkeleton loading={true} w="50px" h="50px" />
-        </PaperP>
-      );
-    }
+    const { roi, isReal = false, totalBought, clase, etiqueta } = this.props;
     const valid = !!roi && typeof roi === "number" && !isNaN(roi);
     const displayText = valid ? `${roi.toFixed(2)}%` : "---";
     const label = "ROI " + (valid ? (isReal ? "Real" : "Proyectado") : "");
@@ -399,24 +345,26 @@ class ROICard extends Component {
     })();
     const cardOpacity = valid ? 1 : 0.5;
     return (
-      <TooltipGhost
-        title={(() => {
-          if (!totalBought) {
-            return "No hay compra";
-          }
-          if (!valid) return "ROI no válido";
-          return `${label}: ${displayText} (${clase})`;
-        })()}
-      >
-        <PaperP
-          className={`flex align-stretch p-relative`}
-          elevation={3}
-          sx={{ opacity: cardOpacity, minWidth: "100px" }}
+      <WaitSkeleton loading={panelProjectionsState.loadingMetrics}>
+        <TooltipGhost
+          title={(() => {
+            if (!totalBought) {
+              return "No hay compra";
+            }
+            if (!valid) return "ROI no válido";
+            return `${label}: ${displayText} (${clase})`;
+          })()}
         >
-          <ClaseROI />
-          <ContentText />
-        </PaperP>
-      </TooltipGhost>
+          <PaperP
+            className={`flex align-stretch p-relative`}
+            elevation={3}
+            sx={{ opacity: cardOpacity, minWidth: "100px" }}
+          >
+            <ClaseROI />
+            <ContentText />
+          </PaperP>
+        </TooltipGhost>
+      </WaitSkeleton>
     );
 
     function ContentText() {

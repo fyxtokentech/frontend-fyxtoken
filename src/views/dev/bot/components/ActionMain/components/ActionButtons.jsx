@@ -15,6 +15,7 @@ import {
   Layer,
   AnimateComponent,
   showPromise,
+  WaitSkeleton,
 } from "@jeff-aporta/camaleon";
 import { HTTPPUT_COINS_START, HTTPPUT_COINS_STOP } from "@api";
 import { driverPanelRobot } from "../../../bot.jsx";
@@ -179,7 +180,8 @@ export default function ActionButtons({
               monedasDisponibles ||
               !monedaYaOperando ||
               monedaEnBorrado ||
-              actionInProcess
+              actionInProcess ||
+              driverPanelRobot.getLoadingCoinsToOperate()
             }
           />
         </div>
@@ -208,7 +210,8 @@ export default function ActionButtons({
             disabled={
               !driverPanelRobot.existsCurrency() ||
               monedaYaOperando ||
-              actionInProcess
+              actionInProcess ||
+              driverPanelRobot.getLoadingCoinsToOperate()
             }
           />
         </div>
@@ -217,72 +220,74 @@ export default function ActionButtons({
 
     function Operar(props) {
       return (
-        <Button
-          {...props}
-          variant="contained"
-          color="ok"
-          size="small"
-          onClick={async () => {
-            if (!driverPanelRobot.getCurrency()) {
-              return;
-            }
-            const coinObj = driverPanelRobot.findCurrencyInCoinsToOperate();
-            if (!coinObj) {
-              return;
-            }
-            setActionInProcess(true);
-
-            try {
-              await showPromise(
-                `Solicitando al backend inicio de operación (${coinObj.symbol})`,
-                new Promise((resolve, reject) => {
-                  HTTPPUT_COINS_START({
-                    id_coin: coinObj.id+1000,
-                    willEnd,
-                    successful: (json, info) => {
-                      driverPanelRobot.getCoinsOperating().push(coinObj);
-                      resolve(`Se empieza a operar (${coinObj.symbol})`);
-                    },
-                    failure: (json, info, rejectPromise) => {
-                      rejectPromise(
-                        `Algo salió mal al operar en ${coinObj.symbol}`,
-                        reject,
-                        { json, info }
-                      );
-                    },
-                  });
-                })
-              );
-            } catch (err) {
-              showError(`Error al iniciar operaración en: ${coinObj.symbol}`);
-            }
-
-            function willEnd() {
-              setActionInProcess(false);
-              driverPanelRobot.setUpdateAvailable((prev) => !prev);
-            }
-          }}
-        >
-          <small>Operar</small>
-        </Button>
+        <WaitSkeleton loading={driverPanelRobot.getLoadingCoinsToOperate()}>
+          <Button
+            {...props}
+            variant="contained"
+            color="ok"
+            size="small"
+            onClick={async () => {
+              if (!driverPanelRobot.getCurrency()) {
+                return;
+              }
+              const coinObj = driverPanelRobot.findCurrencyInCoinsToOperate();
+              if (!coinObj) {
+                return;
+              }
+              try {
+                await showPromise(
+                  `Solicitando al backend inicio de operación (${coinObj.symbol})`,
+                  (resolve, reject) => {
+                    HTTPPUT_COINS_START({
+                      id_coin: coinObj.id,
+                      willStart() {
+                        setActionInProcess(true);
+                      },
+                      willEnd() {
+                        setActionInProcess(false);
+                      },
+                      successful: (json, info) => {
+                        driverPanelRobot.getCoinsOperating().push(coinObj);
+                        resolve(`Se empieza a operar (${coinObj.symbol})`);
+                      },
+                      failure: (json, info, rejectPromise) => {
+                        rejectPromise(
+                          `Algo salió mal al operar en ${coinObj.symbol}`,
+                          reject,
+                          { json, info }
+                        );
+                      },
+                    });
+                  }
+                );
+              } catch (err) {
+                showError(`Error al iniciar operaración en: ${coinObj.symbol}`);
+              }
+            }}
+          >
+            <small>Operar</small>
+          </Button>
+        </WaitSkeleton>
       );
     }
   }
 
   function Detener(props) {
     return (
-      <Button
-        {...props}
-        variant="contained"
-        color="cancel"
-        size="small"
-        onClick={() => {
-          setActionInProcess(true);
-          onSellCoin(driverPanelRobot.getCurrency());
-        }}
-      >
-        <small>Detener</small>
-      </Button>
+      <WaitSkeleton loading={driverPanelRobot.getLoadingCoinsToOperate()}>
+        <Button
+          {...props}
+          variant="contained"
+          color="cancel"
+          size="small"
+          onClick={() => {
+            setActionInProcess(true);
+            onSellCoin(driverPanelRobot.getCurrency());
+          }}
+        >
+          <small>Detener</small>
+        </Button>
+      </WaitSkeleton>
     );
   }
 }

@@ -9,12 +9,14 @@ import {
   assignMapManagement,
   defaultUseViewId,
   RoutingManagement,
+  defaultThemeName,
 } from "@jeff-aporta/camaleon";
 import { initStartApp } from "./app/_start/start";
 import { init as initPolyfill } from "./app/_start/polyfill";
 import { routeCheck } from "./app/_start/routeCheck";
 import { Unauthorize } from "@views/unauthorize";
 
+defaultThemeName("violet");
 assignMapManagement({
   "@wallet": {
     view: "/users/wallet",
@@ -29,6 +31,7 @@ assignMapManagement({
       view_bot: "main",
       period: "most_recent",
       id_coin: 1,
+      coin: "BTC",
       view_table: "operations",
     },
   },

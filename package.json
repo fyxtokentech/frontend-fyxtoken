@@ -8,7 +8,7 @@
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
-    "@jeff-aporta/camaleon": "^0.0.196",
+    "@jeff-aporta/camaleon": "^0.0.227",
     "@mui/icons-material": "^6.4.8",
     "@mui/material": "^6.4.8",
     "@mui/x-charts": "^7.28.0",
@@ -32,9 +32,11 @@
   "scripts": {
     "start": "react-app-rewired start",
     "build": "react-app-rewired build",
-    "serve": "serve -s build",
+    "serve": "serve -s ../build-prod/build",
     "eject": "react-scripts eject",
     "build:context": "cross-env-shell PUBLIC_URL=%npm_config_public_url% npm run build",
+    "build:prod": "npm run build:prod-context --dir=../build-prod/build --public_url=.",
+    "build:prod-context": "cross-env PUBLIC_URL=%npm_config_public_url% BUILD_PATH=%npm_config_dir% react-app-rewired build",
     "deploy:gh-pages": "gh-pages -d build"
   },
   "devDependencies": {

@@ -19,6 +19,7 @@ import {
   getPaletteConfig,
   fluidCSS,
   driverParams,
+  WaitSkeleton
 } from "@jeff-aporta/camaleon";
 import React, { useState, useEffect } from "react";
 import SearchIcon from "@mui/icons-material/Search";
@@ -26,19 +27,7 @@ import ClearIcon from "@mui/icons-material/Clear";
 
 export * from "./controls/DateRangeControls";
 
-export function AutoSkeleton({ loading, w = "100%", h = "5vh", ...rest }) {
-  if (loading == null || loading == undefined) {
-    return <></>;
-  }
-  return (
-    <div className={loading ? "titiling pointer-waiting" : ""}>
-      <div className={loading ? "ghost filtering halfgray brightness-1-5" : ""}>
-        <div {...rest} />
-      </div>
-    </div>
-  );
-}
-
+// TO DO: revisar posibilidad de remover con nuevos desarrollos
 export function UserFilterControl({
   value = "",
   onChange,
@@ -76,7 +65,7 @@ export function UserFilterControl({
   };
 
   return (
-    <AutoSkeleton h="10vh" w={`${width}px`} loading={loading}>
+    <WaitSkeleton loading={loading}>
       <Box sx={{ display: "flex", alignItems: "center" }}>
         <TextField
           label={label}
@@ -99,6 +88,6 @@ export function UserFilterControl({
           </IconButton>
         )}
       </Box>
-    </AutoSkeleton>
+    </WaitSkeleton>
   );
 }

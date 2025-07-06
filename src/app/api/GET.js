@@ -166,6 +166,7 @@ export async function HTTPGET_USEROPERATION_STRATEGY({
   return await MAKE_GET({
     ...rest,
     ...httpdebug,
+    useCatch: false,
     service: "robot_backend",
     buildEndpoint: ({ genpath }) =>
       genpath([

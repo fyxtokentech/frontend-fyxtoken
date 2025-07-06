@@ -12,6 +12,8 @@ import {
   TextField,
   Slider,
   LinearProgress,
+  Checkbox,
+  FormControlLabel,
 } from "@mui/material";
 
 import {
@@ -26,9 +28,9 @@ import {
   subscribeParam,
   AnimateComponent,
   DriverComponent,
+  WaitSkeleton,
 } from "@jeff-aporta/camaleon";
 
-import { AutoSkeleton } from "@components/controls";
 import { HTTPGET_COINS_METRICS, HTTPGET_BALANCECOIN } from "@api";
 
 import ActionButtons from "./ActionButtons";
@@ -44,16 +46,26 @@ import { panelProjectionsState } from "./PanelOfProjections";
 import { driverPanelRobot } from "../../../bot.jsx";
 
 export const driverPanelBalance = DriverComponent({
-  panelBalance: {
-    isComponent: true,
-  },
+  panelBalance: {},
   transactionMostRecent: {
     value: 0,
+  },
+  autoFetch: {
+    nameStorage: "bot-autofetch",
   },
 });
 
 class TimeCount extends AnimateComponent {
+  constructor(props) {
+    super(props);
+  }
+
+  handleAutoFetchChange = (e) => {
+    driverPanelBalance.setAutoFetch(e.target.checked);
+  };
+
   render() {
+    const autoFetch = driverPanelBalance.getAutoFetch() == "true";
     const minutos = 5;
     const segundos = minutos * 60;
     const msSteep = segundos * 1000;
@@ -63,13 +75,38 @@ class TimeCount extends AnimateComponent {
       0,
       1
     );
-    if (this.pastPercent && this.pastPercent > timePercent) {
+    if (
+      autoFetch &&
+      !document.hidden &&
+      this.pastPercent &&
+      this.pastPercent > timePercent
+    ) {
+      console.log("🔄️ AutoFetch ejecutado");
       setTimeout(driverPanelRobot.updatePanelRobot);
     }
     this.pastPercent = timePercent;
     return (
       <>
-        <div align="right">
+        <div className="flex space-between align-center">
+          <FormControlLabel
+            control={
+              <Checkbox
+                color="primaryl4"
+                checked={autoFetch}
+                onChange={this.handleAutoFetchChange}
+                size="small"
+                sx={{
+                  paddingTop: 0,
+                  paddingBottom: 0,
+                }}
+              />
+            }
+            label={
+              <Typography variant="caption" color="secondary">
+                Autofetch
+              </Typography>
+            }
+          />
           <Typography variant="caption" color="contrastpaper">
             {seconds2Time(Math.floor(map(timePercent, 0, 1, 0, segundos)), {
               HH: false,
@@ -81,6 +118,7 @@ class TimeCount extends AnimateComponent {
           color="secondary"
           variant="determinate"
           value={timePercent * 100}
+          className="sticky top z-ontop-but-under-fx"
         />
       </>
     );
@@ -143,7 +181,7 @@ export default class PanelBalance extends Component {
     const { onSellCoin, deletionTimers, setDeletionTimers } = this.props;
     // Usar los estados globales en vez del state local
     const { actionInProcess } = vars_PanelOfInsertMoney;
-    const flatNumber = 12345;
+    const flatNumber = -1;
     const roi = 0;
 
     const hayMoneda = [
@@ -152,7 +190,7 @@ export default class PanelBalance extends Component {
     ].every(Boolean);
 
     return (
-      <div key={driverPanelRobot.getCurrency()}>
+      <div>
         <TimeCount frameRate={1} />
         <PaperP elevation={0}>
           <div className={`flex wrap space-between gap-10px`}>
@@ -202,7 +240,6 @@ window.fetchMetrics = async function (setState = () => 0) {
   if (!id_coin) return;
   await HTTPGET_COINS_METRICS({
     id_coin,
-    setLoading: (loading) => setState({ loadingMetrics: loading }),
     setError: (err) => setState({ errorMetrics: err }),
     setApiData: ([data]) => {
       if (!data) {

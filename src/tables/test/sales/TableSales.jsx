@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { DynTable } from "@jeff-aporta/camaleon";
+import { DynTable, WaitSkeleton } from "@jeff-aporta/camaleon";
 
 import columns_sales from "./columns-sales.jsx";
 import mock_sales from "./mock-sales.json";
 import { Box, Typography } from "@mui/material";
-import { AutoSkeleton, DateRangeControls } from "@components/controls";
+import { DateRangeControls } from "@components/controls";
 import dayjs from "dayjs";
 
 export default function TableSales({
@@ -42,9 +42,9 @@ export default function TableSales({
         }}
       />
       <br />
-      <AutoSkeleton loading={loading} h="300px">
+      <WaitSkeleton loading={loading}>
         <DynTable rows={data} columns={columns_config} {...rest} />
-      </AutoSkeleton>
+      </WaitSkeleton>
     </Box>
   );
 }

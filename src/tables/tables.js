@@ -102,19 +102,25 @@ export const driverTables = {
   },
 
   getViewTable() {
-    return driverParams.init({ view_table: driverTables.TABLE_OPERATIONS })[0];
+    return driverParams.init("view_table", driverTables.TABLE_OPERATIONS);
   },
 
   refetch(cb) {
     Object.entries(tablesLoaded).forEach(([name, table]) => {
+      const loadingEffect = cb === true;
+      const driver = driverTables.getDriverTable(name);
       if (cb && typeof cb === "function") {
-        const driver = driverTables.getDriverTable(name);
         if (driver) {
-          cb({ name, driver });
+          const { loading } = cb({ name, driver, table });
+          if (loading) {
+            loadingEffect = loading;
+          }
         }
       }
-      table.fetchData &&
-        table.fetchData({ loadingEffect: [false, true][cb === true] });
+      if(driver && driver.setLoading && loadingEffect){
+        driver.setLoading(!!loadingEffect)
+      }
+      table.fetchData && table.fetchData();
     });
   },
 
@@ -166,11 +172,11 @@ function newTable({
   paramsKeys = [],
   user_id_required,
   cbErrorParams,
-  init,
   name_table,
   allParamsRequiredToFetch = false,
-  start_fetch = () => {},
-  end_fetch = () => {},
+  init = () => {},
+  startFetch = () => {},
+  endFetch = () => {},
   fetchError = () => {},
   render,
   driver,
@@ -186,7 +192,7 @@ function newTable({
   return class extends Component {
     constructor(props) {
       super(props);
-      init.bind(this)();
+      init.bind(this)(this.contextGeneral());
     }
 
     getDriver() {
@@ -197,43 +203,54 @@ function newTable({
       this.getDriver().setLoading && this.getDriver().setLoading(val);
     }
 
-    async fetchData({ deep = 0, loadingEffect = true } = {}) {
+    contextGeneral() {
+      return {
+        driver: this.getDriver(),
+      };
+    }
+
+    endFetchEnvolve(props) {
+      endFetch.bind(this)(props);
+      this.setLoading(false);
+    }
+
+    async fetchData({ deep = 0 } = {}) {
       loadParams();
-      this.setLoading(true);
-      start_fetch.bind(this)();
-      console.log("params", params);
-      await prefetch.bind(this)(params);
+      startFetch.bind(this)(this.contextGeneral());
+      await prefetch.bind(this)(params, this.contextGeneral());
       if (!(await protocolFetch.bind(this)(deep))) {
-        return end_fetch.bind(this)({ error: true });
+        return this.endFetchEnvolve({ error: true });
       }
       try {
-        await fetchData.bind(this)(params);
+        await fetchData.bind(this)(params, this.contextGeneral());
       } catch (e) {
         showError(e.message || e);
         fetchError.bind(this)();
       }
-      end_fetch.bind(this)({ error: false });
+      this.endFetchEnvolve({ error: false, ...this.contextGeneral() });
     }
 
     componentDidMount() {
       componentDidMount.bind(this)();
       driverTables.addTableAndDriver(name_table, this, driver);
       this.fetchData();
-      const _driver_ = this.getDriver();
-      _driver_.addLinkLoading && _driver_.addLinkLoading(this);
-      _driver_.addLinkTableData && _driver_.addLinkTableData(this);
+      if(driver){
+        driver.addLinkLoading(this);
+        driver.addLinkTableData(this);
+      }
     }
 
     componentWillUnmount() {
       driverTables.removeTableAndDriver(name_table);
       componentWillUnmount.bind(this)();
-      const _driver_ = this.getDriver();
-      _driver_.removeLinkLoading && _driver_.removeLinkLoading(this);
-      _driver_.removeLinkTableData && _driver_.removeLinkTableData(this);
+      if(driver){
+        driver.removeLinkLoading(this);
+        driver.removeLinkTableData(this);
+      }
     }
 
     render() {
-      return render.bind(this)();
+      return render.bind(this)(this.contextGeneral());
     }
   };
 

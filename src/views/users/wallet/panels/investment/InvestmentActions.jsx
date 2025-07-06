@@ -6,7 +6,7 @@ import {
   PaperP,
   genInputsGender,
   genSelectFast,
-  Info,
+  InfoDialog,
   isDark,
   showInfo,
   showSuccess,
@@ -58,11 +58,10 @@ function InvestmentActionInvest({ packtype, setPacktype, time, setTime }) {
       title={
         <>
           Inversión
-          <Info
+          <InfoDialog
             placement="right"
             className="ml-20px"
-            title_text="Información de Inversión"
-            title={
+            description={
               <>
                 Invierte tu dinero eligiendo el paquete y el plazo que mejor se
                 ajusten a tus metas financieras. Ingresa el monto, confirma la
@@ -123,10 +122,10 @@ function InvestmentActionRecharge({ rechargeType, setRechargeType }) {
       title={
         <>
           Recarga
-          <Info
+          <InfoDialog
             placement="right"
             className="ml-20px"
-            title={
+            description={
               <>
                 Añade fondos a tu cuenta de forma rápida y segura. Selecciona el
                 método de recarga, ingresa el monto deseado y confirma la

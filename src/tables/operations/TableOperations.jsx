@@ -10,19 +10,12 @@ import {
 } from "@mui/material";
 import TransactionsIcon from "@mui/icons-material/PriceChange";
 
-import {
-  DynTable,
-  driverParams,
-  Delayer,
-  DriverComponent,
-} from "@jeff-aporta/camaleon";
-
 import mock_operation from "./mock-operation.json";
 import columns_operation from "./columns-operation.jsx";
 
 import { HTTPGET_USEROPERATION_PERIOD } from "@api";
 
-import { AutoSkeleton, DateRangeControls } from "@components/controls";
+import { DateRangeControls } from "@components/controls";
 
 import dayjs from "dayjs";
 
@@ -32,6 +25,11 @@ import {
   IS_GITHUB,
   subscribeParam,
   showInfo,
+  DriverComponent,
+  DynTable,
+  driverParams,
+  Delayer,
+  WaitSkeleton
 } from "@jeff-aporta/camaleon";
 import { driverTables } from "../tables.js";
 
@@ -41,10 +39,8 @@ let mock_default = IS_GITHUB ? mock_operation : [];
 
 export const driverTableOperations = DriverComponent({
   tableOperations: {
-    isComponent: true,
   },
   buttonApplyFilter: {
-    isComponent: true,
   },
   tableData: {
     value: mock_default,
@@ -63,15 +59,14 @@ export default driverTables.newTable({
   paramsKeys: ["start_date", "end_date"],
   allParamsRequiredToFetch: true,
   driver: driverTableOperations,
-  init() {},
-  start_fetch() {
-    this.getDriver().setFilterApply(false);
-  },
-  end_fetch({ error }) {
-    this.getDriver().setLoading(false);
-  },
   fetchError() {
     this.getDriver().setTableData([]);
+  },
+  startFetch(){
+    this.getDriver().setFilterApply(false);
+  },
+  endFetch() {
+    this.getDriver().setFilterApply(false);
   },
   async fetchData({ user_id, start_date, end_date }) {
     await HTTPGET_USEROPERATION_PERIOD({
@@ -99,8 +94,6 @@ export default driverTables.newTable({
     const columns_config = columns_operation();
 
     const DRIVER = this.getDriver();
-
-    console.log("loading", this.getDriver().getLoading());
 
     let [start_date, end_date] = driverParams.get("start_date", "end_date");
 
@@ -181,7 +174,7 @@ export default driverTables.newTable({
                     super(props);
                     subscribeParam(
                       {
-                        "start_date, end_date": () => {
+                        "start_date, end_date, period": () => {
                           DRIVER.setFilterApply(true);
                         },
                       },
@@ -221,7 +214,7 @@ export default driverTables.newTable({
                 return <ButtonFilter />;
               })()}
             </div>
-            <AutoSkeleton loading={DRIVER.getLoading()} h="auto">
+            <WaitSkeleton loading={DRIVER.getLoading()} h="auto">
               <div style={{ width: "100%", overflowX: "auto" }}>
                 <DynTable
                   {...rest}
@@ -232,7 +225,7 @@ export default driverTables.newTable({
                   }
                 />
               </div>
-            </AutoSkeleton>
+            </WaitSkeleton>
           </>
         )}
       </>

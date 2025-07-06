@@ -35,7 +35,6 @@ export default () => <PanelRobot />;
 
 export const driverPanelRobot = DriverComponent({
   panelRobot: {
-    isComponent: true,
   },
   timeUpdateAvailable: {
     value: -1,
@@ -80,17 +79,17 @@ export const driverPanelRobot = DriverComponent({
   coinsOperating: {
     value: [],
 
-    filterExcludeId([id], { getValue, setValue }) {
-      setValue(getValue().filter((c) => c.id !== id));
+    filterExcludeId(id, { getValue, setValue }) {
+      setValue(getValue().filter((c) => c.id != id));
     },
   },
   coinsToDelete: {
     value: [],
-    filterExcludeIdOn([id], { getValue, setValue }) {
-      setValue(getValue().filter((c) => c.id !== id));
+    filterExcludeIdOn(id, { getValue, setValue }) {
+      setValue(getValue().filter((c) => c.id != id));
     },
-    someKey([symbol], { getValue }) {
-      return getValue().some((c) => driverPanelRobot.getCoinKey(c) === symbol);
+    someKey(symbol, { getValue }) {
+      return getValue().some((c) => driverPanelRobot.getCoinKey(c) == symbol);
     },
   },
   currency: {
