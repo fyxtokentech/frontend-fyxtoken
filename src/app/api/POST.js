@@ -16,7 +16,7 @@ export async function HTTPPOST_EXCHANGE_SELL({ id_operation, ...rest }) {
 
 export async function HTTPPOST_TRY_LOGIN({ username, password, ...rest }) {
   try {
-    const result = await MAKE_POST({
+    await MAKE_POST({
       ...rest,
       ...httpdebug,
       service: "robot_backend",
@@ -24,10 +24,6 @@ export async function HTTPPOST_TRY_LOGIN({ username, password, ...rest }) {
         genpath(["login"], { username, password }),
       isTable: true,
     });
-    if (!result || result.length === 0) {
-      throw new Error("No user returned");
-    }
-    return result[0];
   } catch (error) {
   }
 }

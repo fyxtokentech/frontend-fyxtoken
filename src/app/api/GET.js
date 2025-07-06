@@ -168,6 +168,7 @@ export async function HTTPGET_USEROPERATION_STRATEGY({
     ...httpdebug,
     useCatch: false,
     service: "robot_backend",
+    useCache: false,
     buildEndpoint: ({ genpath }) =>
       genpath([
         "operations",

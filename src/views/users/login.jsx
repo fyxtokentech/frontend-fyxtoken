@@ -1,7 +1,15 @@
 import React, { Component, useState } from "react";
 import Alert from "@mui/material/Alert";
 
-import { isDark, showError, href, DivM, PaperP, IS_GITHUB } from "@jeff-aporta/camaleon";
+import {
+  isDark,
+  showError,
+  href,
+  DivM,
+  PaperP,
+  IS_GITHUB,
+  showPromise,
+} from "@jeff-aporta/camaleon";
 import { Main } from "@theme/main.jsx";
 
 import { HTTPPOST_TRY_LOGIN } from "@api";
@@ -53,21 +61,33 @@ function LoginForm() {
       showError("Por favor ingresa contraseña");
       return;
     }
-    let user = await HTTPPOST_TRY_LOGIN({ username, password });
+    let user;
+    await showPromise("Verificando", (resolve, reject) => {
+      HTTPPOST_TRY_LOGIN({
+        username,
+        password,
+        successful([user_]) {
+          user = user_;
+          resolve("Bienvenido");
+          if (!user && IS_GITHUB) {
+            user = {
+              user_id: "2d35c015-5097-46ff-b50c-f89678ee59f0",
+              name: "Jeffrey",
+              last_name: "Agudelo",
+              email: "jeffrey.alexander.agudelo.espitia@gmail.com",
+            };
+          }
+        },
+        failure(d, i, cb) {
+          cb("Credenciales no coinciden", reject, { d, i });
+        },
+      });
+    });
 
-    if (!user && IS_GITHUB) {
-      user = {
-        user_id: "2d35c015-5097-46ff-b50c-f89678ee59f0",
-        name: "Jeffrey",
-        last_name: "Agudelo",
-        email: "jeffrey.alexander.agudelo.espitia@gmail.com",
-      };
-    }
-
-    if (HTTP_IS_ERROR(user)) {
-      showError("Credenciales inválidas");
+    if (!user) {
       return;
     }
+
     const target = href("@wallet");
     localStorage.setItem("user", JSON.stringify(user));
     window.currentUser = user;
