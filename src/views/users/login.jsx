@@ -1,229 +1,333 @@
-import React, { Component, useState } from "react";
+import React, { Component } from "react";
 import Alert from "@mui/material/Alert";
 
-import {
-  isDark,
-  showError,
-  href,
-  DivM,
-  PaperP,
-  IS_GITHUB,
-  showPromise,
-} from "@jeff-aporta/camaleon";
+import { DivM, PaperP, TooltipGhost } from "@jeff-aporta/camaleon";
 import { Main } from "@theme/main.jsx";
-
-import { HTTPPOST_TRY_LOGIN } from "@api";
 
 import {
   Box,
   Button,
-  FormControl,
-  FormControlLabel,
   IconButton,
   Input,
   InputAdornment,
   Typography,
-  Checkbox,
   Link,
+  Divider,
 } from "@mui/material";
-import { fluidCSS, HTTP_IS_ERROR } from "@jeff-aporta/camaleon";
 import EmailIcon from "@mui/icons-material/Email";
 import HttpsIcon from "@mui/icons-material/Https";
 import LockResetIcon from "@mui/icons-material/LockReset";
-import { Visibility, VisibilityOff } from "@mui/icons-material";
+
+import { driverLogin } from "./login.driver.js";
 
 export default function () {
   return (
-    <Main bgtype="portal" h_init="100px" h_fin="100px">
-      <DivM m_max={40} className="d-center min-h-50vh">
+    <Main bgtype="portal">
+      <DivM className="d-center" style={{ minHeight: "75vh" }}>
         <LoginForm />
       </DivM>
     </Main>
   );
 }
 
-function LoginForm() {
-  const [showAlert, setShowAlert] = useState(false);
-
-  const handleLogin = async () => {
-    const username = document.getElementById("username").value;
-    const password = document.getElementById("password").value;
-    // Validaciones de campos
-    if (!username && !password) {
-      showError("Por favor ingresa usuario y contraseña");
-      return;
-    }
-    if (!username) {
-      showError("Por favor ingresa usuario");
-      return;
-    }
-    if (!password) {
-      showError("Por favor ingresa contraseña");
-      return;
-    }
-    let user;
-    await showPromise("Verificando", (resolve, reject) => {
-      HTTPPOST_TRY_LOGIN({
-        username,
-        password,
-        successful([user_]) {
-          user = user_;
-          resolve("Bienvenido");
-          if (!user && IS_GITHUB) {
-            user = {
-              user_id: "2d35c015-5097-46ff-b50c-f89678ee59f0",
-              name: "Jeffrey",
-              last_name: "Agudelo",
-              email: "jeffrey.alexander.agudelo.espitia@gmail.com",
-            };
-          }
-        },
-        failure(d, i, cb) {
-          cb("Credenciales no coinciden", reject, { d, i });
-        },
-      });
-    });
-
-    if (!user) {
-      return;
-    }
-
-    const target = href("@wallet");
-    localStorage.setItem("user", JSON.stringify(user));
-    window.currentUser = user;
-    window.location.href = target;
-  };
-
-  return (
-    <PaperP
-      elevation={6}
-      className="flex-col flex-wrap gap-30px min-h-150px w-fit"
-    >
-      <center className="pad-10px">
-        <Typography variant="h4">Ingresa al Wallet</Typography>
-      </center>
-      <Credentials />
-      <div className="flex-col align-end gap-10px fullWidth">
-        <div
-          className="flex-col align-end gap-10px"
-          style={{ scale: "0.8", transformOrigin: "right center" }}
-        >
-          <div>
-            <FormControlLabel
-              color="secondary"
-              className="flex fd-row-reverse"
-              control={<Checkbox id="remerber-me" defaultChecked />}
-              label={<small>Recordarme</small>}
-              sx={{
-                marginRight: 0,
-                transition: "opacity 0.25s",
-                ".MuiCheckbox-root": {
-                  paddingRight: 0,
-                },
-                "&:has(input:not(:checked))": {
-                  opacity: "0.5",
-                },
-              }}
-            />
-          </div>
-          <Link
-            className="d-end"
-            style={{ opacity: "0.5" }}
-            color="inherit"
-            underline="hover"
-            href="#"
-          >
-            <small className="d-center">
-              ¿Olvidaste tu contraseña? <LockResetIcon sx={{ ml: 1 }} />
-            </small>
-          </Link>
-        </div>
-
-        <Button variant="contained" fullWidth onClick={handleLogin}>
-          Iniciar
-        </Button>
-
-        <Typography variant="caption" className="mt-20px">
-          ¿No tienes una cuenta?{" "}
-          <Link
-            underline="hover"
-            href="#"
-            style={{ color: "var(--verde-cielo)" }}
-          >
-            <b>Registrate</b>
-          </Link>
-        </Typography>
+class LoginForm extends Component {
+  render() {
+    return (
+      <div className="flex col-direction">
+        <AlertError />
+        <BodyForm />
       </div>
-    </PaperP>
-  );
+    );
+
+    function AlertError() {
+      const RETURN = class extends Component {
+        componentDidMount() {
+          driverLogin.addLinkMsgAlert(this);
+        }
+        componentWillUnmount() {
+          driverLogin.removeLinkMsgAlert(this);
+        }
+        render() {
+          const msgAlert = driverLogin.getMsgAlert();
+          if (!msgAlert) {
+            return;
+          }
+          return (
+            <>
+              <Alert className="titiling" variant="filled" severity="error">
+                {msgAlert}
+              </Alert>
+              <br />
+            </>
+          );
+        }
+      };
+      return <RETURN />;
+    }
+
+    function BodyForm() {
+      return (
+        <PaperP className="flex wrap col-direction gap-20px">
+          <div className="padw-20px">
+            <Title />
+            <Divider />
+            <br />
+            <Credentials />
+            <br />
+            <Divider />
+            <Actions />
+          </div>
+        </PaperP>
+      );
+
+      function Title() {
+        return (
+          <center className="pad-10px">
+            <Typography variant="h4">Ingresa al Wallet</Typography>
+          </center>
+        );
+      }
+
+      function Actions() {
+        return (
+          <div className="flex col-direction gap-5px">
+            <OptionAccount />
+            <br />
+            <ButtonMakeLogin />
+            <br />
+            <Divider />
+            <SignUpNotAccount />
+          </div>
+        );
+
+        function OptionAccount() {
+          return (
+            <div className="flex col-direction padh-10px">
+              <Rememberme />
+              <ForgotPass />
+            </div>
+          );
+
+          function ForgotPass() {
+            return (
+              <Button
+                size="small"
+                color="secondary"
+                variant="text"
+                href="#"
+                startIcon={<LockResetIcon fontSize="small" />}
+                className="flex justify-start"
+              >
+                <small>¿Olvidaste tu contraseña?</small>
+              </Button>
+            );
+          }
+
+          function Rememberme() {
+            const RETURN = class extends Component {
+              componentDidMount() {
+                driverLogin.addLinkRememberMe(this);
+              }
+              componentWillUnmount() {
+                driverLogin.removeLinkRememberMe(this);
+              }
+              render() {
+                return (
+                  <Button
+                    size="small"
+                    color={driverLogin.mapCaseRememberMe("color")}
+                    variant="text"
+                    onClick={() => driverLogin.setRememberMe((x) => !x)}
+                    startIcon={driverLogin.mapCaseRememberMe("icon")}
+                    className="flex justify-start"
+                  >
+                    Recordarme
+                  </Button>
+                );
+              }
+            };
+            return <RETURN />;
+          }
+        }
+
+        function ButtonMakeLogin() {
+          const RETURN = class extends Component {
+            componentDidMount() {
+              driverLogin.addLinkEmail(this);
+              driverLogin.addLinkPassword(this);
+            }
+            componentWillUnmount() {
+              driverLogin.removeLinkEmail(this);
+              driverLogin.removeLinkPassword(this);
+            }
+
+            render() {
+              const basic = driverLogin.basicRulesCredentials();
+              return (
+                <TooltipGhost title={basic || "Iniciar sesión"}>
+                  <div>
+                    <Button
+                      variant="contained"
+                      fullWidth
+                      disabled={basic}
+                      onClick={driverLogin.handleLogin}
+                    >
+                      Iniciar
+                    </Button>
+                  </div>
+                </TooltipGhost>
+              );
+            }
+          };
+          return <RETURN />;
+        }
+
+        function SignUpNotAccount() {
+          return (
+            <Typography variant="caption" className="mt-20px">
+              ¿No tienes una cuenta?{" "}
+              <Link underline="hover" href="#">
+                <b>Registrate</b>
+              </Link>
+            </Typography>
+          );
+        }
+      }
+    }
+  }
 }
 
-class Credentials extends Component {
-  constructor(props) {
-    super(props);
-    this.state = { showPassword: false };
+class InputCredential extends Component {
+  componentDidMount() {
+    if (!this.props.isPassword) {
+      return;
+    }
+    driverLogin.addLinkShowPassword(this);
   }
 
-  handleClickShowPassword() {
-    this.setState((prev) => ({ showPassword: !prev.showPassword }));
-  }
-
-  static handleMouseDownPassword(e) {
-    e.preventDefault();
-  }
-
-  static handleMouseUpPassword(e) {
-    e.preventDefault();
+  componentWillUnmount() {
+    if (!this.props.isPassword) {
+      return;
+    }
+    driverLogin.removeLinkShowPassword(this);
   }
 
   render() {
-    const { showPassword } = this.state;
-
+    const { title, icon, children } = this.props;
     return (
-      <div className="flex-col gap-40px">
-        <div className="flex-col">
-          <Typography variant="caption" color="secondary">
-            <small>Correo electrónico</small>
-          </Typography>
-          <Box sx={{ display: "inline-flex", alignItems: "flex-end" }}>
-            <EmailIcon sx={{ mr: 1 }} color="secondary" />
-            <Input
-              fullWidth
-              id="username"
-              placeholder="Ingresa Correo electrónico"
-              color="primary"
-              variant="filled"
-            />
-          </Box>
-        </div>
-        <div className="flex-col">
-          <Typography variant="caption" color="secondary">
-            <small>Contraseña</small>
-          </Typography>
-          <Box sx={{ display: "inline-flex", alignItems: "flex-end" }}>
-            <HttpsIcon sx={{ mr: 1 }} color="secondary" />
-            <FormControl variant="standard" fullWidth>
-              <Input
-                id="password"
-                type={showPassword ? "text" : "password"}
-                placeholder="Ingresa Contraseña"
-                fullWidth
-                endAdornment={
-                  <InputAdornment position="end">
-                    <IconButton
-                      onClick={this.handleClickShowPassword}
-                      onMouseDown={this.handleMouseDownPassword}
-                      onMouseUp={this.handleMouseUpPassword}
-                    >
-                      {showPassword ? <VisibilityOff /> : <Visibility />}
-                    </IconButton>
-                  </InputAdornment>
-                }
-              />
-            </FormControl>
-          </Box>
+      <div>
+        <Typography variant="caption" color="secondary">
+          <small>{title}</small>
+        </Typography>
+        <br />
+        <div className="flex align-center">
+          {icon}
+          {children}
         </div>
       </div>
     );
+  }
+}
+
+class Credentials extends Component {
+  render() {
+    const showPassword = driverLogin.getShowPassword();
+    const propsIcon = {
+      sx: { mr: 1 },
+      color: "secondary",
+      fontSize: "small",
+    };
+    return (
+      <Box
+        component="form"
+        id="login-form"
+        className="flex col-direction gap-20px"
+      >
+        <EMail />
+        <Password />
+      </Box>
+    );
+
+    function Password() {
+      const RETURN = class extends Component {
+        componentDidMount() {
+          driverLogin.addLinkShowPassword(this);
+        }
+
+        componentWillUnmount() {
+          driverLogin.removeLinkShowPassword(this);
+        }
+
+        render() {
+          return (
+            <InputCredential
+              isPassword
+              title="Contraseña"
+              icon={<HttpsIcon {...propsIcon} />}
+            >
+              <Input
+                name="password"
+                defaultValue={driverLogin.getPassword()}
+                onChange={() => driverLogin.updateFields()}
+                type={driverLogin.mapCaseShowPassword("typeInput")}
+                placeholder="Ingresa la contraseña"
+                sx={{
+                  "& input::placeholder": {
+                    fontSize: "smaller",
+                  },
+                }}
+                fullWidth
+                endAdornment={
+                  <InputAdornment position="end">
+                    <TooltipGhost
+                      title={driverLogin.mapCaseShowPassword("textVisibility")}
+                    >
+                      <IconButton
+                        onClick={() => {
+                          driverLogin.setShowPassword((x) => !x);
+                        }}
+                        onMouseDown={(e) => {
+                          e.preventDefault();
+                        }}
+                        onMouseUp={(e) => {
+                          e.preventDefault();
+                        }}
+                      >
+                        {driverLogin.mapCaseShowPassword("iconVisibility")}
+                      </IconButton>
+                    </TooltipGhost>
+                  </InputAdornment>
+                }
+              />
+            </InputCredential>
+          );
+        }
+      };
+      return <RETURN />;
+    }
+
+    function EMail() {
+      return (
+        <InputCredential
+          title="Correo electrónico"
+          icon={<EmailIcon {...propsIcon} />}
+        >
+          <Input
+            fullWidth
+            name="username"
+            defaultValue={driverLogin.getEmail()}
+            onChange={() => driverLogin.updateFields()}
+            placeholder="Ingresa el correo electrónico"
+            sx={{
+              "& input::placeholder": {
+                fontSize: "smaller",
+              },
+            }}
+            color="primary"
+            variant="filled"
+          />
+        </InputCredential>
+      );
+    }
   }
 }

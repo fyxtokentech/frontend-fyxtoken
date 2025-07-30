@@ -3,17 +3,26 @@ function authError([first, second]) {
   if (!user) {
     if (first === "users") {
       if (second !== "login") {
-        return {
-          error: true,
-          message: "Debes iniciar sesión para acceder a Usuarios",
-        };
+        return `
+          Debes iniciar sesión,
+          para acceder al módulo de usuarios (/users)
+        `;
       }
     }
     if (first === "dev") {
-      return {
-        error: true,
-        message: "Debes iniciar sesión para acceder a Dev",
-      };
+      return `
+        Debes iniciar sesión,
+        para acceder al módulo de desarrolladores (/dev)
+      `;
+    }
+  } else {
+    if (first === "users") {
+      if (second == "login") {
+        return `
+          Ya se inició sesión, 
+          no puedes acceder al módulo de inicio de sesión (/users/login)
+        `;
+      }
     }
   }
 }
@@ -21,7 +30,6 @@ function authError([first, second]) {
 export function routeCheck({
   querypath: path = () => 0, // Por defecto evita errores
 }) {
-
   if (!path) {
     return; // No debe retornar error
   }

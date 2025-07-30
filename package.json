@@ -8,7 +8,7 @@
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
-    "@jeff-aporta/camaleon": "^0.0.227",
+    "@jeff-aporta/camaleon": "^0.1.117",
     "@mui/icons-material": "^6.4.8",
     "@mui/material": "^6.4.8",
     "@mui/x-charts": "^7.28.0",
@@ -30,7 +30,7 @@
     "socket.io-client": "^4.8.1"
   },
   "scripts": {
-    "start": "react-app-rewired start",
+    "start": "set BROWSER=brave && react-app-rewired start",
     "build": "react-app-rewired build",
     "serve": "serve -s ../build-prod/build",
     "eject": "react-scripts eject",

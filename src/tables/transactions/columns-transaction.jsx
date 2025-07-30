@@ -8,6 +8,7 @@ import StatusOkIcon from "@mui/icons-material/CheckCircleOutline";
 import StatusErrorIcon from "@mui/icons-material/UnpublishedOutlined";
 import TagFacesOutlinedIcon from "@mui/icons-material/TagFacesOutlined";
 import CurrencyExchangeIcon from "@mui/icons-material/CurrencyExchange";
+import ExpandIcon from "@mui/icons-material/Expand";
 
 export default () => [
   {
@@ -31,7 +32,7 @@ export default () => [
     field: "profit",
     headerName: "Beneficio",
     description: "Ganancia obtenida.",
-    ...getModelsFormat().profit,
+    ...getModelsFormat().profit_op,
   },
   {
     field: "origin_transaction",
@@ -49,6 +50,11 @@ export default () => [
         E: {
           text: "Exchange",
           icon: <CurrencyExchangeIcon />,
+          color: "secondary",
+        },
+        P: {
+          text: "Pip",
+          icon: <ExpandIcon />,
           color: "secondary",
         },
       },
@@ -119,7 +125,6 @@ export default () => [
     field: "create_time",
     headerName: "create_time",
     description: "Fecha de creación de la transacción (solo interno).",
-    ...getModelsFormat().datetime,
   },
   {
     field: "limit_to_buy",
@@ -137,12 +142,12 @@ export default () => [
     field: "start_date_transaction",
     headerName: "Inicio",
     description: "Fecha y hora de inicio de la transacción.",
-    ...getModelsFormat().datetime,
+    ...getModelsFormat().dateFormat2,
   },
   {
     field: "end_date_transaction",
     headerName: "Final",
     description: "Fecha y hora de cierre de la transacción.",
-    ...getModelsFormat().datetime,
+    ...getModelsFormat().dateFormat2,
   },
 ];

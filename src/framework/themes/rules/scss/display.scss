@@ -1,0 +1,67 @@
+@each $value in (none) {
+  .d-#{$value} {
+    display: $value !important;
+  }
+}
+
+@each $value in (inline-flex, flex, block, inline-block) {
+  .#{$value} {
+    display: $value !important;
+  }
+}
+
+.row-direction {
+  flex-direction: row !important;
+}
+
+.col-direction {
+  flex-direction: column !important;
+}
+
+.col-direction-reverse {
+  flex-direction: column-reverse !important;
+}
+
+.wrap {
+  flex-wrap: wrap !important;
+}
+
+.nowrap {
+  white-space: nowrap;
+  flex-wrap: nowrap;
+}
+
+.d-center {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+}
+
+.d-end {
+  display: flex !important;
+  justify-content: end !important;
+  align-items: end !important;
+}
+
+@each $value in (center, end, start) {
+  .justify-#{$value} {
+    justify-content: $value !important;
+  }
+}
+
+@each $value in (space-between, space-evenly, space-around) {
+  .justify-#{$value},
+  .#{$value} {
+    justify-content: $value !important;
+  }
+}
+
+@each $value in (center, end, start, stretch) {
+  .align-#{$value} {
+    align-items: $value !important;
+  }
+}
+
+.stretch {
+  align-items: stretch !important;
+}

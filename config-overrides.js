@@ -10,12 +10,20 @@ module.exports = override(
     "@views": path.resolve(__dirname, "src/views"),
     "@theme": path.resolve(__dirname, "src/app/theme"),
     "@components": path.resolve(__dirname, "src/app/theme/components"),
-    "@recurrent": path.resolve(__dirname, "src/app/theme/components/recurrent.jsx"),
+    "@recurrent": path.resolve(
+      __dirname,
+      "src/app/theme/components/recurrent.jsx"
+    ),
     "@tables": path.resolve(__dirname, "src/tables"),
     "@test": path.resolve(__dirname, "src/tables/test"),
   }),
   (config) => {
-    config.resolve.extensions = config.resolve.extensions.concat(['.js', '.jsx', '.mjs']);
+    config.resolve.extensions = config.resolve.extensions.concat([
+      ".js",
+      ".jsx",
+      ".mjs",
+      ".cjs",
+    ]);
     return config;
   }
 );

@@ -6,36 +6,37 @@ import {
   showError,
   sleep,
   Delayer,
+  getModelsFormat,
   addModelFormat,
   addNumberFormat,
   getNumberFormat,
   TooltipGhost,
   JS2CSS,
+  DriverComponent,
+  getSecondaryColor,
+  getAdjacentPrimaryColor,
 } from "@jeff-aporta/camaleon";
 
 import BenefitUplineIcon from "@mui/icons-material/TrendingUpOutlined";
 import BenefitDownlineIcon from "@mui/icons-material/TrendingDownOutlined";
 import BenefitConstantlineIcon from "@mui/icons-material/TrendingFlatOutlined";
 import { Chip, Tooltip, Typography } from "@mui/material";
-
-const tablesLoaded = {};
-const driverTablesLoaded = {};
-const delayers = {};
+import { BorderBottom } from "@mui/icons-material";
 
 addNumberFormat({
   toCoin(value, local) {
     const { precision2SmallNumber, numberFormat } = getNumberFormat();
     const number_format = precision2SmallNumber({ value });
-    const { retorno } = numberFormat(number_format, value, local, "");
-    return retorno;
+    const { texto } = numberFormat(number_format, value, local, "");
+    return texto;
   },
   toCoinDifference(value1, value2, local) {
     const { precision2SmallNumber, numberFormat } = getNumberFormat();
     // No es necesario abs en diff, precision2SmallNumber lo infiere
     const diff = (value1 - value2) / 10;
     const number_format = precision2SmallNumber({ value: diff });
-    const { retorno } = numberFormat(number_format, value1, local, "");
-    return retorno;
+    const { texto } = numberFormat(number_format, value1, local, "");
+    return texto;
   },
   precision2SmallNumber({ value }) {
     const absValue = Math.abs(+value);
@@ -50,7 +51,7 @@ addNumberFormat({
   },
 });
 
-const currentCoin = currentSufix("name_coin");
+const currentCoin = currentSufix("name_coin", true);
 
 const {
   renderInfo: renderInfoNameCoin, //
@@ -69,6 +70,7 @@ JS2CSS.insertStyle({
 addModelFormat({
   currentSufix,
   currentCoin,
+  dateFormat2: dateFormat2(),
   profit_op: {
     ...propsNameCoin,
     extra_width: 30,
@@ -76,6 +78,8 @@ addModelFormat({
     className: "fill",
     renderInfo: {
       ...renderInfoNameCoin,
+      className: null,
+      style: null,
       iconized: iconized_real_roi(true),
     },
   },
@@ -93,80 +97,59 @@ addModelFormat({
   },
 });
 
-export const driverTables = {
+export const driverTables = DriverComponent({
+  idDriver: "tables",
   TABLE_TRANSACTIONS: "transactions",
   TABLE_OPERATIONS: "operations",
-
-  setViewTable(newViewTable) {
-    driverParams.set({ view_table: newViewTable });
+  viewTable: {
+    nameParam: "view_table",
+    _setup_({ init, TABLE_OPERATIONS }) {
+      init(TABLE_OPERATIONS);
+    },
   },
 
-  getViewTable() {
-    return driverParams.init("view_table", driverTables.TABLE_OPERATIONS);
-  },
-
-  refetch(cb) {
-    Object.entries(tablesLoaded).forEach(([name, table]) => {
-      const loadingEffect = cb === true;
-      const driver = driverTables.getDriverTable(name);
-      if (cb && typeof cb === "function") {
-        if (driver) {
-          const { loading } = cb({ name, driver, table });
-          if (loading) {
-            loadingEffect = loading;
-          }
-        }
+  refetch(effectBool = false) {
+    Object.entries(this.getTables()).forEach(([name, table]) => {
+      const driver = this.getDriverTable(name);
+      if (driver && driver.setLoading) {
+        driver.setLoading(effectBool);
       }
-      if(driver && driver.setLoading && loadingEffect){
-        driver.setLoading(!!loadingEffect)
-      }
+      console.log({driver})
       table.fetchData && table.fetchData();
     });
   },
 
-  getOperationRow() {
-    return driverTables.operation_row;
+  operationRow: {},
+
+  driverTable: {
+    isObject: true,
   },
 
-  setOperationRow(row) {
-    driverTables.operation_row = row;
+  tables: {
+    isObject: true,
   },
 
-  addTableAndDriver(name, table, driver) {
-    driverTables.addDriverTable(name, driver);
-    driverTables.addTable(name, table);
+  delayers: {
+    isArray: true,
   },
 
-  removeTableAndDriver(name) {
-    driverTables.removeDriverTable(name);
-    driverTables.removeTable(name);
+  addTableAndDriver({name, table, driver}) {
+    this.addDriverTable(name, driver);
+    this.addTables(name, table);
   },
 
-  getDriverTable(name) {
-    return driverTablesLoaded[name];
+  deleteTableAndDriver(name) {
+    this.deleteDriverTable(name);
+    this.deleteTables(name);
   },
 
-  addDriverTable(name, driver) {
-    driverTablesLoaded[name] = driver;
-  },
-
-  removeDriverTable(name) {
-    delete driverTablesLoaded[name];
-  },
-
-  addTable(name, table) {
-    tablesLoaded[name] = table;
-  },
-
-  removeTable(name) {
-    delete tablesLoaded[name];
-  },
   newTable,
-};
+});
 
 function newTable({
   componentDidMount = () => {},
   componentWillUnmount = () => {},
+  componentDidUpdate = () => {},
   fetchData = () => {},
   prefetch = () => {},
   paramsKeys = [],
@@ -179,13 +162,8 @@ function newTable({
   endFetch = () => {},
   fetchError = () => {},
   render,
-  driver,
-  ...props
+  driver = {},
 } = {}) {
-  delayers[name_table] ??= Delayer(1000);
-
-  const delayerFetch = delayers[name_table];
-
   let paramsValues;
   let params;
 
@@ -196,22 +174,23 @@ function newTable({
     }
 
     getDriver() {
-      return driver || driverTables.getDriverTable(name_table) || {};
+      return driver;
     }
 
     setLoading(val) {
-      this.getDriver().setLoading && this.getDriver().setLoading(val);
+      driver.setLoading && driver.setLoading(val);
     }
 
     contextGeneral() {
       return {
-        driver: this.getDriver(),
+        driver,
+        data: driver.getTableData ? driver.getTableData() : [],
       };
     }
 
     endFetchEnvolve(props) {
       endFetch.bind(this)(props);
-      this.setLoading(false);
+      driver.setLoading && driver.setLoading(false);
     }
 
     async fetchData({ deep = 0 } = {}) {
@@ -230,23 +209,27 @@ function newTable({
       this.endFetchEnvolve({ error: false, ...this.contextGeneral() });
     }
 
+    componentDidUpdate(...args) {
+      componentDidUpdate.bind(this)(...args);
+    }
+
     componentDidMount() {
       componentDidMount.bind(this)();
-      driverTables.addTableAndDriver(name_table, this, driver);
+      driverTables.addTableAndDriver({name: name_table, table: this, driver});
+      driverTables.addDelayers(name_table, Delayer(1000));
       this.fetchData();
-      if(driver){
-        driver.addLinkLoading(this);
-        driver.addLinkTableData(this);
-      }
+      const { addLinkLoading, addLinkTableData } = driver;
+      addLinkLoading && addLinkLoading(this);
+      addLinkTableData && addLinkTableData(this);
     }
 
     componentWillUnmount() {
-      driverTables.removeTableAndDriver(name_table);
+      driverTables.deleteTableAndDriver(name_table);
+      driverTables.deleteDelayers(name_table);
       componentWillUnmount.bind(this)();
-      if(driver){
-        driver.removeLinkLoading(this);
-        driver.removeLinkTableData(this);
-      }
+      const { removeLinkLoading, removeLinkTableData } = driver;
+      removeLinkLoading && removeLinkLoading(this);
+      removeLinkTableData && removeLinkTableData(this);
     }
 
     render() {
@@ -269,27 +252,86 @@ function newTable({
     if (allParamsRequiredToFetch && paramsValues.some((item) => !item)) {
       if (deep > 1) {
         showError("Problema al obtener datos en URLParams", params);
+        await sleep(1000);
       }
       if (cbErrorParams) {
         cbErrorParams();
         return false;
       } else {
-        // await sleep(100);
         return await this.fetchData({ deep: deep + 1 });
       }
     }
-    if (!delayerFetch.isReady()) {
-      console.log("Fetch cancelado, tiempo de espera");
+    const delayer = driverTables.getDelayers(name_table);
+    if (delayer && !delayer.isReady()) {
       return false;
     }
     return true;
   }
 }
 
-function currentSufix(sufix) {
+function dateFormat2() {
+  const outenv = "layer fill padw-15px";
+  const inenv = "flex justify-space-between align-center gap-10px";
+  const {
+    renderInfo: renderInfoDatetime, //
+    ...propsDatetime
+  } = getModelsFormat().datetime;
+  return {
+    ...propsDatetime,
+    renderInfo: {
+      ...renderInfoDatetime,
+      className: `${outenv} ${inenv}`,
+      style: {},
+      styleEl2: ({ hour, minute, seconds }) => {
+        const hs = +hour + minute / 60 + seconds / 3600;
+        const t = hs / 24;
+        const colorTop = getAdjacentPrimaryColor({
+          a: 60,
+          light: true,
+        })[0];
+        const colorBottom = getAdjacentPrimaryColor({
+          a: 60,
+          light: false,
+        })[0];
+        return {
+          backgroundColor: `rgba(${colorBottom
+            .mix(colorTop, t)
+            .rgb()
+            .array()
+            .join(",")}, 0.5)`,
+          fontSize: "smaller",
+          borderRadius: "10px",
+          padding: "0 5px",
+          width: "fit-content",
+          height: "fit-content",
+        };
+      },
+    },
+  };
+}
+
+function currentSufix(sufix, space_between = true) {
+  const outenv = "layer fill padw-15px";
+  const inenv = "flex justify-space-between align-center gap-10px";
   return {
     fit_content: true,
     renderInfo: {
+      ...(space_between
+        ? {
+            className: `${outenv} ${inenv}`,
+            styleEl2: {
+              backgroundColor: `rgba(${getSecondaryColor()
+                .rgb()
+                .array()
+                .join(",")}, 0.5)`,
+              fontSize: "smaller",
+              borderRadius: "10px",
+              padding: "0 5px",
+              width: "fit-content",
+              height: "fit-content",
+            },
+          }
+        : {}),
       local: "es-ES",
       sufix,
       type: "number",
@@ -304,7 +346,7 @@ function iconized_real_roi(op = false) {
       return renderString;
     }
     let { value } = params;
-    const { real_roi } = params.row;
+    let { real_roi } = params.row;
     let icon, color;
 
     if (value == 0) {
@@ -318,6 +360,9 @@ function iconized_real_roi(op = false) {
     if (value > 0) {
       icon = <BenefitUplineIcon />;
       color = "ok";
+    }
+    if (real_roi) {
+      real_roi = +real_roi.toFixed(2);
     }
 
     const texto = (() => {
@@ -340,7 +385,7 @@ function iconized_real_roi(op = false) {
           </span>
           {real_roi ? (
             <Chip
-              label={`${real_roi.toFixed(2)}%`}
+              label={`${real_roi}%`}
               size="small"
               variant="filled"
               sx={{
@@ -356,7 +401,7 @@ function iconized_real_roi(op = false) {
     })();
     const tooltip = (() => {
       if (op && real_roi) {
-        const percent = ["", `(${real_roi.toFixed(2)}%)`][+!!real_roi];
+        const percent = ["", `(${real_roi}%)`][+!!real_roi];
         return `${renderString} ${percent}`;
       }
       return renderString;

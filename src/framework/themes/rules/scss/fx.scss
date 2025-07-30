@@ -1,0 +1,68 @@
+.mouse-3d-effect-tr {
+  --rtx: 15px;
+  --rty: 15px;
+  --rx: 10deg;
+  --ry: 10deg;
+  --ptx: var(--percentMouseCenterX);
+  --pty: var(--percentMouseCenterY);
+  --prx: var(--percentMouseCenterY);
+  --pry: var(--percentMouseCenterX);
+
+  transform-style: preserve-3d;
+  perspective-origin: 50% 50%;
+  perspective: 2000px;
+  transform: translateX(calc(var(--ptx) * var(--rtx)))
+    translateY(calc(var(--pty) * var(--rty)))
+    rotateX(calc((1 - var(--prx)) * var(--rx)))
+    rotateY(calc(var(--pry) * -1 * var(--ry)));
+
+  &.h-positive {
+    --prx: var(--percentMouseY);
+  }
+}
+
+.mouse-in-xy {
+  left: var(--mouseX);
+  top: var(--mouseY);
+
+  &.centraliced {
+    transform: translate(-50%, -50%);
+  }
+}
+
+.turnoff-when-mouse-left-pressed {
+  opacity: calc(1 - var(--mouseLeftPressed));
+  transition: opacity 0.2s;
+}
+
+.invert-nohue {
+  filter: invert(1) hue-rotate(180deg);
+}
+
+.transition-all {
+  --time: 0.3s;
+  --effect: linear;
+  transition: all var(--time) var(--effect);
+  interpolate-size: allow-keywords;
+}
+
+$short-times: (
+  01: 0.1,
+  025: 0.25,
+  05: 0.5,
+  075: 0.75,
+);
+
+@each $suffix, $sec in $short-times {
+  .all-#{$suffix}s {
+    @extend .transition-all;
+    --time: #{$sec}s;
+  }
+}
+
+@for $i from 1 through 10 {
+  .all-#{$i}s {
+    @extend .transition-all;
+    --time: #{$i}s;
+  }
+}

@@ -19,6 +19,9 @@ export const httpdebug = {
   newfetch: ({ url }) => console.log(`NEW fetching URL: ${url}`),
   fetchcached: ({ url }) => console.log(`CACHED URL: ${url}`),
   willStart: (props) => console.log(`[request] Enviando:`, props),
+  willEnd: ({ data, url, ...rest }) => {
+    console.log(`[request] Recibido de ${url}: `, data, rest);
+  },
 };
 
 export * from "./GET.js";

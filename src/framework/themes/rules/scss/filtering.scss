@@ -1,0 +1,94 @@
+.filtering {
+  --scale-gray: 0;
+  --opacity: 1;
+  --opacity-animation: 1;
+  --brightness: 1;
+
+  filter: opacity(var(--opacity)) grayscale(var(--scale-gray))
+    brightness(var(--brightness));
+
+  &.halfgray {
+    --scale-gray: 0.5;
+  }
+
+  &.brightness-1-5 {
+    --brightness: 1.5;
+  }
+}
+
+.pointer-waiting {
+  cursor: wait !important;
+}
+
+.pointer-progress {
+  cursor: progress !important;
+}
+
+.pointer-alias {
+  cursor: alias !important;
+}
+
+.pointer-not-allowed {
+  cursor: not-allowed !important;
+}
+
+.transition-filter {
+  transition: filter 0.2s;
+}
+
+.bright-hover-2 {
+  @extend .transition-filter;
+  @extend .filtering;
+  --brightness: 1;
+  &:hover {
+    --brightness: 2;
+  }
+}
+
+.bright-hover-1-5 {
+  @extend .transition-filter;
+  @extend .filtering;
+  --brightness: 1;
+  &:hover {
+    --brightness: 1.5;
+  }
+}
+
+.bright-10 {
+  @extend .filtering;
+  --brightness: 10;
+}
+
+.backdropfilter {
+  --brightness: 1;
+  &.brightnesshover-1-5 {
+    &:hover {
+      --brightness: 1.5;
+    }
+  }
+  backdrop-filter: brightness(var(--brightness));
+}
+
+.text-hide-unhover-container {
+  --w: 0;
+  --t: 0;
+
+  &:hover {
+    --w: auto;
+    --t: 1;
+  }
+  &:focus-within {
+    --t: 1;
+  }
+  .text-hide-opacity-unhover {
+    transition: opacity 0.2s;
+    opacity: var(--t);
+  }
+
+  .text-hide-unhover {
+    transition: width 0.2s;
+    interpolate-size: allow-keywords;
+    overflow: hidden;
+    width: var(--w);
+  }
+}

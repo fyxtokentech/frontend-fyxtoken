@@ -183,7 +183,7 @@ function PanelIWishToWithdraw({ mode, setMode }) {
         />
       </div>
       <div
-        className="d-inline-block padb-10px padt-5px padw-10px"
+        className="inline-block padb-10px padt-5px padw-10px"
         style={custom_styles.controlInput}
       >
         <SelectModeWithDrawal mode={mode} setMode={setMode} />
@@ -245,12 +245,12 @@ function PanelIWishToWithdraw({ mode, setMode }) {
             style={{
               cursor: !mode ? "not-allowed" : "",
             }}
-            className="d-inline-block"
+            className="inline-block"
           >
             <Button
               disabled={!mode}
               variant="contained"
-              color="primaryl4"
+              color="l4"
               startIcon={<i className="fa-solid fa-hand-holding-dollar" />}
             >
               Solicitar Retiro

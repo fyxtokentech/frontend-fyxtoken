@@ -14,48 +14,16 @@ import TableTransactions from "@tables/transactions/TableTransactions";
 
 import { MovementsGraph } from "@components/graph/graph-driver";
 
-import { driverPanelRobot } from "../../bot.jsx";
-
 import { driverTables } from "@tables/tables.js";
-import { driverActionButtons } from "./components/ActionButtons";
+import { driverPanelRobot } from "../../bot.driver.js";
 
-let SINGLETON_VIEW_TABLE;
-
-export { driverActionButtons };
-
-export const driverActionMain = {
-  updateViewTable() {
-    SINGLETON_VIEW_TABLE.forceUpdate();
-  },
-};
+import PanelBalance from "./components/PanelBalance.jsx";
+import { driverCoinsOperating } from "./components/CoinsOperating.driver.js";
 
 export default function () {
-  const [deletionTimers, setDeletionTimers] = useState([]);
-
-  const { PanelBalance } = getComponentsQuery({
-    STATIC: ({ subcomponent }) => subcomponent("ActionMain"),
-  });
-
   return (
     <PaperP className="flex col-direction gap-20px">
-      <PanelBalance.default
-        deletionTimers={deletionTimers}
-        setDeletionTimers={setDeletionTimers}
-        onSellCoin={(coinTitle) => {
-          if (window.onSellCoinRef && window.onSellCoinRef.current) {
-            window.onSellCoinRef.current(coinTitle);
-          }
-        }}
-      />
-
-      {/* Ref para exponer la función de borrado externo */}
-      {(() => {
-        if (!window.onSellCoinRef) {
-          window.onSellCoinRef = React.createRef();
-        }
-        return null;
-      })()}
-
+      <PanelBalance/>
       <ViewTable />
     </PaperP>
   );
@@ -64,10 +32,6 @@ export default function () {
 class ViewTable extends Component {
   constructor(props) {
     super(props);
-  }
-
-  componentDidMount() {
-    SINGLETON_VIEW_TABLE = this;
   }
 
   render() {

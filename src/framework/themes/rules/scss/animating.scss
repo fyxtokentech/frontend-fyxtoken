@@ -1,0 +1,50 @@
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+.fadeout-90 {
+  --animation-duration: 1000ms;
+  animation: fadeOut90 var(--animation-duration) forwards;
+}
+
+@keyframes fadeOut90 {
+  0% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  90% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+}
+
+.titiling {
+  animation: titiling 1s infinite alternate !important;
+}
+
+@keyframes titiling {
+  from {
+    filter: opacity(0.2);
+  }
+
+  to {
+    filter: opacity(0.7);
+  }
+}

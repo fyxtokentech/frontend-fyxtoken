@@ -38,13 +38,13 @@ export class APIKeyViewExchange extends React.Component {
     const { user_id } = window.currentUser;
     HTTPGET_USER_API({
       user_id,
-      setApiData: (data) => {
+      successful: (data) => {
         console.log(data);
         this.setState({ apiKeys: data }, () => {
           this.forceUpdate();
         });
       },
-      setError: () => {
+      failure: () => {
         showError("Error al obtener las APIs");
       },
     });

@@ -33,7 +33,7 @@ export function AutomatizacionView() {
   const [accumulate, setAccumulate] = useState(true);
   const [currency, setCurrency] = useState("USDT");
   const [progressivePercent, setProgressivePercent] = useState(10);
-  const [targetSale, setTargetSale] = useState("10%");
+  const [targetSale, setTargetSale] = useState("10");
   const [targetBuy, setTargetBuy] = useState("40000");
   const [expanded, setExpanded] = useState("intermediate");
   const handleChangeAcc = () =>
@@ -74,6 +74,7 @@ export function AutomatizacionView() {
             onChange={(e, v) => setIntermediateBuy(v)}
             min={1}
             max={100}
+            step={0.1}
             valueLabelDisplay="auto"
             size="small"
           />
@@ -92,6 +93,7 @@ export function AutomatizacionView() {
             onChange={(e, v) => setRetroBuy(v)}
             min={1}
             max={50}
+            step={0.1}
             valueLabelDisplay="auto"
             size="small"
           />
@@ -146,8 +148,9 @@ export function AutomatizacionView() {
             size="small"
             label="Meta de Venta"
             value={targetSale}
+            onChange={(e) => setTargetSale(e.target.value)}
             InputProps={{
-              endAdornment: <InputAdornment position="end">%</InputAdornment>,
+              // endAdornment: <InputAdornment position="end">%</InputAdornment>,
             }}
             helperText="Ganancia objetivo."
           />

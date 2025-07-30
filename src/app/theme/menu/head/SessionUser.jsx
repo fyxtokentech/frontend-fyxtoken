@@ -76,7 +76,7 @@ export function SessionUser() {
               anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
               transformOrigin={{ vertical: "top", horizontal: "right" }}
             >
-              <NavigationLink to="@wallet" color="complement">
+              <NavigationLink to="@wallet">
                 <MenuItem onClick={handleClose}>
                   Wallet
                   <AccountBalanceWalletIcon fontSize="small" sx={{ ml: 1 }} />

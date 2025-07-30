@@ -16,16 +16,20 @@ import CurrencyBitcoinIcon from "@mui/icons-material/CurrencyBitcoin";
 import ShowChartIcon from "@mui/icons-material/ShowChart";
 import CandlestickChartIcon from "@mui/icons-material/CandlestickChart";
 import AutoFixHighIcon from "@mui/icons-material/AutoFixHigh";
+import ExpandIcon from "@mui/icons-material/Expand";
+import PublicIcon from "@mui/icons-material/Public";
 
-import { PaperP, driverParams } from "@jeff-aporta/camaleon";
-import { APIKeyView, exchanges_withdrawal } from "./tabs/APIKey";
+import { PaperP, driverParams, TooltipGhost } from "@jeff-aporta/camaleon";
+import { APIKeyView } from "./tabs/APIKey";
 import { RSIView } from "./tabs/RSI";
 import { CriptomonedasView } from "./tabs/Cripto";
 import { AutoView } from "./tabs/Auto";
 import { CandlestickView } from "./tabs/Candle";
 import { AutomatizacionView } from "./tabs/Auto";
+import { PIPView } from "./tabs/PIP";
+import { GlobalView } from "./tabs/Global";
 
-import { driverPanelRobot } from "../../bot.jsx";
+import { driverPanelRobot } from "../../bot.driver.js";
 
 export const driverSettings = {
   setViewSetting: (view) => driverParams.set("view_setting_bot", view),
@@ -42,6 +46,8 @@ export default function Settings() {
     },
     { id: "rsi", label: "RSI", icon: <ShowChartIcon /> },
     { id: "candlestick", label: "Candlestick", icon: <CandlestickChartIcon /> },
+    { id: "pips", label: "Pips", icon: <ExpandIcon /> },
+    { id: "global", label: "Global", icon: <PublicIcon /> },
   ];
   const initialView = driverSettings.getViewSetting();
   const [selectedViewSetting, setSelectedViewSetting] = useState(initialView);
@@ -68,23 +74,35 @@ export default function Settings() {
     <>
       <Box sx={{ display: "flex", justifyContent: "flex-end", p: 1 }}>
         <Button
+          className="text-hide-unhover-container"
           variant="contained"
-          color="error"
+          color="toRed50"
           size="small"
-          endIcon={<DisabledByDefaultIcon />}
-          onClick={() => driverPanelRobot.setToMainViewBot()}
+          onClick={driverPanelRobot.setToMainViewBot}
         >
-          Cerrar configuración
+          <DisabledByDefaultIcon fontSize="small" />
+          <div className="text-hide-unhover nowrap">
+            &nbsp;<small>Cerrar configuración</small>
+          </div>
         </Button>
       </Box>
 
-      <Paper>
-        <AppBar position="static" color="default">
+      <Paper elevation={5}>
+        <AppBar position="static">
           <Tabs
             value={selectedViewSetting}
             onChange={(e, v) => handleSelect(v)}
             variant="scrollable"
             scrollButtons="auto"
+            visibleScrollbar
+            sx={{
+              "& .MuiTabs-indicator": {
+                backgroundColor: "l3.main",
+              },
+              "& .MuiTab-root.Mui-selected": {
+                color: "l3.main",
+              },
+            }}
           >
             {views.map((view) => (
               <Tab
@@ -111,6 +129,8 @@ export default function Settings() {
               {selectedViewSetting === "criptomonedas" && <CriptomonedasView />}
               {selectedViewSetting === "rsi" && <RSIView />}
               {selectedViewSetting === "candlestick" && <CandlestickView />}
+              {selectedViewSetting === "pips" && <PIPView />}
+              {selectedViewSetting === "global" && <GlobalView />}
             </PaperP>
           </Box>
         </Box>

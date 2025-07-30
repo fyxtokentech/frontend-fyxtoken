@@ -1,156 +1,102 @@
-import React, { useState } from "react";
-import { Typography, TextField, Slider, Button } from "@mui/material";
+import React, { Component } from "react";
+import { Typography, TextField, Slider, Button, Paper } from "@mui/material";
 import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
-import { HTTPPUT_USEROPERATION_INVESTMEN } from "@api";
-import {
-  showSuccess,
-  showWarning,
-  PaperP,
-  driverParams,
-} from "@jeff-aporta/camaleon";
+
+import { PaperP, fluidCSS } from "@jeff-aporta/camaleon";
 import { TooltipGhost } from "@jeff-aporta/camaleon";
 
-let _balance_ = 10;
-const MAX_VALUE_INVERSION = 1000000;
+import { driverPanelBalance } from "./PanelBalance.driver.js";
+import { driverPanelOfInsertMoney } from "./PanelOfInsertMoney.driver.js";
+import { driverPanelOfProjections } from "./PanelOfProjections.driver.js";
 
-export const getBalance = () => _balance_;
+const MAX_VALUE_INVERSION = 1000000;
 
 const marks = [
   { value: 1, label: "10" },
   { value: 2, label: "100" },
-  { value: 3, label: "1.000" },
+  { value: 3, label: "1000" },
   { value: 4, label: "10k" },
   { value: 5, label: "100k" },
   { value: 6, label: "1M" },
 ];
 
-export const vars_PanelOfInsertMoney = {
-  inputValue: 100,
-  sliderExp: Math.log10(100),
-};
-
 export const valueText = () => {
-  return vars_PanelOfInsertMoney.inputValue + " USD";
-};
-
-let _PanelOfInsertMoney_;
-
-export const changeValueInsertMoney = (value) => {
-  if (!value) {
-    return;
-  }
-  value = +Math.max(10, value);
-  vars_PanelOfInsertMoney.inputValue = value;
-  vars_PanelOfInsertMoney.sliderExp = Math.log10(value);
-  _PanelOfInsertMoney_.forceUpdate();
+  return driverPanelBalance.getDefaultUSDTBuy() + " USD";
 };
 
 export default class PanelOfInsertMoney extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { updating: false };
     this.handleInputChange = this.handleInputChange.bind(this);
     this.handleSliderChange = this.handleSliderChange.bind(this);
-    this.handleInvest = this.handleInvest.bind(this);
-    _PanelOfInsertMoney_ = this;
   }
 
   componentDidMount() {
-    this.interval = setInterval(() => {
-      this.setState((prev) => ({
-        priceProjectionValue:
-          prev.priceProjectionValue + 1 > 3
-            ? -3
-            : prev.priceProjectionValue + 1,
-      }));
-    }, 10000);
+    driverPanelBalance.addLinkDefaultUSDTBuy(this);
   }
 
   componentWillUnmount() {
-    clearInterval(this.interval);
+    driverPanelBalance.removeLinkDefaultUSDTBuy(this);
   }
 
   handleInputChange(e) {
-    const { setInputValue, setSliderExp } = this.props;
-    const v = Math.floor(Number(e.target.value));
-    let b = Math.min(MAX_VALUE_INVERSION, Math.max(0, v));
-    if (b) {
-      b = parseInt(b);
-      setInputValue(b);
-    } else {
-      setInputValue("");
-    }
-    setSliderExp(Math.log10(b));
+    let b = driverPanelBalance.clamp2DefaultUSDTBuy(+e.target.value);
+    driverPanelBalance.setDefaultUSDTBuy(b);
   }
 
   handleSliderChange(e, expVal) {
-    const { setInputValue, setSliderExp } = this.props;
-    setSliderExp(expVal);
-    const m = Math.round(10 ** expVal);
-    setInputValue(m);
-  }
-
-  handleInvest() {
-    this.setState({ updating: true });
-    const coin_id = driverParams.get("id_coin")[0];
-    HTTPPUT_USEROPERATION_INVESTMEN({
-      coin_id,
-      new_value: vars_PanelOfInsertMoney.inputValue,
-      failure: (error) => {
-        showWarning("Error al invertir");
-        this.setState({ updating: false });
-      },
-      successful: (data) => {
-        showSuccess("Inversión exitosa");
-        this.setState({ updating: false });
-      },
-      willStart: () => {
-        this.setState({ updating: true });
-      },
-      willEnd: () => {
-        this.setState({ updating: false });
-      },
-    });
+    driverPanelBalance.setDefaultUSDTBuy(Math.round(10 ** expVal));
   }
 
   render() {
-    _balance_ = +vars_PanelOfInsertMoney.inputValue;
+    const maxInvestLog10 = Math.log10(MAX_VALUE_INVERSION);
+    const limitMaxLog10 = Math.min(
+      Math.log10(driverPanelBalance.getLimitUSDTBuy()),
+      maxInvestLog10
+    );
     return (
       <PaperP style={{ minWidth: "250px" }}>
         <div className="flex col-direction gap-10px">
           <Typography variant="caption" color="secondary">
-            Insertar Dinero
+            <small className="underline">Inversión</small>
           </Typography>
-          <TextField
-            type="number"
-            label="USD"
-            variant="outlined"
-            size="small"
-            inputProps={{
-              min: 0,
-              max: MAX_VALUE_INVERSION,
-              step: 1,
-              pattern: "[0-9]*",
-              inputMode: "numeric",
-            }}
-            value={vars_PanelOfInsertMoney.inputValue}
-            onChange={this.handleInputChange}
-            sx={{ mt: 1, width: "100%" }}
-          />
+          <div className="flex align-center gap-10px">
+            <TextField
+              type="number"
+              label="USD"
+              variant="outlined"
+              size="small"
+              inputProps={{
+                min: driverPanelBalance.getMin2DefaultUSDTBuy(),
+                max: driverPanelBalance.getMax2DefaultUSDTBuy(),
+                step: 1,
+                pattern: "[0-9]*",
+                inputMode: "numeric",
+              }}
+              value={driverPanelBalance.getDefaultUSDTBuy()}
+              onChange={this.handleInputChange}
+              sx={{ mt: 1, width: "100%" }}
+            />
+            <TooltipGhost title="Invertir">
+              <span>{this.buttonAssign()}</span>
+            </TooltipGhost>
+          </div>
           <div
-            className="d-inline-center"
+            className="inline-flex justify-center align-center"
             style={{ width: "95%", margin: "auto" }}
           >
             <Slider
               aria-label="Custom marks"
-              value={vars_PanelOfInsertMoney.sliderExp}
+              value={driverPanelBalance.getLog10DefaultUSDTBuy()}
               getAriaValueText={valueText}
               min={1}
-              max={Math.log10(MAX_VALUE_INVERSION)}
+              max={limitMaxLog10}
               step={0.01}
               valueLabelDisplay="auto"
               valueLabelFormat={valueText()}
-              marks={marks}
+              marks={marks.filter((mark) => {
+                return mark.value <= limitMaxLog10;
+              })}
               onChange={this.handleSliderChange}
               sx={{
                 "& .MuiSlider-mark": { width: 4, height: 4 },
@@ -158,23 +104,108 @@ export default class PanelOfInsertMoney extends React.Component {
               }}
             />
           </div>
-          <div style={{ marginTop: 8, textAlign: "right" }}>
-            <TooltipGhost title="Invertir">
-              <Button
-                variant="contained"
-                size="small"
-                startIcon={<AttachMoneyIcon />}
-                disabled={
-                  this.state.updating || !vars_PanelOfInsertMoney.inputValue
-                }
-                onClick={this.handleInvest}
-              >
-                Invertir
-              </Button>
-            </TooltipGhost>
-          </div>
+          <ProfitProjCard />
         </div>
       </PaperP>
     );
+  }
+
+  buttonAssign() {
+    const RETURN = class extends Component {
+      componentDidMount() {
+        driverPanelOfInsertMoney.addLinkWaitInvestment(this);
+      }
+      componentWillUnmount() {
+        driverPanelOfInsertMoney.removeLinkWaitInvestment(this);
+      }
+      render() {
+        return (
+          <Button
+            variant="contained"
+            size="small"
+            startIcon={<AttachMoneyIcon fontSize="small" />}
+            disabled={driverPanelOfInsertMoney.getWaitInvestment()}
+            onClick={() => driverPanelOfInsertMoney.handleInvest()}
+          >
+            Asignar
+          </Button>
+        );
+      }
+    }
+    return <RETURN />;
+  }
+}
+
+class ProfitProjCard extends Component {
+  constructor(props) {
+    super(props);
+  }
+
+  componentDidMount() {
+    driverPanelBalance.addLinkDefaultUSDTBuy(this);
+    driverPanelBalance.addLinkLimitUSDTBuy(this);
+  }
+
+  componentWillUnmount() {
+    driverPanelBalance.removeLinkDefaultUSDTBuy(this);
+    driverPanelBalance.removeLinkLimitUSDTBuy(this);
+  }
+
+  render() {
+    const {
+      current_price: currentPrice, //
+      projected_price: projectedPrice,
+    } = driverPanelOfProjections.getCoinMetric();
+
+    const diffPrice = projectedPrice - currentPrice;
+
+    const color = [["warning", "error"][+(diffPrice < 0)], "ok"][
+      +(diffPrice > 0)
+    ];
+
+    const projectedGainUSD = this.calculateProjectedGain(
+      driverPanelBalance.getDefaultUSDTBuy(),
+      currentPrice,
+      projectedPrice
+    );
+    const valueProfitProjected = projectedGainUSD.toFixed(2);
+    const labelTitle = "Beneficio estimado";
+
+    return (
+      <PaperP p_min={2} p_max={5} elevation={3}>
+        <TooltipGhost
+          title={
+            !!projectedGainUSD &&
+            `${labelTitle}: ${valueProfitProjected} USD por cada ${driverPanelBalance.getDefaultUSDTBuy()} USD`
+          }
+        >
+          <div>
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              className="mb-5px nowrap"
+            >
+              <small>
+                {labelTitle} ({driverPanelBalance.getDefaultUSDTBuy()} USD)
+              </small>
+            </Typography>
+            <br />
+            <Typography color={color} variant="caption">
+              {["---", `${valueProfitProjected} USD`][+!!projectedGainUSD]}
+            </Typography>
+          </div>
+        </TooltipGhost>
+      </PaperP>
+    );
+  }
+
+  // Calcula ganancia proyectada para un monto dado (USD)
+  calculateProjectedGain(amountUSD, currentPrice, projectedPrice) {
+    if (!projectedPrice || currentPrice <= 0) {
+      return 0;
+    }
+    const tokens = amountUSD / currentPrice;
+    const diffProfit = projectedPrice - currentPrice;
+    return diffProfit * tokens;
   }
 }

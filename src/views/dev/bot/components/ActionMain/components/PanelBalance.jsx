@@ -1,5 +1,4 @@
 import React, { Component } from "react";
-import SettingsIcon from "@mui/icons-material/Settings";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import TrendingDownIcon from "@mui/icons-material/TrendingDown";
 import TrendingFlatIcon from "@mui/icons-material/TrendingFlat";
@@ -31,41 +30,24 @@ import {
   WaitSkeleton,
 } from "@jeff-aporta/camaleon";
 
-import { HTTPGET_COINS_METRICS, HTTPGET_BALANCECOIN } from "@api";
-
 import ActionButtons from "./ActionButtons";
 import CoinsOperating from "./CoinsOperating";
 import PanelCoinSelected from "./PanelCoinSelected";
-import PanelOfInsertMoney, {
-  changeValueInsertMoney,
-} from "./PanelOfInsertMoney";
-import PanelOfProjections from "./PanelOfProjections";
+import PanelOfInsertMoney from "./PanelOfInsertMoney";
 
 import { vars_PanelOfInsertMoney } from "./PanelOfInsertMoney";
 import { panelProjectionsState } from "./PanelOfProjections";
-import { driverPanelRobot } from "../../../bot.jsx";
-
-export const driverPanelBalance = DriverComponent({
-  panelBalance: {},
-  transactionMostRecent: {
-    value: 0,
-  },
-  autoFetch: {
-    nameStorage: "bot-autofetch",
-  },
-});
+import { driverPanelBalance } from "./PanelBalance.driver.js";
+import { driverPanelRobot } from "../../../bot.driver.js";
+import { driverTables } from "../../../../../../tables/tables.js";
 
 class TimeCount extends AnimateComponent {
-  constructor(props) {
-    super(props);
-  }
-
   handleAutoFetchChange = (e) => {
     driverPanelBalance.setAutoFetch(e.target.checked);
   };
 
   render() {
-    const autoFetch = driverPanelBalance.getAutoFetch() == "true";
+    const autoFetch = driverPanelBalance.getAutoFetch();
     const minutos = 5;
     const segundos = minutos * 60;
     const msSteep = segundos * 1000;
@@ -75,14 +57,20 @@ class TimeCount extends AnimateComponent {
       0,
       1
     );
-    if (
-      autoFetch &&
-      !document.hidden &&
-      this.pastPercent &&
-      this.pastPercent > timePercent
-    ) {
-      console.log("🔄️ AutoFetch ejecutado");
-      setTimeout(driverPanelRobot.updatePanelRobot);
+    if (this.pastPercent > timePercent) {
+      if (!document.hidden) {
+        if (autoFetch) {
+          console.log("🔄️ Autofetch ejecutado");
+          setTimeout(() => {
+            driverPanelRobot.fetchCoinMetrics();
+            driverTables.refetch();
+          });
+        } else {
+          console.log("⛔ Autofetch desactivado en Storage");
+        }
+      } else {
+        console.log("⛔ Ventana no activa para Autofetch");
+      }
     }
     this.pastPercent = timePercent;
     return (
@@ -91,7 +79,7 @@ class TimeCount extends AnimateComponent {
           <FormControlLabel
             control={
               <Checkbox
-                color="primaryl4"
+                color="l4"
                 checked={autoFetch}
                 onChange={this.handleAutoFetchChange}
                 size="small"
@@ -107,7 +95,7 @@ class TimeCount extends AnimateComponent {
               </Typography>
             }
           />
-          <Typography variant="caption" color="contrastpaper">
+          <Typography variant="caption" color="contrastPaper">
             {seconds2Time(Math.floor(map(timePercent, 0, 1, 0, segundos)), {
               HH: false,
             })}{" "}
@@ -144,44 +132,23 @@ function seconds2Time(seconds, { HH = true, MM = true, SS = true } = {}) {
 export default class PanelBalance extends Component {
   constructor(props) {
     super(props);
-    this.state = {};
-    subscribeParam(
-      { "id_coin, coin": () => driverPanelRobot.updatePanelRobot() },
-      this
-    );
-    driverPanelBalance.setPanelBalance(this);
   }
 
   componentDidMount() {
-    this.addParamListener();
-    driverPanelRobot.addLinkLoadingCoinsToOperate(this);
+    driverPanelRobot.addLinkCoinsOperating(this);
+    driverPanelRobot.addLinkCoinsToDelete(this);
+    driverPanelRobot.addLinkIdCoin(this);
+    driverPanelRobot.addLinkCurrency(this);
   }
 
   componentWillUnmount() {
-    this.removeParamListener();
-    driverPanelRobot.removeLinkLoadingCoinsToOperate(this);
+    driverPanelRobot.removeLinkCoinsOperating(this);
+    driverPanelRobot.removeLinkCoinsToDelete(this);
+    driverPanelRobot.removeLinkIdCoin(this);
+    driverPanelRobot.removeLinkCurrency(this);
   }
 
-  settingIcon = () => (
-    <IconButtonWithTooltip
-      title="Configurar"
-      onClick={() => driverPanelRobot.setToSettingsViewBot()}
-      icon={
-        <div className="flex col-direction align-center">
-          <SettingsIcon />
-          <Typography variant="caption" color="text.secondary">
-            <small>Configurar</small>
-          </Typography>
-        </div>
-      }
-    />
-  );
-
   render() {
-    const { onSellCoin, deletionTimers, setDeletionTimers } = this.props;
-    // Usar los estados globales en vez del state local
-    const { actionInProcess } = vars_PanelOfInsertMoney;
-    const flatNumber = -1;
     const roi = 0;
 
     const hayMoneda = [
@@ -193,87 +160,25 @@ export default class PanelBalance extends Component {
       <div>
         <TimeCount frameRate={1} />
         <PaperP elevation={0}>
-          <div className={`flex wrap space-between gap-10px`}>
-            <PanelCoinSelected />
-            <PanelOfProjections flatNumber={flatNumber} />
-            <PanelOfInsertMoney
-              setInputValue={(value) => {
-                vars_PanelOfInsertMoney.inputValue = value;
-                driverPanelRobot.updatePanelRobot();
-              }}
-              setSliderExp={(exp) => {
-                vars_PanelOfInsertMoney.sliderExp = exp;
-                driverPanelRobot.updatePanelRobot();
-              }}
-            />
-            <ActionButtons
-              settingIcon={this.settingIcon}
-              onSellCoin={onSellCoin}
-              actionInProcess={actionInProcess}
-              setActionInProcess={(value) =>
-                this.setState({ actionInProcess: value })
-              }
-            />
+          <div className={`flex wrap space-between gap-5px`}>
+            <div className="flex wrap gap-5px">
+              <PanelCoinSelected />
+              <PanelOfInsertMoney />
+            </div>
+            <ActionButtons />
           </div>
-          {hayMoneda && (
-            <>
-              <br />
-              <CoinsOperating
-                deletionTimers={deletionTimers}
-                setDeletionTimers={setDeletionTimers}
-                onExternalDeleteRef={window.onSellCoinRef}
-                actionInProcess={actionInProcess}
-                setActionInProcess={(value) =>
-                  this.setState({ actionInProcess: value })
-                }
-              />
-            </>
-          )}
+          {(() => {
+            if (hayMoneda) {
+              return (
+                <>
+                  <br />
+                  <CoinsOperating />
+                </>
+              );
+            }
+          })()}
         </PaperP>
       </div>
     );
   }
 }
-
-window.fetchMetrics = async function (setState = () => 0) {
-  const id_coin = driverParams.get("id_coin")[0];
-  if (!id_coin) return;
-  await HTTPGET_COINS_METRICS({
-    id_coin,
-    setError: (err) => setState({ errorMetrics: err }),
-    setApiData: ([data]) => {
-      if (!data) {
-        console.log("[fetchMetrics]: No se recibio datos", id_coin);
-        return;
-      }
-      setState({ coinMetric: data });
-      changeValueInsertMoney(data.default_usdt_buy);
-    },
-  });
-  try {
-    driverPanelBalance.setTransactionMostRecent(await HTTPGET_BALANCECOIN());
-  } catch (e) {
-    console.error(e);
-  }
-};
-
-window.calculateTimeToUpdate = function () {
-  // MInutos actuales (en el sistema local)
-  const currentMinute = calculate_minute_test();
-
-  const next5MinMultiple = (() => {
-    const nextMultiple = Math.ceil(currentMinute / 5);
-    return 5 * nextMultiple - 1;
-  })();
-
-  window.msToUpdate = next5MinMultiple * 60 * 1000;
-
-  function calculate_minute_test() {
-    // MInutos actuales (en el sistema local)
-    const currentMinute = new Date().getMinutes();
-    // Porcentaje de minutos transcurridos para el multiplo de 5
-    const percentDecimalTime = (currentMinute / 5) % 1;
-    const inMultiple = +(percentDecimalTime == 0);
-    return currentMinute + inMultiple;
-  }
-};

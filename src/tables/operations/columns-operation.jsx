@@ -51,6 +51,7 @@ export default () => [
   {
     field: "profit",
     headerName: "Beneficio",
+    fit_content: true,
     description: "Ganancia obtenida de la operación.",
     ...getModelsFormat().profit_op,
   },
@@ -69,6 +70,7 @@ export default () => [
   {
     field: "price_buy",
     headerName: "Compra",
+    space_between: true,
     description: "Precio de compra de la moneda en USDC.",
     ...getModelsFormat().currentCoin,
   },
@@ -118,13 +120,13 @@ export default () => [
     field: "start_date_operation",
     headerName: "Inicio",
     description: "Fecha y hora en que comenzó la operación.",
-    ...getModelsFormat().datetime,
+    ...getModelsFormat().dateFormat2,
   },
   {
     field: "end_date_operation",
     headerName: "Fin",
     description: "Fecha y hora en que finalizó la operación.",
-    ...getModelsFormat().datetime,
+    ...getModelsFormat().dateFormat2,
   },
   {
     inTable: false,
@@ -132,7 +134,6 @@ export default () => [
     field: "create_date",
     headerName: "create_date",
     description: "Fecha de creación interna de la operación.",
-    ...getModelsFormat().datetime,
   },
   {
     field: "number_of_transactions",

@@ -24,7 +24,7 @@ export async function HTTPPUT_COINS_STOP({ user_id, id_coin, ...rest }) {
   });
 }
 
-export async function HTTPPUT_USEROPERATION_INVESTMEN({
+export async function HTTPPUT_USEROPERATION_INVESTMENT({
   user_id,
   coin_id,
   new_value,

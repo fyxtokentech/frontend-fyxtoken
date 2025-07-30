@@ -9,8 +9,8 @@ import {
 // Importar contenedores y templates
 import {
   DivM,
-  addThemeSwitchListener,
-  removeThemeSwitchListener,
+  addThemeChangeListener,
+  removeThemeChangeListener,
 } from "@jeff-aporta/camaleon";
 
 // Importar los componentes de las pestañas (se crearán a continuación)
@@ -41,28 +41,14 @@ const reverseTabMapping = Object.fromEntries(
   Object.entries(tabMapping).map(([key, value]) => [value, key])
 );
 
-export default function () {
-  return <Resume />;
-}
+export default () => <Resume />;
 
 class Resume extends React.Component {
   constructor(props) {
     super(props);
     const key = driverParams.get("view_resume")[0] || "deposits";
     const idx = tabMapping.hasOwnProperty(key) ? tabMapping[key] : 0;
-    this.state = { theme: 0, activeTab: idx };
-  }
-
-  handleThemeSwitch(theme) {
-    this.setState({ theme });
-  }
-
-  componentDidMount() {
-    addThemeSwitchListener(this.handleThemeSwitch);
-  }
-
-  componentWillUnmount() {
-    removeThemeSwitchListener(this.handleThemeSwitch);
+    this.state = { activeTab: idx };
   }
 
   handleChange = (_, newValue) => {

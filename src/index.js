@@ -10,12 +10,16 @@ import {
   defaultUseViewId,
   RoutingManagement,
   defaultThemeName,
+  setTransition,
+  setMainTitle,
 } from "@jeff-aporta/camaleon";
 import { initStartApp } from "./app/_start/start";
 import { init as initPolyfill } from "./app/_start/polyfill";
 import { routeCheck } from "./app/_start/routeCheck";
-import { Unauthorize } from "@views/unauthorize";
 
+setMainTitle("Fyxtoken", "Futuro financiero");
+
+defaultUseViewId(true);
 defaultThemeName("violet");
 assignMapManagement({
   "@wallet": {
@@ -36,9 +40,25 @@ assignMapManagement({
     },
   },
 });
-defaultUseViewId(true);
 initStartApp();
 initPolyfill();
+const time = 200;
+setTransition({
+  fade: {
+    userSelect: "none",
+    pointerEvents: "none",
+    transition: `all ${time}ms ease-in-out`,
+  },
+  fadeout: {
+    transform: "translateX(-100%)",
+    filter: "opacity(0.6) grayscale(0.5)",
+  },
+  fadein: {
+    transform: "translateX(0)",
+    filter: "opacity(1) grayscale(0)",
+  },
+  time: time,
+});
 
 const componentsContext = require.context("./views", true, /\.jsx$/);
 
@@ -47,17 +67,14 @@ window["currentUser"] = JSON.parse(localStorage.getItem("user") || "null");
 
 createRoot(document.getElementById("root")).render(
   <RoutingManagement
-    {...{
-      componentsContext,
-      routeCheck, // Función verificadora de errores en ruta
-      componentError: (check) => <Unauthorize message={check.message} />,
-      customRoutes: { custom: <h1>Hola desde custom</h1> },
-      startIgnore: [
-        package_json.repository.url
-          .replace("http://", "")
-          .split("/")
-          .filter(Boolean)[3],
-      ],
-    }}
+    componentsContext={componentsContext}
+    routeCheck={routeCheck}
+    customRoutes={{ custom: <h1>Hola desde custom</h1> }}
+    startIgnore={[
+      package_json.repository.url
+        .replace("http://", "")
+        .split("/")
+        .filter(Boolean)[3],
+    ]}
   />
 );

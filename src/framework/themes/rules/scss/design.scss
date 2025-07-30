@@ -1,0 +1,214 @@
+.fit-w,
+.fit-width {
+  width: fit-content;
+}
+
+.fit-h,
+.fit-height {
+  height: fit-content;
+}
+
+.fit-content {
+  width: fit-content;
+  height: fit-content;
+}
+
+.fullVW {
+  width: 100vw;
+}
+
+.fullVH {
+  height: 100vh;
+}
+
+.full-w,
+.fullWidth {
+  min-width: 100%;
+  max-width: 100%;
+  width: 100%;
+}
+
+.full-h,
+.fullHeight {
+  min-height: 100%;
+  height: 100%;
+}
+
+.fill {
+  @extend .full-w;
+  @extend .full-h;
+}
+
+.design {
+  position: relative !important;
+}
+
+.sticky,
+.layer,
+.fixed {
+  --tx: 0;
+  --ty: 0;
+  --x: unset;
+  --y: unset;
+  left: var(--x);
+  top: var(--y);
+
+  &.left {
+    --x: 0;
+  }
+
+  &.top {
+    --y: 0;
+  }
+
+  &.right {
+    right: 0;
+  }
+
+  &.bottom {
+    bottom: 0;
+  }
+
+  &.center-x {
+    --x: 50%;
+  }
+
+  &.center-y {
+    --y: 50%;
+  }
+
+  &.center {
+    @extend .center-x;
+    @extend .center-y;
+  }
+
+  &.centralized {
+    --tx: -50%;
+    --ty: -50%;
+  }
+
+  &.full-w,
+  &.fullWidth {
+    --x: 0;
+    right: 0;
+  }
+
+  &.full-h,
+  &.fullHeight {
+    --y: 0;
+    bottom: 0;
+  }
+
+  &.center-centralized {
+    @extend .center;
+    @extend .centralized;
+  }
+}
+
+.sticky {
+  position: sticky !important;
+}
+
+.fixed {
+  position: fixed !important;
+}
+
+.sticky,
+.fixed {
+  transform: translate(var(--tx), var(--ty));
+}
+
+.layer {
+  position: absolute !important;
+  --e: 1;
+  --ex: 1;
+  --ey: 1;
+  --r: 0;
+  --tox: 0;
+  --toy: 0;
+
+  transform: translate(var(--tx), var(--ty))
+    scale(calc(var(--e) * var(--ex)), calc(var(--e) * var(--ey)))
+    rotate(var(--r));
+
+  transform-origin: var(--tox) var(--toy);
+
+  &.toCenterX {
+    --tox: center;
+  }
+
+  &.toCenterY {
+    --toy: center;
+  }
+
+  &.toCenter {
+    @extend .toCenterX;
+    @extend .toCenterY;
+  }
+
+  &.toLeft {
+    --tox: left;
+  }
+
+  &.toRight {
+    --tox: right;
+  }
+
+  &.toBottom {
+    --toy: bottom;
+  }
+
+  &.toTop {
+    --toy: top;
+  }
+
+  &.scale-1-5 {
+    --e: 1.5;
+  }
+
+  &.scale-2 {
+    --e: 2;
+  }
+}
+
+.fit-contain {
+  object-fit: contain;
+  @extend .object-position;
+}
+
+.fit-cover {
+  object-fit: cover;
+  @extend .object-position;
+}
+
+.fit-scale {
+  object-fit: scale-down;
+  @extend .object-position;
+}
+
+.object-position {
+  --ox: center;
+  --oy: center;
+  object-position: var(--ox) var(--oy);
+
+  &.oleft {
+    --ox: left;
+  }
+
+  &.oright {
+    --ox: right;
+  }
+
+  &.otop {
+    --oy: top;
+  }
+
+  &.obottom {
+    --oy: bottom;
+  }
+
+  &.ocenter {
+    --ox: center;
+    --oy: center;
+  }
+}

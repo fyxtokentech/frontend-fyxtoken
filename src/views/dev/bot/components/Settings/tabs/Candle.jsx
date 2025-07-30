@@ -1,277 +1,225 @@
-import React, { useState, useEffect } from "react";
-
+import React, { Component } from "react";
 import {
   Button,
-  Tooltip,
-  Fab,
-  TableContainer,
-  Paper,
-  Table,
-  TableHead,
-  TableRow,
-  TableCell,
-  TableBody,
   TextField,
-  Select,
-  MenuItem,
-  FormControlLabel,
-  Checkbox,
   Box,
   Typography,
-  ToggleButtonGroup,
-  ToggleButton,
   Grid,
   Slider,
-  CircularProgress,
 } from "@mui/material";
-
-import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
-import TimelineIcon from "@mui/icons-material/Timeline";
 import SaveIcon from "@mui/icons-material/Save";
-import IconButton from "@mui/material/IconButton";
 import { TitleTab } from "./_repetitive";
-import { ImageLocal } from "@jeff-aporta/camaleon";
 import {
-  HTTPGET_USEROPERATION_STRATEGY,
-  HTTPPATCH_USEROPERATION_STRATEGY,
-} from "@api";
-import {
-  showSuccess,
-  showError,
   showInfo,
-  driverParams,
+  WaitSkeleton,
+  TooltipGhost,
+  ImageLocal,
 } from "@jeff-aporta/camaleon";
+import { driverCandle } from "./Candle.driver.js";
 
-export function CandlestickView() {
-  const [config, setConfig] = useState(null);
-  const [saving, setSaving] = useState(false);
+export class CandlestickView extends Component {
+  componentDidMount() {
+    driverCandle.addLinkConfig(this);
+    driverCandle.addLinkLoading(this);
+    driverCandle.addLinkSaving(this);
+    driverCandle.addLinkWasChanged(this);
+    driverCandle.addLinkSliderPercentDown(this);
+    driverCandle.addLinkSliderPercentUp(this);
+    driverCandle.loadConfig();
+  }
 
-  // Utilidades conversión periodo texto <-> objeto
-  const periodTextToObj = (txt) => {
-    if (!txt) return { unit: "m", value: 5 };
-    if (txt.includes("minuto")) return { unit: "m", value: parseInt(txt) };
-    if (txt.includes("hora")) return { unit: "h", value: parseInt(txt) };
-    if (txt.includes("día")) return { unit: "d", value: parseInt(txt) };
-    if (txt.includes("semana")) return { unit: "s", value: parseInt(txt) };
-    if (txt.includes("mes")) return { unit: "M", value: parseInt(txt) };
-    return { unit: "m", value: 5 };
-  };
-  const periodObjToText = ({ unit, value }) => {
-    if (!unit || !value) return "5 minutos";
-    switch (unit) {
-      case "m":
-        return `${value} minutos`;
-      case "h":
-        return `${value} hora${value > 1 ? "s" : ""}`;
-      case "d":
-        return `${value} día${value > 1 ? "s" : ""}`;
-      case "s":
-        return `${value} semana${value > 1 ? "s" : ""}`;
-      case "M":
-        return `${value} mes${value > 1 ? "es" : ""}`;
-      default:
-        return "5 minutos";
-    }
-  };
+  componentWillUnmount() {
+    driverCandle.removeLinkConfig(this);
+    driverCandle.removeLinkLoading(this);
+    driverCandle.removeLinkSaving(this);
+    driverCandle.removeLinkWasChanged(this);
+    driverCandle.removeLinkSliderPercentDown(this);
+    driverCandle.removeLinkSliderPercentUp(this);
+  }
 
-  // Carga config candle al montar
-  useEffect(() => {
-    (async () => {
-      const { user_id } = window.currentUser;
-      const id_coin = driverParams.get("id_coin")[0];
-      if (!user_id || !id_coin) {
-        return;
-      }
-      await HTTPGET_USEROPERATION_STRATEGY({
-        user_id,
-        id_coin,
-        strategy: "candle",
-        failure: () => showError("Error al cargar configuración de velas"),
-        successful: ([data]) => {
-          const loaded = data;
-          setTimeout(() => {
-            setConfig(data);
-          });
-        },
-      });
-    })();
-  }, []);
+  render() {
+    // const config = driverCandle.getConfig(); // No utilizado actualmente
+    // const saving = driverCandle.getSaving(); // No utilizado actualmente
+    const loading = driverCandle.getLoading();
+    // const wasChanged = driverCandle.getWasChanged(); // No utilizado actualmente
 
-  if (!config) {
     return (
-      <div className="d-center gap-10px">
-        <CircularProgress /> fetching...
-      </div>
+      <WaitSkeleton loading={loading}>
+        <Grid
+          container
+          spacing={0}
+          sx={{
+            p: { xs: 0, sm: 2 },
+            maxWidth: "100%",
+            mx: "auto",
+            width: "100%",
+            alignItems: "stretch",
+          }}
+        >
+          <Grid item md={5} className="d-center wrap">
+            {this.ImageCandle()}
+          </Grid>
+          {this.FormCandle()}
+        </Grid>
+      </WaitSkeleton>
     );
   }
 
-  const handlePeriodChange = (e) =>
-    setConfig((prev) => ({ ...prev, period: periodTextToObj(e.target.value) }));
-  const handlePercentDownChange = (e, val) =>
-    setConfig((prev) => ({
-      ...prev,
-      percent: { down: val, up: prev.percent.up },
-    }));
-  const handlePercentUpChange = (e, val) =>
-    setConfig((prev) => ({
-      ...prev,
-      percent: { down: prev.percent.down, up: val },
-    }));
-  const handlePercentDownInput = (e) =>
-    setConfig((prev) => ({
-      ...prev,
-      percent: { down: Number(e.target.value), up: prev.percent.up },
-    }));
-  const handlePercentUpInput = (e) =>
-    setConfig((prev) => ({
-      ...prev,
-      percent: { down: prev.percent.down, up: Number(e.target.value) },
-    }));
-
-  const handleSave = async () => {
-    const { user_id } = window.currentUser;
-    const id_coin = driverParams.get("id_coin")[0];
-    if (!user_id || !id_coin) {
-      return;
-    }
-    setSaving(true);
-    await HTTPPATCH_USEROPERATION_STRATEGY({
-      user_id,
-      id_coin,
-      strategy: "candle",
-      new_config: JSON.stringify(config),
-      successful: () => showSuccess("Configuración de velas guardada"),
-      failure: () => showError("Error al guardar configuración de velas"),
-    });
-    setSaving(false);
-  };
-
-  return (
-    <Box sx={{ p: 2 }}>
-      <Grid container spacing={2} alignItems="stretch">
-        <Grid item xs={12} md={5} className="d-center wrap">
-          <ImageLocal
-            src={"img/ilustration/candlesticks.svg"}
-            alt="Ilustración Candle"
-            style={{
-              width: "100%",
-              height: "100%",
-              objectFit: "contain",
-              objectPosition: "center",
-            }}
+  FormCandle() {
+    const config = driverCandle.getConfig();
+    const saving = driverCandle.getSaving();
+    const wasChanged = driverCandle.getWasChanged();
+    
+    return (
+      <Grid item xs={12} md={7}>
+        <Box
+          sx={{
+            p: { xs: 1.5, sm: 3 },
+            borderRadius: { xs: 0, sm: 3 },
+            boxShadow: { xs: 0, sm: 2 },
+            width: "100%",
+          }}
+        >
+          <TitleTab 
+            variant="h5" 
+            title="Configuración Velas" 
+            subtitle="Configuración de análisis de velas japonesas"
           />
-        </Grid>
-        <Grid item xs={12} md={7}>
-          <Box sx={{ p: 2, borderRadius: 3, boxShadow: 2, width: "100%" }}>
-            <TitleTab
-              title="Configuración de Velas"
-              subtitle="Define periodo y porcentaje para velas."
-              variant="h6"
-            />
-            <br />
-            <Grid container spacing={2}>
-              <Grid item xs={12} sm={12}>
-                <TextField
-                  select
-                  label="Periodo"
-                  value={periodObjToText(config.period)}
-                  onChange={handlePeriodChange}
-                  fullWidth
-                  SelectProps={{ native: true }}
-                >
-                  <option value="5 minutos">5 minutos</option>
-                  <option value="10 minutos">10 minutos</option>
-                  <option value="15 minutos">15 minutos</option>
-                  <option value="30 minutos">30 minutos</option>
-                  <option value="1 hora">1 hora</option>
-                  <option value="1 día">1 día</option>
-                </TextField>
+          <br />
+
+            <form
+              id="candle-form"
+              onChange={() => {
+                driverCandle.updateFromForm();
+              }}
+            >
+              <Grid container spacing={2}>
+                <Grid item xs={12}>
+                  <TextField
+                    select
+                    label="Periodo"
+                    name="period"
+                    value={driverCandle.periodObjToText(config.period)}
+                    fullWidth
+                    SelectProps={{ native: true }}
+                  >
+                    <option value="5 minutos">5 minutos</option>
+                    <option value="10 minutos">10 minutos</option>
+                    <option value="15 minutos">15 minutos</option>
+                    <option value="30 minutos">30 minutos</option>
+                    <option value="1 hora">1 hora</option>
+                    <option value="1 día">1 día</option>
+                  </TextField>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="subtitle1" gutterBottom sx={{ mt: 2 }}>
+                    Baja (%)
+                  </Typography>
+                  <Slider
+                    value={driverCandle.getSliderPercentDown()}
+                    onChange={(e, value) => {
+                      driverCandle.updateSliderPercentDown(value);
+                    }}
+                    valueLabelDisplay="on"
+                    step={0.01}
+                    valueLabelFormat={(value) => `${+value.toFixed(2)}%`}
+                    getAriaValueText={(val) => `${+val.toFixed(2)}%`}
+                    min={0}
+                    max={10}
+                    sx={{ mb: 2 }}
+                  />
+                  <TextField
+                    type="number"
+                    name="percent.down"
+                    value={config.percent.down}
+                    onKeyDown={(e) => {
+                      if (e.key === ".") {
+                        e.preventDefault();
+                        showInfo("La separación decimal es con coma");
+                      }
+                      if (e.key === "-") {
+                        e.preventDefault();
+                        showInfo("No se puede ingresar números negativos");
+                      }
+                    }}
+                    InputProps={{ inputProps: { min: 0, max: 10, step: 0.01 } }}
+                    fullWidth
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="subtitle1" gutterBottom sx={{ mt: 2 }}>
+                    Subida (%)
+                  </Typography>
+                  <Slider
+                    value={driverCandle.getSliderPercentUp()}
+                    onChange={(e, value) => {
+                      driverCandle.updateSliderPercentUp(value);
+                    }}
+                    valueLabelDisplay="on"
+                    step={0.01}
+                    valueLabelFormat={(value) => `${+value.toFixed(2)}%`}
+                    getAriaValueText={(val) => `${+val.toFixed(2)}%`}
+                    min={0}
+                    max={10}
+                    sx={{ mb: 2 }}
+                  />
+                  <TextField
+                    type="number"
+                    name="percent.up"
+                    value={config.percent.up}
+                    onKeyDown={(e) => {
+                      if (e.key === ".") {
+                        e.preventDefault();
+                        showInfo("La separación decimal es con coma");
+                      }
+                      if (e.key === "-") {
+                        e.preventDefault();
+                        showInfo("No se puede ingresar números negativos");
+                      }
+                    }}
+                    InputProps={{ inputProps: { min: 0, max: 10, step: 0.01 } }}
+                    fullWidth
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <div className="flex justify-end" style={{ marginTop: 16 }}>
+                    <TooltipGhost
+                      title={driverCandle.mapCaseWasChanged("tooltipSaveButton")}
+                    >
+                      <div>
+                        <Button
+                          variant="contained"
+                          color="primary"
+                          startIcon={<SaveIcon />}
+                          onClick={() => driverCandle.saveConfig()}
+                          loading={saving}
+                          disabled={!wasChanged || saving}
+                        >
+                          {driverCandle.mapCaseSaving("textButtonSave")}
+                        </Button>
+                      </div>
+                    </TooltipGhost>
+                  </div>
+                </Grid>
               </Grid>
-              <Grid item xs={12} sm={6}>
-                <br />
-                <Typography variant="subtitle1" gutterBottom>
-                  Baja (%)
-                </Typography>
-                <br />
-                <Slider
-                  value={config.percent.down}
-                  onChange={handlePercentDownChange}
-                  valueLabelDisplay="on"
-                  step={0.01}
-                  valueLabelFormat={(value) => `${+value.toFixed(2)}%`}
-                  getAriaValueText={(val) => `${+val.toFixed(2)}%`}
-                  min={0}
-                  max={10}
-                />
-                <TextField
-                  type="number"
-                  value={config.percent.down}
-                  onKeyDown={(e) => {
-                    if (e.key === ".") {
-                      e.preventDefault();
-                      showInfo("La separación decimal es con coma");
-                    }
-                    if (e.key === "-") {
-                      e.preventDefault();
-                      showInfo("No se puede ingresar números negativos");
-                    }
-                  }}
-                  onChange={handlePercentDownInput}
-                  InputProps={{ inputProps: { min: 0, max: 10, step: 0.01 } }}
-                  fullWidth
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <br />
-                <Typography variant="subtitle1" gutterBottom>
-                  Subida (%)
-                </Typography>
-                <br />
-                <Slider
-                  value={config.percent.up}
-                  onChange={handlePercentUpChange}
-                  valueLabelDisplay="on"
-                  step={0.01}
-                  valueLabelFormat={(value) => `${+value.toFixed(2)}%`}
-                  getAriaValueText={(val) => `${+val.toFixed(2)}%`}
-                  min={0}
-                  max={10}
-                />
-                <TextField
-                  type="number"
-                  value={config.percent.up}
-                  onKeyDown={(e) => {
-                    if (e.key === ".") {
-                      e.preventDefault();
-                      showInfo("La separación decimal es con coma");
-                    }
-                    if (e.key === "-") {
-                      e.preventDefault();
-                      showInfo("No se puede ingresar números negativos");
-                    }
-                  }}
-                  onChange={handlePercentUpInput}
-                  InputProps={{ inputProps: { min: 0, max: 10, step: 0.01 } }}
-                  fullWidth
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <br />
-                <Button
-                  variant="contained"
-                  color="primary"
-                  fullWidth
-                  startIcon={<SaveIcon />}
-                  onClick={handleSave}
-                  disabled={saving}
-                >
-                  {saving ? "Guardando..." : "Guardar cambios"}
-                </Button>
-              </Grid>
-            </Grid>
-          </Box>
-        </Grid>
+            </form>
+        </Box>
       </Grid>
-    </Box>
-  );
+    );
+  }
+
+  ImageCandle() {
+    return (
+      <ImageLocal
+        src="img/ilustration/candlesticks.svg"
+        alt="Velas japonesas"
+        style={{
+          width: "100%",
+          height: "100%",
+          objectFit: "contain",
+          objectPosition: "center",
+        }}
+      />
+    );
+  }
 }

@@ -228,7 +228,7 @@ function LogoHome() {
         <Box
           className={fluidCSS()
             .lerpX("responsive-min", { fontSize: [15, 20] })
-            .end("flex-col")}
+            .end("flex col-direction")}
         >
           <Typography
             style={{
@@ -252,7 +252,7 @@ function LogoHome() {
               fontFamily: "lemonmilk-rg",
               fontSize: "45%",
             }}
-            color="primaryl3"
+            color="contrastPaper"
             sx={{ display: { xs: "none", sm: "block" } }}
           >
             Futuro financiero
