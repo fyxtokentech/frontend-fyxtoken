@@ -74,12 +74,11 @@ export const driverRSI = DriverComponent({
       },
       successful: ([data]) => {
         // Convertir period de objeto a texto para el frontend
-        const configForFrontend = {
+        this.assignConfig({
           ...data,
           period: this.periodObjToText(data.period || { unit: "m", value: 5 }),
           operate_intermediate: data.operate_intermediate === "S",
-        };
-        this.assignConfig(configForFrontend);
+        });
         // Sincronizar variables del slider
         this.setSliderOversold(data.oversold);
         this.setSliderOverbought(data.overbought);
@@ -101,7 +100,7 @@ export const driverRSI = DriverComponent({
     const new_config = {
       ...config,
       period: this.periodTextToObj(config.period),
-      operate_intermediate: ["N", "S"][+config.operate_intermediate],
+      operate_intermediate: ["N", "S"][+(config.operate_intermediate=="on")],
     };
 
     await showPromise("Guardando configuración RSI...", (resolve) => {
