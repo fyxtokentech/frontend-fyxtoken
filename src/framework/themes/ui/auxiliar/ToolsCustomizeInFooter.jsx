@@ -76,7 +76,9 @@ export function ToolsCustomizeInFooter({ updateThemeName }) {
           labelId="label-select-theme-name"
           id="select-theme-name"
           value={isRegistered(themeName) ?? ""}
-          onChange={(e) => updateThemeName(e.target.value)}
+          onChange={(e) => {
+            updateThemeName(e.target.value);
+          }}
         >
           {getAllThemesRegistered()
             .sort((a, b) => a.label.localeCompare(b.label))

@@ -20,7 +20,7 @@ export const zIndex = (() => {
 export function init() {
   Object.assign(mapFilterTheme, {
     ...getAllThemesRegistered().reduce((acc, themeRegister) => {
-      acc[themeRegister.name[0]] = (rotation) => {
+      acc[themeRegister.name] = (rotation) => {
         const name_color = window.themeColors[themeRegister.name_color];
         return rotation(name_color, Color("red"));
       };

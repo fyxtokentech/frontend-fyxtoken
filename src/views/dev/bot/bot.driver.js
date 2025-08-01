@@ -21,6 +21,10 @@ export const driverPanelRobot = DriverComponent({
     const coinCurrency = currency || this.getCurrency();
     return coinKey === coinCurrency;
   },
+  loadingCoinMetrics:{
+    isBoolean:true,
+    value:true,
+  },
   async fetchCoinMetrics(_) {
     driverPanelBalance.setDefaultUSDTBuy(0);
     driverPanelBalance.setLimitUSDTBuy(0);
@@ -131,7 +135,7 @@ export const driverPanelRobot = DriverComponent({
     mapCase: {
       colorChip: {
         true: () => "primary",
-        false: () => "toRed50",
+        false: () => "close",
       },
       textColor: {
         true: () => "white",

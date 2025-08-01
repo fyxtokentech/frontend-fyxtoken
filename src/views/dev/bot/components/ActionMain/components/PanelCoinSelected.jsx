@@ -43,11 +43,28 @@ export default class extends React.Component {
         <br />
         <div className="flex col-direction justify-space-between gap-5px">
           <CoinSelectionOperate />
-          <WaitSkeleton loading={driverPanelOfProjections.getLoading()}>
+          <FronCoinMetrics>
             <PanelOfProjections />
-          </WaitSkeleton>
+          </FronCoinMetrics>
         </div>
       </PaperP>
+    );
+  }
+}
+
+class FronCoinMetrics extends React.Component {
+  componentDidMount() {
+    driverPanelBalance.addLinkLoadingCoinMetric(this);
+  }
+  componentWillUnmount() {
+    driverPanelBalance.removeLinkLoadingCoinMetric(this);
+  }
+
+  render() {
+    return (
+      <WaitSkeleton loading={driverPanelBalance.getLoadingCoinMetric()}>
+        {this.props.children}
+      </WaitSkeleton>
     );
   }
 }
@@ -144,34 +161,36 @@ class CoinSelectionOperate extends React.Component {
             },
           ])}
         </WaitSkeleton>
-        <WaitSkeleton loading={driverPanelOfProjections.getLoading()}>
-          <div className="flex gap-5px">
-            <BalanceGeneral
-              label="Balance USDC"
-              value={(() => {
-                return driverPanelOfProjections.getLoading()
-                  ? "---"
-                  : driverPanelBalance.getBalanceCoin().toLocaleString();
-              })()}
-            />
-            <BalanceGeneral
-              label={`Balance ${driverPanelRobot.getCurrency()}`}
-              value={(() => {
-                let total_tokens = "---";
-                if (!driverPanelOfProjections.getLoading()) {
-                  ({ total_tokens } = driverPanelOfProjections.getCoinMetric());
-                  if (!total_tokens) {
-                    total_tokens = "N/A";
-                  } else {
-                    total_tokens = total_tokens.toLocaleString();
-                  }
-                }
-                return total_tokens;
-              })()}
-            />
-          </div>
-        </WaitSkeleton>
+        <this.infoCoinMetricsBalances />
       </div>
+    );
+  }
+
+  infoCoinMetricsBalances() {
+    return (
+      <FronCoinMetrics>
+        <div className="flex gap-5px">
+          <BalanceGeneral
+            label="Balance USDC"
+            value={driverPanelOfProjections.mapCaseLoading("balanceUSD")}
+          />
+          <BalanceGeneral
+            label={`Balance ${driverPanelRobot.getCurrency()}`}
+            value={(() => {
+              let total_tokens = "---";
+              if (!driverPanelOfProjections.getLoading()) {
+                ({ total_tokens } = driverPanelOfProjections.getCoinMetric());
+                if (!total_tokens) {
+                  total_tokens = "N/A";
+                } else {
+                  total_tokens = total_tokens.toLocaleString();
+                }
+              }
+              return total_tokens;
+            })()}
+          />
+        </div>
+      </FronCoinMetrics>
     );
   }
 }

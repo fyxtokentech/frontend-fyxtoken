@@ -95,7 +95,7 @@ function SINGLETON_EFFECT({
       if (applyMock()) {
         return;
       }
-      failure(
+      console.log(
         {
           status: "error",
           message: "Hay promesa pero no hubo respuesta",
@@ -103,7 +103,6 @@ function SINGLETON_EFFECT({
           value: responseResults[url],
           promise: responsePromises[url],
         },
-        rejectPromise
       );
     }
   }

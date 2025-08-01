@@ -1,14 +1,13 @@
 import {
   DriverComponent,
-  inferStringData,
   showError,
   showPromise,
-  driverParams,
 } from "@jeff-aporta/camaleon";
 import {
   HTTPGET_USEROPERATION_STRATEGY,
   HTTPPATCH_USEROPERATION_STRATEGY,
 } from "@api";
+import { driverPanelRobot } from "../../../bot.driver";
 
 export const driverGlobal = DriverComponent({
   idDriver: "settings-global",
@@ -47,7 +46,7 @@ export const driverGlobal = DriverComponent({
 
   async loadConfig() {
     const { user_id } = window.currentUser;
-    const id_coin = driverParams.getOne("id_coin");
+    const id_coin = driverPanelRobot.getIdCoin();
     if (!user_id || !id_coin) {
       this.setLoading(false);
       return;
@@ -71,7 +70,7 @@ export const driverGlobal = DriverComponent({
 
   async saveConfig() {
     const { user_id } = window.currentUser;
-    const id_coin = driverParams.getOne("id_coin");
+    const id_coin = driverPanelRobot.getIdCoin();
     if (!user_id || !id_coin) {
       return;
     }
@@ -103,29 +102,11 @@ export const driverGlobal = DriverComponent({
 
   updateFromForm() {
     const originalConfig = JSON.stringify(this.getConfig());
-
-    // Obtener datos del formulario
-    const form = document.getElementById("global-form");
-    if (!form) {
-      return;
-    }
-
-    const formData = new FormData(form);
-    const currentConfig = this.getConfig();
-
-    // Crear nuevo config
-    const newConfig = { ...currentConfig };
-
-    // Actualizar campos
-    for (const [key, value] of formData.entries()) {
-      newConfig[key] = inferStringData(value);
-    }
-
-    // Actualizar config
-    this.assignConfig(newConfig);
+    this.setFromIdFormConfig("global-form");
+    const newConfig = JSON.stringify(this.getConfig());
 
     // Detectar si hubo cambios
-    if (originalConfig !== JSON.stringify(newConfig)) {
+    if (originalConfig !== newConfig) {
       this.setWasChanged(true);
     }
   },

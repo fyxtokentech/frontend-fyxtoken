@@ -233,8 +233,8 @@ export class APIKeyViewExchange extends React.Component {
             )}
           </DialogContent>
           <DialogActions>
-            <Button onClick={this.handleSave}>Guardar</Button>
-            <Button onClick={this.handleCancel}>Cancelar</Button>
+            <Button onClick={()=>this.handleSave()}>Guardar</Button>
+            <Button onClick={()=>this.handleCancel()}>Cancelar</Button>
           </DialogActions>
         </Dialog>
       </>

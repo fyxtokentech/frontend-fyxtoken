@@ -3,6 +3,8 @@ import { driverParams, subscribeParam } from "../themes/router/params.js";
 
 import { firstUppercase } from "./tools.js";
 
+import { started } from "../events/events.base.js";
+
 const allDrivers = { noId: [] };
 
 export function inferStringData(val) {
@@ -183,12 +185,25 @@ export function DriverComponent(modelProps) {
 
           if (isVar) {
             if (isFunction) {
+              const optionalPrefixes = ["is", "get"];
+              const binder = props.bind(this);
               const isAsync = props.constructor.name === "AsyncFunction";
+              const invoker = function(val) {
+                const optionalVal = optionalPrefixes.some(prefix => key.startsWith(prefix));
+                const CONTEXT = CONTEXT_GENERAL();
+                if (optionalVal && !val) {
+                  return binder(CONTEXT);
+                }
+                return binder(val, CONTEXT);
+              };
               if (isAsync) {
-                this[key] = async (val) =>
-                  await props.bind(this)(val, CONTEXT_GENERAL());
+                this[key] = async function(val) {
+                  return await invoker(val);
+                };
               } else {
-                this[key] = (val) => props.bind(this)(val, CONTEXT_GENERAL());
+                this[key] = function(val) {
+                  return invoker(val);
+                };
               }
             } else {
               this[key] = props;
@@ -237,7 +252,6 @@ export function DriverComponent(modelProps) {
 
         const getValueDefault = (newValue) => {
           if (isNullish(newValue)) {
-            console.log("newValue isNullish:", newValue);
             newValue = get();
           }
           return newValue;
@@ -372,10 +386,10 @@ export function DriverComponent(modelProps) {
                 if (!newData[parent]) {
                   newData[parent] = {};
                 }
-                if(!child2){
+                if (!child2) {
                   newData[parent][child] = inferStringData(value);
-                }else{
-                  if(!newData[parent][child]){
+                } else {
+                  if (!newData[parent][child]) {
                     newData[parent][child] = {};
                   }
                   newData[parent][child][child2] = inferStringData(value);
@@ -744,6 +758,9 @@ export function DriverComponent(modelProps) {
 
         async function notifyLinks({ oldValue, newValue }) {
           links.forEach((c) => {
+            if (!started()) {
+              return;
+            }
             if (c.forceUpdate) {
               c.forceUpdate();
             } else if (typeof c == "function") {

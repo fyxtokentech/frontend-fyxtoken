@@ -138,7 +138,9 @@ export class AppThemeProvider extends Component {
           {children}
         </FirstPart>
         <Footer
-          updateThemeName={(name) => this.setState({ theme_name: name })}
+          updateThemeName={(name) => {
+            this.setState({ theme_name: name });
+          }}
         />
         <CursorLight />
       </CamaleonAppThemeProvider>

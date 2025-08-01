@@ -185,6 +185,7 @@ export class RSIView extends Component {
     const config = driverRSI.getConfig();
     return (
       <InputNumberDot
+        label="Delta negativo"
         min={-20}
         max={100}
         step={0.01}
@@ -198,6 +199,7 @@ export class RSIView extends Component {
     const config = driverRSI.getConfig();
     return (
       <InputNumberDot
+        label="Delta positivo"
         min={0}
         max={100}
         step={0.01}
@@ -258,6 +260,7 @@ export class RSIView extends Component {
     const config = driverRSI.getConfig();
     return (
       <InputNumberDot
+        label="Sobreventa"
         min={0}
         max={100}
         step={0.01}
@@ -271,6 +274,7 @@ export class RSIView extends Component {
     const config = driverRSI.getConfig();
     return (
       <InputNumberDot
+        label="Sobrecompra"
         min={0}
         max={100}
         step={0.01}

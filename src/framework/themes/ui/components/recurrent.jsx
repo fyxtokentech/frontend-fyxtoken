@@ -11,6 +11,7 @@ import {
   ESCAPE,
   ENTER,
   DELETE,
+  SUPR,
   END,
   HOME,
   ARROW_LEFT,
@@ -19,13 +20,24 @@ import {
   ARROW_RIGHT,
 } from "../../../events/events.ids.js";
 import { Design, Layer } from "./containers.jsx";
+import { joinClass, clamp, Delayer } from "../../../tools/index.js";
 
 export function ImageLocal(props) {
-  const { src, ...rest } = props;
+  const { src, alt = "", ...rest } = props;
   const base = process.env.PUBLIC_URL || "";
   const path = src.startsWith("/") ? src : `/${src}`;
-  return <Box component="img" {...rest} alt="" src={`${base}${path}`} />;
+  return (
+    <Box
+      component="img"
+      loading="lazy"
+      {...rest}
+      alt={alt}
+      src={`${base}${path}`}
+    />
+  );
 }
+
+const delayer = Delayer(100);
 
 export function InfoDialog({
   title = "Información",
@@ -56,38 +68,38 @@ export function InfoDialog({
   return (
     <TooltipGhost {...rest_props} title={description}>
       <div className="inline-block">
-        {isButton ? (
-          <div className={className}>
-            <Button
-              className={`
-                  inline-flex justify-center align-center
-                  text-hide-unhover-container
-              `}
-              variant={variant}
-              color={[color, colorDisabled][+disabled]}
+        {(() => {
+          const color_ = [color, colorDisabled][+disabled];
+          if (isButton) {
+            return (
+              <div className={className}>
+                <ButtonShyText
+                  className="inline-flex justify-center align-center"
+                  variant={variant}
+                  color={color_}
+                  onClick={handleClick}
+                  disabled={disabled}
+                  startIcon={icon}
+                >
+                  Información
+                </ButtonShyText>
+              </div>
+            );
+          }
+          return (
+            <Typography
+              color={color_}
+              className={joinClass(
+                "inline-block",
+                className,
+                ["c-pointer", "pointer-not-allowed"][+disabled]
+              )}
               onClick={handleClick}
-              disabled={disabled}
-              size="small"
             >
               {icon}
-              <div className="text-hide-unhover">
-                <span style={{ marginLeft: "5px" }}>
-                  <small>Información</small>
-                </span>
-              </div>
-            </Button>
-          </div>
-        ) : (
-          <Typography
-            color={[color, colorDisabled][+disabled]}
-            className={`inline-block c-pointer ${className} ${
-              ["", "pointer-not-allowed"][+disabled]
-            }`}
-            onClick={handleClick}
-          >
-            {icon}
-          </Typography>
-        )}
+            </Typography>
+          );
+        })()}
       </div>
     </TooltipGhost>
   );
@@ -111,13 +123,31 @@ export function InputNumberDot({
   label,
   name,
   value = 0,
-  min,
-  max,
-  step,
+  min = Number.MIN_SAFE_INTEGER,
+  max = Number.MAX_SAFE_INTEGER,
+  step = 1,
+  positive,
   onKeyDown,
+  onChange,
   ...props
 }) {
   const inputRef = React.useRef(null);
+
+  if (positive) {
+    if (min <= 0 || !min) {
+      min = 0;
+    }
+  }
+  const applyCandidate = (candidate, e) => {
+    const { target } = e;
+    const num = Number(candidate);
+    const newVal = Number.isFinite(num)
+      ? clamp(num, min, max)
+      : clamp(0, min, max);
+    target.value = newVal;
+    onChange && onChange(newVal);
+    target.dispatchEvent(new Event("change", { bubbles: true }));
+  };
 
   return (
     <Design className="text-hide-unhover-container">
@@ -125,23 +155,29 @@ export function InputNumberDot({
         {...props}
         inputRef={inputRef}
         label={label}
+        InputLabelProps={{ shrink: true }}
         type="text"
         inputMode="decimal"
+        variant="outlined"
+        color="toBOW50"
         name={name}
-        defaultValue={value}
+        defaultValue={clamp(value, min, max)}
         onKeyDown={(e) => {
           // Manejar teclas de flecha arriba y abajo para incrementar/decrementar
-          if (onKeyDown) {
-            onKeyDown(e);
+          if (onKeyDown && onKeyDown(e)) {
+            return;
           }
           if (stepMove({ event: e })) {
             return;
           }
 
-          // Permitir otras teclas de control (backspace, delete, tab, escape, enter, home, end, arrows laterales)
+          const { key, keyCode, target } = e;
+          const { value, selectionStart: start, selectionEnd: end } = target;
+
+          // Permitir otras teclas de control
+          // (delete, tab, escape, enter, home, end, arrows laterales)
           if (
             [
-              BACKSPACE,
               TAB,
               ESCAPE,
               ENTER,
@@ -150,43 +186,82 @@ export function InputNumberDot({
               HOME,
               ARROW_LEFT,
               ARROW_RIGHT,
-            ].includes(e.keyCode)
+            ].includes(keyCode)
           ) {
+            return;
+          }
+          // Manejar BACKSPACE y calcular nuevo valor con start/end
+          if (keyCode === BACKSPACE) {
+            e.preventDefault();
+            const deletionStart = start === end ? start - 1 : start;
+            const candidate = value.slice(0, deletionStart) + value.slice(end);
+            applyCandidate(candidate, e);
+            return;
+          }
+
+          // Manejar SUPR y calcular nuevo valor con start/end
+          if (keyCode === SUPR) {
+            e.preventDefault();
+            const deletionStart = start;
+            const candidate = value.slice(0, deletionStart) + value.slice(end);
+            applyCandidate(candidate, e);
             return;
           }
 
           // Permitir solo números, punto decimal y guión (negativo)
-          if (e.key === "-" && min >= 0) {
+          if (key === "-" && min >= 0) {
             e.preventDefault();
             return;
           }
-          if (!/[0-9.-]/.test(e.key)) {
+          if (!/[0-9.-]/.test(key)) {
             e.preventDefault();
             return;
+          }else{
+            if (value == "0") {
+              e.preventDefault();
+              applyCandidate(+key, e);
+              return;
+            }
           }
 
           // Si es un punto, verificar que no haya ya uno
-          if (e.key === "." && e.target.value.includes(".")) {
+          if (key === "." && value.includes(".")) {
             e.preventDefault();
             return;
           }
 
           // Si es un signo -, solo permitir al inicio
-          if (
-            e.key === "-" &&
-            e.target.value.length > 0 &&
-            e.target.selectionStart !== 0
-          ) {
+          if (key === "-" && value.length > 0 && start !== 0) {
             e.preventDefault();
             return;
           }
 
+          if (/^[0-9]$/.test(key)) {
+            const candidate = value.slice(0, start) + key + value.slice(end);
+            const theNumber = Number(candidate);
+            if (Number.isFinite(theNumber)) {
+              if (theNumber < min) {
+                e.preventDefault();
+                applyCandidate(min, e);
+                return;
+              }
+              if (theNumber > max) {
+                e.preventDefault();
+                applyCandidate(max, e);
+                return;
+              }
+            }
+          }
+
           // Si ya hay un signo '-', no permitir otro
-          if (e.key === "-" && /^-/.test(e.target.value)) {
+          if (key === "-" && /^-/.test(value)) {
             e.preventDefault();
             return;
           }
+
+          onChange && onChange(e);
         }}
+        onChange={onChange}
         InputProps={{
           inputProps: {
             min: min,
@@ -195,15 +270,17 @@ export function InputNumberDot({
           },
         }}
         onBlur={(e) => {
-          const val = parseFloat(e.target.value);
+          const raw = e.target.value.trim();
+          if (!raw) {
+            const newVal = clamp(0, min, max);
+            inputRef.current.value = newVal;
+            const changeEvent = new Event("change", { bubbles: true });
+            inputRef.current.dispatchEvent(changeEvent);
+            return;
+          }
+          const val = parseFloat(raw);
           if (!isNaN(val)) {
-            let newVal = val;
-            if (val < min) {
-              newVal = min;
-            }
-            if (val > max) {
-              newVal = max;
-            }
+            let newVal = clamp(val, min, max);
             if (newVal !== val) {
               inputRef.current.value = newVal;
               const changeEvent = new Event("change", { bubbles: true });
@@ -213,10 +290,16 @@ export function InputNumberDot({
         }}
         fullWidth
       />
+      {step && <Stepers />}
+    </Design>
+  );
+
+  function Stepers() {
+    return (
       <Layer right centery centralized>
         <div className="flex col-direction text-hide-opacity-unhover">
           <div
-            className="backdropfilter brightnesshover-1-5 padw-5px c-pointer"
+            className="backdropfilter brightnesshover-2 padw-5px c-pointer"
             onClick={() =>
               stepMove({
                 input: inputRef.current,
@@ -227,7 +310,7 @@ export function InputNumberDot({
             +
           </div>
           <div
-            className="backdropfilter brightnesshover-1-5 padw-5px c-pointer"
+            className="backdropfilter brightnesshover-2 padw-5px c-pointer"
             onClick={() =>
               stepMove({
                 input: inputRef.current,
@@ -239,10 +322,13 @@ export function InputNumberDot({
           </div>
         </div>
       </Layer>
-    </Design>
-  );
+    );
+  }
 
   function stepMove({ input, event, keyCode }) {
+    if (!delayer.isReady(() => stepMove({ input, event, keyCode }))) {
+      return;
+    }
     if (event) {
       if (!input) {
         input = event.target;
@@ -253,14 +339,21 @@ export function InputNumberDot({
     }
     if ([ARROW_UP, ARROW_DOWN].includes(keyCode)) {
       event && event.preventDefault();
-      const currentValue = parseFloat(input.value) || 0;
-      let newValue;
+      const currentValue = (() => {
+        const v = parseFloat(input.value);
+        if (isNaN(v)) {
+          return 0;
+        }
+        return v;
+      })();
 
-      if (keyCode === ARROW_UP) {
-        newValue = Math.min(currentValue + step, max);
-      } else {
-        newValue = Math.max(currentValue - step, min);
-      }
+      let newValue = (() => {
+        if (keyCode === ARROW_UP) {
+          return Math.min(currentValue + step, max);
+        } else {
+          return Math.max(currentValue - step, min);
+        }
+      })();
 
       // Redondear según los decimales del step para evitar problemas de precisión
       const decimals = (() => {
@@ -269,14 +362,51 @@ export function InputNumberDot({
         }
         return Math.max(0, Math.ceil(Math.log10(1 / step)));
       })();
+
       const multiplier = Math.pow(10, decimals);
+
       newValue = Math.round(newValue * multiplier) / multiplier;
       input.value = newValue;
 
       // Disparar evento de cambio para actualizar el driver
       const changeEvent = new Event("change", { bubbles: true });
       input.dispatchEvent(changeEvent);
+      onChange && onChange(newValue);
       return true;
     }
   }
+}
+
+export function ButtonShyText({
+  className = "",
+  startIcon,
+  endIcon,
+  variant = "contained",
+  size = "small",
+  children,
+  childrenClass = "text-hide-unhover",
+  tooltip,
+  nowrap = true,
+  ...rest
+}) {
+  const button = (
+    <Button
+      {...rest}
+      className={joinClass("text-hide-unhover-container", className)}
+      variant={variant}
+      size={size}
+    >
+      {startIcon}
+      <div className={[childrenClass, nowrap ? "nowrap" : ""].join(" ")}>
+        {startIcon && <span>&nbsp;</span>}
+        <small>{children}</small>
+        {endIcon && <span>&nbsp;</span>}
+      </div>
+      {endIcon}
+    </Button>
+  );
+  if (tooltip) {
+    return <TooltipGhost title={tooltip}>{button}</TooltipGhost>;
+  }
+  return button;
 }

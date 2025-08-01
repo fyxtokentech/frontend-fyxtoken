@@ -44,6 +44,10 @@ export const driverActionButtons = DriverComponent({
   paused: {
     isBoolean: true,
     mapCase: {
+      textTooltipPause: {
+        false: () => `Pausar la operación (${driverPanelRobot.getCurrency()})`,
+        true: () => `Reanudar la operación (${driverPanelRobot.getCurrency()})`,
+      },
       textButtonPause: {
         false: () => "Pausar",
         true: () => "Reanudar",

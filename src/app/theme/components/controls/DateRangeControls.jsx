@@ -70,6 +70,7 @@ const driverDateRangeControls = DriverComponent({
           break;
         case "week":
           const iw = +this.getWeekToday();
+          console.log({iw})
           const { start, end } = this.getWeekRange(iw);
           init = getYYYYMMDD(year, month, start);
           fin = getYYYYMMDD(year, month, end);
@@ -179,6 +180,9 @@ const driverDateRangeControls = DriverComponent({
     const month = this.getMonth();
     if (!week) {
       week = this.getWeek();
+    }
+    if (week > 4) {
+      week = 4;
     }
     nWeeks = [
       { start: 1, end: 7 },

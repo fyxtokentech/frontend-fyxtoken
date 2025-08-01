@@ -1,14 +1,13 @@
 import {
   DriverComponent,
-  inferStringData,
   showError,
   showPromise,
-  driverParams,
 } from "@jeff-aporta/camaleon";
 import {
   HTTPGET_USEROPERATION_STRATEGY,
   HTTPPATCH_USEROPERATION_STRATEGY,
 } from "@api";
+import { driverPanelRobot } from "../../../bot.driver.js";
 
 export const driverRSI = DriverComponent({
   idDriver: "settings-rsi",
@@ -59,7 +58,7 @@ export const driverRSI = DriverComponent({
 
   async loadConfig() {
     const { user_id } = window.currentUser;
-    const id_coin = driverParams.getOne("id_coin");
+    const id_coin = driverPanelRobot.getIdCoin();
     if (!user_id || !id_coin) {
       this.setLoading(false);
       return;
@@ -92,14 +91,14 @@ export const driverRSI = DriverComponent({
 
   async saveConfig() {
     const { user_id } = window.currentUser;
-    const id_coin = driverParams.getOne("id_coin");
+    const id_coin = driverPanelRobot.getIdCoin();
     if (!user_id || !id_coin) {
       return;
     }
 
     // Convertir period de texto a objeto para el backend
     const config = this.getConfig();
-    const backendConfig = {
+    const new_config = {
       ...config,
       period: this.periodTextToObj(config.period),
       operate_intermediate: ["N", "S"][+config.operate_intermediate],
@@ -110,7 +109,7 @@ export const driverRSI = DriverComponent({
         user_id,
         id_coin,
         strategy: "rsi",
-        new_config: JSON.stringify(backendConfig),
+        new_config: JSON.stringify(new_config),
         willStart: () => {
           this.setSaving(true);
         },

@@ -7,7 +7,11 @@ import { themeColors, registerColors } from "../colors.js";
 import { Checkbox, Input } from "@mui/material";
 import { getAllColors } from "../colors.js";
 import { getPaletteLoader } from "./manager.js";
-import { getCreateThemeName, getExcludeThemeName } from "./manager.vars.js";
+import {
+  getCreateThemeName,
+  getExcludeThemeName,
+  getThemeName,
+} from "./manager.vars.js";
 import { scrollbarColors } from "../scrollbar.js";
 
 export class Polychroma extends PaletteBaseMonochrome {
@@ -81,7 +85,7 @@ function inferPropsThemePolychroma({
   };
 }
 
-function createPolychroma({ color, label, name, whiten, blacken }) {
+async function createPolychroma({ color, label, name, whiten, blacken }) {
   const createThemeInclude = getCreateThemeName();
   const excludeThemeInclude = getExcludeThemeName();
 
@@ -105,13 +109,14 @@ function createPolychroma({ color, label, name, whiten, blacken }) {
   function include() {
     const retorno = (() => {
       const checkInclude = createThemeInclude && createThemeInclude.length > 0;
-      const checkExclude = excludeThemeInclude && excludeThemeInclude.length > 0;
+      const checkExclude =
+        excludeThemeInclude && excludeThemeInclude.length > 0;
       if (checkInclude) {
-        return createThemeInclude.some((x) => name==x);
+        return createThemeInclude.some((x) => name == x);
       }
       if (checkExclude) {
-        const R = excludeThemeInclude.some((x) => name==x);
-        if(R){
+        const R = excludeThemeInclude.some((x) => name == x);
+        if (R) {
           return false;
         }
       }
@@ -124,11 +129,16 @@ function createPolychroma({ color, label, name, whiten, blacken }) {
     name = name + "Panda";
     label = label + " (Panda)";
     if (include()) {
-      new (class extends Pandachrome {
-        constructor() {
-          super(propsConstructor({ panda: true }));
-        }
-      })();
+      registerThemes_PaletteGeneral[name] = {
+        fn: () =>
+          new (class extends Pandachrome {
+            constructor() {
+              super(propsConstructor({ panda: true }));
+            }
+          })(),
+        label,
+        name,
+      };
     }
   }
 
@@ -136,11 +146,16 @@ function createPolychroma({ color, label, name, whiten, blacken }) {
     name = keyColor;
     if (include()) {
       const c = propsConstructor();
-      new (class extends Polychroma {
-        constructor() {
-          super(c);
-        }
-      })();
+      registerThemes_PaletteGeneral[name] = {
+        fn: () =>
+          new (class extends Polychroma {
+            constructor() {
+              super(c);
+            }
+          })(),
+        name,
+        label,
+      };
     }
   }
 }

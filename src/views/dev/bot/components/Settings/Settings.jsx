@@ -19,7 +19,12 @@ import AutoFixHighIcon from "@mui/icons-material/AutoFixHigh";
 import ExpandIcon from "@mui/icons-material/Expand";
 import PublicIcon from "@mui/icons-material/Public";
 
-import { PaperP, driverParams, TooltipGhost } from "@jeff-aporta/camaleon";
+import {
+  PaperP,
+  driverParams,
+  TooltipGhost,
+  ButtonShyText,
+} from "@jeff-aporta/camaleon";
 import { APIKeyView } from "./tabs/APIKey";
 import { RSIView } from "./tabs/RSI";
 import { CriptomonedasView } from "./tabs/Cripto";
@@ -73,18 +78,14 @@ export default function Settings() {
   return (
     <>
       <Box sx={{ display: "flex", justifyContent: "flex-end", p: 1 }}>
-        <Button
-          className="text-hide-unhover-container"
-          variant="contained"
-          color="toRed50"
-          size="small"
+        <ButtonShyText
+          tooltip="Volver al panel principal"
+          color="close"
           onClick={driverPanelRobot.setToMainViewBot}
+          startIcon={<DisabledByDefaultIcon fontSize="small" />}
         >
-          <DisabledByDefaultIcon fontSize="small" />
-          <div className="text-hide-unhover nowrap">
-            &nbsp;<small>Cerrar configuración</small>
-          </div>
-        </Button>
+          Cerrar configuración
+        </ButtonShyText>
       </Box>
 
       <Paper elevation={5}>

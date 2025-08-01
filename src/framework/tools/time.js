@@ -38,53 +38,39 @@ function ellapsed(delay) {
 
 export function Delayer(timedelay) {
   let delay = -1;
-  let id = 0;
+  let pila = [];
+  let equilibrio = 0;
 
   return new (class {
     setDelay(newTimedelay) {
       timedelay = newTimedelay;
     }
 
-    incrementId() {
-      id++;
-    }
-
-    getId() {
-      return id;
-    }
-
-    isTheId(id_, reset = false) {
-      const isTheId = id == id_;
-      if (reset && isTheId) {
-        this.resetId();
-      }
-      return isTheId;
-    }
-
-    resetId() {
-      id = 0;
-    }
-
     getDelay() {
       return timedelay;
     }
 
-    isReady(cbIncrement = false, id_) {
-      const ready = ellapsed(delay) >= timedelay;
-      console.log({ ready, id_, id }, this.getId());
+    isReady(cbIncrement) {
+      let ready = ellapsed(delay) >= timedelay;
+      cbIncrement && pila.push(cbIncrement);
+      console.log({ pila, ready, equilibrio });
       if (ready) {
-        if (id_) {
-          if (!this.isTheId(id_, true)) {
-            return false;
+        if (pila.length) {
+          if (equilibrio == 0) {
+            delay = Date.now();
+            pila.pop()();
+            pila = [];
           }
+        } else {
+          delay = Date.now();
         }
-        delay = Date.now();
       } else {
         if (cbIncrement) {
-          this.incrementId();
-          if (typeof cbIncrement == "function") {
-            setTimeout(() => cbIncrement(id), timedelay);
-          }
+          equilibrio++;
+          setTimeout(() => {
+            equilibrio--;
+            this.isReady();
+          }, timedelay);
         }
       }
       return ready;

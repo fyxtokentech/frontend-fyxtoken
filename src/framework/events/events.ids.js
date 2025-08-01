@@ -83,6 +83,8 @@ export const W_LOWER = 119;
 export const X_LOWER = 120;
 export const Y_LOWER = 121;
 export const Z_LOWER = 122;
+// Espéciales
+export const SUPR = 127;
 // Letters A-Z
 export const KEY_A = 65;
 export const KEY_B = 66;

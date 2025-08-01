@@ -65,7 +65,7 @@ function SelectThemeName({ themeName, updateThemeName }) {
         {getAllThemesRegistered()
           .sort((a, b) => a.label.localeCompare(b.label))
           .map((themeRegister, i) => (
-            <MenuItem key={i} value={themeRegister.name[0]}>
+            <MenuItem key={i} value={themeRegister.name}>
               {themeRegister.label}
             </MenuItem>
           ))}

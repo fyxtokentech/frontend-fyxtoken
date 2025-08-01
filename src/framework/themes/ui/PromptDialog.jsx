@@ -17,7 +17,7 @@ import {
 import CloseIcon from "@mui/icons-material/Close";
 
 import { DriverComponent } from "../../tools/DriverComponent.js";
-import { TooltipGhost } from "./components/index.js";
+import { TooltipGhost, InputNumberDot } from "./components/index.js";
 import { AddSVGFilter } from "../../graphics/index.js";
 import { Color } from "../rules/colors.js";
 
@@ -26,6 +26,8 @@ import {
   getSecondaryColor,
   isDark,
 } from "../rules/manager/index.js";
+
+import { ENTER } from "../../events/events.ids.js";
 
 const driverDialog = DriverComponent({
   idDriver: "prompt-dialog-camaleon",
@@ -52,6 +54,7 @@ const driverDialog = DriverComponent({
             resolve({ status: "confirmed", success: true, value });
           },
           onCancel: (value) => {
+            console.log("onCancel", value);
             if (okcancel.includes(input)) {
               value = false;
             }
@@ -92,8 +95,9 @@ export class PromptDialog extends Component {
   }
 
   open(props) {
+    console.log(props);
     this.setState({
-      inputValue: "",
+      inputValue: props.value || "",
       validationError: null,
       formData: {},
       ...props,
@@ -102,7 +106,7 @@ export class PromptDialog extends Component {
   }
 
   onClose() {
-    this.setState({ open: false });
+    this.setState({ inputValue: "", open: false });
   }
 
   handleConfirm() {
@@ -139,7 +143,6 @@ export class PromptDialog extends Component {
     if (callback) {
       callback(payload);
     }
-    this.setState({ inputValue: "" });
     this.onClose();
   }
 
@@ -148,7 +151,6 @@ export class PromptDialog extends Component {
     if (callback) {
       callback();
     }
-    this.setState({ inputValue: "" });
     this.onClose();
   }
 
@@ -200,13 +202,17 @@ export class PromptDialog extends Component {
 
   render() {
     const {
-      inputValue,
+      value,
       open,
       title,
       description,
       validationError,
       onValidate,
       input = "text",
+      min,
+      max,
+      step,
+      positive,
       Actions = () => null,
       footer,
       showConfirmButton = true,
@@ -239,8 +245,7 @@ export class PromptDialog extends Component {
           {showCloseButton && (
             <TooltipGhost title="Cerrar" onClick={this.handleCancel}>
               <IconButton
-                aria-label="close"
-                color="contrastPaper"
+                color="closePaper"
                 size="small"
                 onClick={this.handleCancel}
                 sx={{ position: "absolute", right: "5px", top: "5px" }}
@@ -265,9 +270,19 @@ export class PromptDialog extends Component {
               }
             </Alert>
           )}
-          <Typography variant="body2" component="div">
-            {description}
-          </Typography>
+          {description && (
+            <Typography variant="body2" component="div">
+              {(() => {
+                if (typeof description == "function") {
+                  return description();
+                }
+                return description;
+              })()}
+              <br />
+              <br />
+            </Typography>
+          )}
+
           {(() => {
             if (React.isValidElement(input)) {
               return (
@@ -291,22 +306,29 @@ export class PromptDialog extends Component {
                 return null;
               case "number":
                 return (
-                  <TextField
-                    type="number"
+                  <InputNumberDot
                     autoFocus
-                    margin="dense"
                     fullWidth
-                    value={inputValue}
-                    onChange={(e) =>
-                      this.setState({ inputValue: Number(e.target.value) })
-                    }
+                    value={value || 0}
+                    min={min}
+                    max={max}
+                    step={step}
+                    positive={positive}
+                    label={label}
+                    onChange={(e) => {
+                      this.setState({
+                        inputValue: Number(
+                          typeof e === "number" ? e : e.target.value
+                        ),
+                      });
+                    }}
                     onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        this.handleConfirm();
+                      if (e.keyCode === ENTER) {
+                        e.preventDefault();
+                        document.getElementById("buttonConfirmOnPromptDialog").click();
+                        return true;
                       }
                     }}
-                    label={label}
-                    variant="outlined"
                   />
                 );
               case "boolean":
@@ -314,7 +336,8 @@ export class PromptDialog extends Component {
                   <FormControlLabel
                     control={
                       <Checkbox
-                        checked={inputValue}
+                        color="toBOW50"
+                        checked={value}
                         onChange={(e) =>
                           this.setState({ inputValue: e.target.checked })
                         }
@@ -330,10 +353,10 @@ export class PromptDialog extends Component {
                     autoFocus
                     margin="dense"
                     fullWidth
-                    value={inputValue}
+                    value={value || ""}
                     onChange={this.handleChange}
                     onKeyDown={(e) => {
-                      if (e.key === "Enter") {
+                      if (e.keyCode === ENTER) {
                         this.handleConfirm();
                       }
                     }}
@@ -361,15 +384,15 @@ export class PromptDialog extends Component {
               {cancelText}
             </Button>
           )}
-          {showConfirmButton && (
-            <Button
-              onClick={this.handleConfirm}
-              variant={variantConfirmButton}
-              color={colorConfirmButton}
-            >
-              {confirmText}
-            </Button>
-          )}
+          <Button
+          id="buttonConfirmOnPromptDialog"
+            onClick={this.handleConfirm}
+            variant={variantConfirmButton}
+            color={colorConfirmButton}
+            className={showConfirmButton ? "" : "d-none"}
+          >
+            {confirmText}
+          </Button>
         </DialogActions>
       </Dialog>
     );

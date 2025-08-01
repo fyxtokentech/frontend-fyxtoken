@@ -116,7 +116,7 @@ export async function HTTPGET_USEROPERATION_OPEN({
   });
 }
 
-// http://localhost:8000/coins/metrics/{user_id}/{id_coin}
+// http://localhost:8000/coins/metrics/user/{user_id}/coin/{id_coin}
 export async function HTTPGET_COINS_METRICS({ user_id, id_coin, ...rest }) {
   ({ user_id, id_coin } = AUTO_PARAMS({ user_id, id_coin }));
   return await MAKE_GET({
@@ -124,7 +124,7 @@ export async function HTTPGET_COINS_METRICS({ user_id, id_coin, ...rest }) {
     ...httpdebug,
     service: "robot_backend",
     buildEndpoint: ({ genpath }) =>
-      genpath(["coins", "metrics", user_id, id_coin]),
+      genpath(["coins", "metrics", "user", user_id, "coin", id_coin]),
   });
 }
 
@@ -175,7 +175,7 @@ export async function HTTPGET_USEROPERATION_PERIOD({
 export async function HTTPGET_USEROPERATION_STRATEGY({
   user_id,
   id_coin,
-  strategy, // rsi | candle | roi
+  strategy, // rsi | candle | roi | pips | global
   ...rest
 }) {
   ({ user_id, id_coin } = AUTO_PARAMS({ user_id, id_coin }));
@@ -198,14 +198,14 @@ export async function HTTPGET_USEROPERATION_STRATEGY({
   });
 }
 
-// http://localhost:8000/coins/{user_id}
+// http://localhost:8000/coins/user/{user_id}
 export async function HTTPGET_COINS_BY_USER({ user_id, ...rest }) {
   ({ user_id } = AUTO_PARAMS({ user_id }));
   return await MAKE_GET({
     ...rest,
     ...httpdebug,
     service: "robot_backend",
-    buildEndpoint: ({ genpath }) => genpath(["coins", user_id]),
+    buildEndpoint: ({ genpath }) => genpath(["coins", "user", user_id]),
     mock_default: {
       content: [
         ["symbol", "id"],

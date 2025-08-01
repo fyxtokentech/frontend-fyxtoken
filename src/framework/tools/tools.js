@@ -18,3 +18,7 @@ export function firstUppercase(str) {
   const retorno = str.charAt(0).toUpperCase() + str.slice(1);
   return retorno;
 }
+
+export function joinClass(...classes) {
+  return classes.filter(Boolean).join(" ");
+}

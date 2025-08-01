@@ -68,7 +68,11 @@ export function isDark() {
 export function getPaletteConfig(name = getThemeName()) {
   let retorno = MUIDefaultValues[name];
   if (!retorno) {
-    return MUIDefaultValues["cyan"];
+    retorno = MUIDefaultValues["cyan"];
+  }
+  if(retorno.fn){
+    retorno = retorno.fn();
+    MUIDefaultValues[name] = retorno;
   }
   return retorno;
 }

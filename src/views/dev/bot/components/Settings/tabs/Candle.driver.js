@@ -1,14 +1,13 @@
 import {
   DriverComponent,
-  inferStringData,
   showError,
   showPromise,
-  driverParams,
 } from "@jeff-aporta/camaleon";
 import {
   HTTPGET_USEROPERATION_STRATEGY,
   HTTPPATCH_USEROPERATION_STRATEGY,
 } from "@api";
+import { driverPanelRobot } from "../../../bot.driver.js";
 
 export const driverCandle = DriverComponent({
   idDriver: "settings-candle",
@@ -55,7 +54,7 @@ export const driverCandle = DriverComponent({
 
   async loadConfig() {
     const { user_id } = window.currentUser;
-    const id_coin = driverParams.getOne("id_coin");
+    const id_coin = driverPanelRobot.getIdCoin();
     if (!user_id || !id_coin) {
       this.setLoading(false);
       return;
@@ -70,8 +69,10 @@ export const driverCandle = DriverComponent({
         this.setLoading(false);
       },
       successful: ([data]) => {
-        this.assignConfig(data);
-        // Sincronizar variables del slider
+        this.assignConfig({
+          ...data,
+          period: this.periodObjToText(data.period),
+        });
         this.setSliderPercentDown(data.percent?.down ?? 0);
         this.setSliderPercentUp(data.percent?.up ?? 0);
         this.setWasChanged(false);
@@ -82,17 +83,24 @@ export const driverCandle = DriverComponent({
 
   async saveConfig() {
     const { user_id } = window.currentUser;
-    const id_coin = driverParams.getOne("id_coin");
+    const id_coin = driverPanelRobot.getIdCoin();
     if (!user_id || !id_coin) {
       return;
     }
+
+    const config = this.getConfig();
+
+    const new_config = {
+      ...config,
+      period: this.periodTextToObj(config.period),
+    };
 
     await showPromise("Guardando configuración de velas...", (resolve) => {
       HTTPPATCH_USEROPERATION_STRATEGY({
         user_id,
         id_coin,
         strategy: "candle",
-        new_config: this.stringifyConfig(),
+        new_config: JSON.stringify(new_config),
         willStart: () => {
           this.setSaving(true);
         },
@@ -112,39 +120,8 @@ export const driverCandle = DriverComponent({
 
   updateFromForm() {
     const originalConfig = JSON.stringify(this.getConfig());
-
-    // Obtener datos del formulario
-    const form = document.getElementById("candle-form");
-    if (!form) {
-      return;
-    }
-
-    const formData = new FormData(form);
-    const currentConfig = this.getConfig();
-
-    // Crear nuevo config manteniendo la estructura anidada
-    const newConfig = { ...currentConfig };
-
-    // Manejar campos anidados
-    for (const [key, value] of formData.entries()) {
-      if (key.includes(".")) {
-        // Campo anidado como "percent.down"
-        const [parent, child] = key.split(".");
-        if (!newConfig[parent]) {
-          newConfig[parent] = {};
-        }
-        newConfig[parent][child] = inferStringData(value);
-      } else {
-        // Campo simple
-        newConfig[key] = inferStringData(value);
-      }
-    }
-
-    // Actualizar config
-    this.assignConfig(newConfig);
-
-    // Detectar si hubo cambios
-    if (originalConfig !== JSON.stringify(newConfig)) {
+    this.setFromIdFormConfig("candle-form");
+    if (originalConfig !== JSON.stringify(this.getConfig())) {
       this.setWasChanged(true);
     }
   },
@@ -202,13 +179,13 @@ export const driverCandle = DriverComponent({
     }
     const value = parseInt(txt);
     const unitMap = {
-      "minuto": "m",
-      "hora": "h",
-      "día": "d",
-      "semana": "s",
-      "mes": "M"
+      minuto: "m",
+      hora: "h",
+      día: "d",
+      semana: "s",
+      mes: "M",
     };
-    
+
     for (const [key, unit] of Object.entries(unitMap)) {
       if (txt.includes(key)) {
         return { unit, value };

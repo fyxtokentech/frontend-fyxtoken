@@ -69,7 +69,7 @@ export class CandlestickView extends Component {
     const config = driverCandle.getConfig();
     const saving = driverCandle.getSaving();
     const wasChanged = driverCandle.getWasChanged();
-    
+
     return (
       <Grid item xs={12} md={7}>
         <Box
@@ -80,131 +80,138 @@ export class CandlestickView extends Component {
             width: "100%",
           }}
         >
-          <TitleTab 
-            variant="h5" 
-            title="Configuración Velas" 
+          <TitleTab
+            variant="h5"
+            title="Configuración Velas"
             subtitle="Configuración de análisis de velas japonesas"
           />
           <br />
 
-            <form
-              id="candle-form"
-              onChange={() => {
-                driverCandle.updateFromForm();
-              }}
-            >
-              <Grid container spacing={2}>
-                <Grid item xs={12}>
-                  <TextField
-                    select
-                    label="Periodo"
-                    name="period"
-                    value={driverCandle.periodObjToText(config.period)}
-                    fullWidth
-                    SelectProps={{ native: true }}
-                  >
-                    <option value="5 minutos">5 minutos</option>
-                    <option value="10 minutos">10 minutos</option>
-                    <option value="15 minutos">15 minutos</option>
-                    <option value="30 minutos">30 minutos</option>
-                    <option value="1 hora">1 hora</option>
-                    <option value="1 día">1 día</option>
-                  </TextField>
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <Typography variant="subtitle1" gutterBottom sx={{ mt: 2 }}>
-                    Baja (%)
-                  </Typography>
-                  <Slider
-                    value={driverCandle.getSliderPercentDown()}
-                    onChange={(e, value) => {
-                      driverCandle.updateSliderPercentDown(value);
-                    }}
-                    valueLabelDisplay="on"
-                    step={0.01}
-                    valueLabelFormat={(value) => `${+value.toFixed(2)}%`}
-                    getAriaValueText={(val) => `${+val.toFixed(2)}%`}
-                    min={0}
-                    max={10}
-                    sx={{ mb: 2 }}
-                  />
-                  <TextField
-                    type="number"
-                    name="percent.down"
-                    value={config.percent.down}
-                    onKeyDown={(e) => {
-                      if (e.key === ".") {
-                        e.preventDefault();
-                        showInfo("La separación decimal es con coma");
-                      }
-                      if (e.key === "-") {
-                        e.preventDefault();
-                        showInfo("No se puede ingresar números negativos");
-                      }
-                    }}
-                    InputProps={{ inputProps: { min: 0, max: 10, step: 0.01 } }}
-                    fullWidth
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <Typography variant="subtitle1" gutterBottom sx={{ mt: 2 }}>
-                    Subida (%)
-                  </Typography>
-                  <Slider
-                    value={driverCandle.getSliderPercentUp()}
-                    onChange={(e, value) => {
-                      driverCandle.updateSliderPercentUp(value);
-                    }}
-                    valueLabelDisplay="on"
-                    step={0.01}
-                    valueLabelFormat={(value) => `${+value.toFixed(2)}%`}
-                    getAriaValueText={(val) => `${+val.toFixed(2)}%`}
-                    min={0}
-                    max={10}
-                    sx={{ mb: 2 }}
-                  />
-                  <TextField
-                    type="number"
-                    name="percent.up"
-                    value={config.percent.up}
-                    onKeyDown={(e) => {
-                      if (e.key === ".") {
-                        e.preventDefault();
-                        showInfo("La separación decimal es con coma");
-                      }
-                      if (e.key === "-") {
-                        e.preventDefault();
-                        showInfo("No se puede ingresar números negativos");
-                      }
-                    }}
-                    InputProps={{ inputProps: { min: 0, max: 10, step: 0.01 } }}
-                    fullWidth
-                  />
-                </Grid>
-                <Grid item xs={12}>
-                  <div className="flex justify-end" style={{ marginTop: 16 }}>
-                    <TooltipGhost
-                      title={driverCandle.mapCaseWasChanged("tooltipSaveButton")}
-                    >
-                      <div>
-                        <Button
-                          variant="contained"
-                          color="primary"
-                          startIcon={<SaveIcon />}
-                          onClick={() => driverCandle.saveConfig()}
-                          loading={saving}
-                          disabled={!wasChanged || saving}
-                        >
-                          {driverCandle.mapCaseSaving("textButtonSave")}
-                        </Button>
-                      </div>
-                    </TooltipGhost>
-                  </div>
-                </Grid>
+          <form
+            id="candle-form"
+            onChange={() => {
+              driverCandle.updateFromForm();
+            }}
+          >
+            <Grid container spacing={2}>
+              <Grid item xs={12}>
+                <this.Period config={config} />
               </Grid>
-            </form>
+              <Grid item xs={12} sm={6}>
+                <Typography variant="subtitle1" gutterBottom sx={{ mt: 2 }}>
+                  Baja (%)
+                </Typography>
+                <Slider
+                  value={driverCandle.getSliderPercentDown()}
+                  onChange={(e, value) => {
+                    driverCandle.updateSliderPercentDown(value);
+                  }}
+                  valueLabelDisplay="on"
+                  step={0.01}
+                  valueLabelFormat={(value) => `${+value.toFixed(2)}%`}
+                  getAriaValueText={(val) => `${+val.toFixed(2)}%`}
+                  min={0}
+                  max={10}
+                  sx={{ mb: 2 }}
+                />
+                <TextField
+                  type="number"
+                  name="percent.down"
+                  value={config.percent.down}
+                  onKeyDown={(e) => {
+                    if (e.key === ".") {
+                      e.preventDefault();
+                      showInfo("La separación decimal es con coma");
+                    }
+                    if (e.key === "-") {
+                      e.preventDefault();
+                      showInfo("No se puede ingresar números negativos");
+                    }
+                  }}
+                  InputProps={{ inputProps: { min: 0, max: 10, step: 0.01 } }}
+                  fullWidth
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Typography variant="subtitle1" gutterBottom sx={{ mt: 2 }}>
+                  Subida (%)
+                </Typography>
+                <Slider
+                  value={driverCandle.getSliderPercentUp()}
+                  onChange={(e, value) => {
+                    driverCandle.updateSliderPercentUp(value);
+                  }}
+                  valueLabelDisplay="on"
+                  step={0.01}
+                  valueLabelFormat={(value) => `${+value.toFixed(2)}%`}
+                  getAriaValueText={(val) => `${+val.toFixed(2)}%`}
+                  min={0}
+                  max={10}
+                  sx={{ mb: 2 }}
+                />
+                <TextField
+                  type="number"
+                  name="percent.up"
+                  value={config.percent.up}
+                  onKeyDown={(e) => {
+                    if (e.key === ".") {
+                      e.preventDefault();
+                      showInfo("La separación decimal es con coma");
+                    }
+                    if (e.key === "-") {
+                      e.preventDefault();
+                      showInfo("No se puede ingresar números negativos");
+                    }
+                  }}
+                  InputProps={{ inputProps: { min: 0, max: 10, step: 0.01 } }}
+                  fullWidth
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <div className="flex justify-end" style={{ marginTop: 16 }}>
+                  <TooltipGhost
+                    title={driverCandle.mapCaseWasChanged("tooltipSaveButton")}
+                  >
+                    <div>
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        startIcon={<SaveIcon />}
+                        onClick={() => driverCandle.saveConfig()}
+                        loading={saving}
+                        disabled={!wasChanged || saving}
+                      >
+                        {driverCandle.mapCaseSaving("textButtonSave")}
+                      </Button>
+                    </div>
+                  </TooltipGhost>
+                </div>
+              </Grid>
+            </Grid>
+          </form>
         </Box>
       </Grid>
+    );
+  }
+
+  Period({ config }) {
+    console.log(config.period);
+    return (
+      <TextField
+        select
+        label="Periodo"
+        name="period"
+        value={config.period}
+        fullWidth
+        SelectProps={{ native: true }}
+      >
+        <option value="5 minutos">5 minutos</option>
+        <option value="10 minutos">10 minutos</option>
+        <option value="15 minutos">15 minutos</option>
+        <option value="30 minutos">30 minutos</option>
+        <option value="1 hora">1 hora</option>
+        <option value="1 día">1 día</option>
+      </TextField>
     );
   }
 

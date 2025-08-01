@@ -106,6 +106,13 @@ export const bodyHeight = () => document.body.clientHeight;
 export const windowCX = () => window.innerWidth / 2;
 export const windowCY = () => window.innerHeight / 2;
 
+let _started = false
+export const started = () => _started
+
+window.addEventListener("load", () => {
+  _started = true
+})
+
 export const scrollY = () =>
   window.scrollY ||
   window.pageYOffset ||

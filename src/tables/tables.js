@@ -23,6 +23,8 @@ import BenefitConstantlineIcon from "@mui/icons-material/TrendingFlatOutlined";
 import { Chip, Tooltip, Typography } from "@mui/material";
 import { BorderBottom } from "@mui/icons-material";
 
+import dayjs from "dayjs";
+
 addNumberFormat({
   toCoin(value, local) {
     const { precision2SmallNumber, numberFormat } = getNumberFormat();
@@ -101,25 +103,60 @@ export const driverTables = DriverComponent({
   idDriver: "tables",
   TABLE_TRANSACTIONS: "transactions",
   TABLE_OPERATIONS: "operations",
+  NOT_VALUE: "---",
   viewTable: {
     nameParam: "view_table",
     _setup_({ init, TABLE_OPERATIONS }) {
       init(TABLE_OPERATIONS);
     },
+    _willSet_() {
+      this.settingLoadingTables();
+    },
   },
 
-  refetch(effectBool = false) {
+  settingLoadingTables({ loading = true, cb } = {}) {
     Object.entries(this.getTables()).forEach(([name, table]) => {
       const driver = this.getDriverTable(name);
       if (driver && driver.setLoading) {
-        driver.setLoading(effectBool);
+        driver.setLoading(loading);
       }
-      console.log({driver})
-      table.fetchData && table.fetchData();
+      console.log(cb);
+      cb && cb({ name, table, driver });
     });
   },
 
-  operationRow: {},
+  refetch(loading = false) {
+    this.settingLoadingTables({
+      loading,
+      cb: ({ table }) => {
+        table.fetchData && table.fetchData();
+      },
+    });
+  },
+
+  operationRow: {
+    mapCase: {
+      label(type, { getValue, NOT_VALUE }) {
+        const value = getValue();
+        switch (type) {
+          case "start":
+            return value
+              ? date2Label(dayjs(value.start_date_operation))
+              : NOT_VALUE;
+          case "end":
+            return value
+              ? date2Label(dayjs(value.end_date_operation))
+              : NOT_VALUE;
+        }
+        function date2Label(date) {
+          if (date.isValid()) {
+            return date.format("DD/MM/YYYY HH:mm");
+          }
+          return NOT_VALUE;
+        }
+      },
+    },
+  },
 
   driverTable: {
     isObject: true,
@@ -133,7 +170,7 @@ export const driverTables = DriverComponent({
     isArray: true,
   },
 
-  addTableAndDriver({name, table, driver}) {
+  addTableAndDriver({ name, table, driver }) {
     this.addDriverTable(name, driver);
     this.addTables(name, table);
   },
@@ -195,18 +232,19 @@ function newTable({
 
     async fetchData({ deep = 0 } = {}) {
       loadParams();
-      startFetch.bind(this)(this.contextGeneral());
-      await prefetch.bind(this)(params, this.contextGeneral());
+      const CONTEXT = this.contextGeneral();
+      startFetch.bind(this)(CONTEXT);
+      await prefetch.bind(this)(params, CONTEXT);
       if (!(await protocolFetch.bind(this)(deep))) {
         return this.endFetchEnvolve({ error: true });
       }
       try {
-        await fetchData.bind(this)(params, this.contextGeneral());
+        await fetchData.bind(this)(params, CONTEXT);
       } catch (e) {
         showError(e.message || e);
         fetchError.bind(this)();
       }
-      this.endFetchEnvolve({ error: false, ...this.contextGeneral() });
+      this.endFetchEnvolve({ error: false, ...CONTEXT });
     }
 
     componentDidUpdate(...args) {
@@ -215,7 +253,7 @@ function newTable({
 
     componentDidMount() {
       componentDidMount.bind(this)();
-      driverTables.addTableAndDriver({name: name_table, table: this, driver});
+      driverTables.addTableAndDriver({ name: name_table, table: this, driver });
       driverTables.addDelayers(name_table, Delayer(1000));
       this.fetchData();
       const { addLinkLoading, addLinkTableData } = driver;

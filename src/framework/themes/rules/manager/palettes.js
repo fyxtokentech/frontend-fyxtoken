@@ -12,7 +12,6 @@ export class PaletteGeneral {
     if (!this.name) {
       this.name = Math.random().toString(36).slice(2);
     }
-    registerThemes_PaletteGeneral[this.name] = this;
   }
 
   getbgstate(darkmode, state) {
@@ -451,6 +450,9 @@ export class PaletteBaseMonochrome extends PaletteMonochrome {
       return retorno;
     }
 
+    const reds = toColorSteep25("red", this.contrast);
+    const paperRed = toColorSteep25("red", this.contrastPaper, "PaperRed");
+
     const colorsCamaleon = {
       triade1,
       triade2,
@@ -489,7 +491,8 @@ export class PaletteBaseMonochrome extends PaletteMonochrome {
       ...toColorSteep25.bind(this)("PaperBOW", primary),
       ...toColorSteep25.bind(this)("BOW", primary),
       ...toColorSteep25("gray", primary),
-      ...toColorSteep25("red", primary),
+      ...reds,
+      ...paperRed,
       ...toColorSteep25("green", primary),
       ...toColorSteep25("orange", primary),
       ...toColorSteep25("slategray", primary, "secondary"),
@@ -497,6 +500,8 @@ export class PaletteBaseMonochrome extends PaletteMonochrome {
       ...toColorSteep25("limegreen", primary, "safety"),
       ...toColorSteep25("darkorange", primary, "caution"),
       ...toColorSteep25("deepskyblue", primary, "info"),
+      close: reds.toRed50,
+      closePaper: paperRed.toPaperRed50,
     };
     this.colorsCamaleonKeys = Object.keys(colorsCamaleon);
 

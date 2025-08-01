@@ -37,6 +37,7 @@ import {
   WaitSkeleton,
   columnsExclude,
   getSecondaryColor,
+  ButtonShyText,
 } from "@jeff-aporta/camaleon";
 
 import { driverTables, newTable } from "../tables.js";
@@ -45,36 +46,10 @@ import mock_transaction from "./mock-transaction.json";
 import columns_transaction from "./columns-transaction.jsx";
 
 import dayjs from "dayjs";
-import { HTTPGET_TRANSACTIONS, HTTPGET_OPERATION_ID } from "@api";
 import { Button } from "@mui/material";
 import DisabledByDefaultIcon from "@mui/icons-material/DisabledByDefault";
 
-const driverTableTransactions = DriverComponent({
-  idDriver: "table-transactions",
-  tableTransactions: {},
-  tableData: {
-    value: IS_GITHUB ? mock_transaction : [],
-  },
-  nameCoin: {
-    find() {
-      const { name_coin } =
-        this.getTableData().find((m) => m["name_coin"]) ?? {};
-      return name_coin;
-    },
-  },
-  idOperation: {
-    nameParam: "id_operation",
-    update({ setValue }) {
-      const {
-        id_operation = this.getIdOperation(), //
-      } = driverTables.getOperationRow() || {};
-      setValue(id_operation);
-    },
-  },
-  loading: {
-    value: false,
-  },
-});
+import { driverTableTransactions } from "./TableTransactions.driver.js";
 
 export default driverTables.newTable({
   name_table: driverTables.TABLE_TRANSACTIONS,
@@ -83,7 +58,6 @@ export default driverTables.newTable({
   allParamsRequiredToFetch: true,
   driver: driverTableTransactions,
   init({ driver }) {
-    console.log(driver);
     driver.updateIdOperation();
   },
   componentDidMount() {
@@ -92,40 +66,11 @@ export default driverTables.newTable({
   componentWillUnmount() {
     driverTables.removeLinkOperationRow(this);
   },
-  async prefetch({ id_operation }, { driver }) {
-    if (!driverTables.getOperationRow() && id_operation) {
-      await HTTPGET_OPERATION_ID({
-        operationID: id_operation,
-        successful: ([data]) => {
-          driverTables.setOperationRow(data);
-          driver.updateIdOperation();
-        },
-      });
-    }
+  async prefetch({ id_operation }) {
+    await driverTableTransactions.loadOperation({ id_operation });
   },
-  async fetchData({ id_operation, user_id }, { driver }) {
-    await HTTPGET_TRANSACTIONS({
-      id_operation,
-      successful: (data) => {
-        driver.setTableData(data);
-      },
-      failure() {
-        driver.setTableData([]);
-      },
-      checkErrors: () => {
-        if (!user_id) {
-          return toOperation("No hay usuario seleccionado");
-        }
-        if (!id_operation) {
-          return toOperation("No hay operación seleccionada");
-        }
-      },
-    });
-
-    function toOperation(msg) {
-      driverTables.setViewTable(driverTables.TABLE_OPERATIONS);
-      return msg;
-    }
+  async fetchData({ id_operation, user_id }) {
+    await driverTableTransactions.loadData({ id_operation, user_id });
   },
   render({ driver, data }) {
     const {
@@ -182,103 +127,100 @@ function PrefixUseOperation({ useOperation, columns_config }) {
         className="p-absolute"
         style={{ right: loading * 10 + "px", top: loading * 10 + "px" }}
       >
-        <Tooltip title="Volver a operaciones" placement="left">
-          <Button
-            className="text-hide-unhover-container"
-            variant="contained"
-            color="toRed50"
-            size="small"
-            onClick={() =>
-              driverTables.setViewTable(driverTables.TABLE_OPERATIONS)
-            }
-          >
-            <DisabledByDefaultIcon fontSize="small" />
-            <div className="text-hide-unhover nowrap">
-              &nbsp;<small>Cerrar Transacciones</small>
-            </div>
-          </Button>
-        </Tooltip>
+        <ButtonShyText
+          tooltip="Volver a operaciones"
+          color="close"
+          onClick={(e) => {
+            driverTables.setViewTable(driverTables.TABLE_OPERATIONS);
+          }}
+          startIcon={<DisabledByDefaultIcon fontSize="small" />}
+        >
+          Cerrar transacciones
+        </ButtonShyText>
       </div>
       <Info />
     </>
   );
 
-  function date2Label(date) {
-    if (date.isValid()) {
-      return date.format("YYYY-MM-DD HH:mm");
-    }
-    return "---";
-  }
-
   function Info() {
-    const rowData = driverTables.getOperationRow();
-    const startLabel = rowData
-      ? date2Label(dayjs(rowData.start_date_operation))
-      : "---";
-    const endLabel = rowData
-      ? date2Label(dayjs(rowData.end_date_operation))
-      : "---";
+    const RETURN = class extends React.Component {
+      componentDidMount() {
+        driverTables.addLinkOperationRow(this);
+        driverTableTransactions.addLinkLoadingOperation(this)
+      }
+      componentWillUnmount() {
+        driverTables.removeLinkOperationRow(this);
+        driverTableTransactions.removeLinkLoadingOperation(this)
+      }
 
-    let {
-      id_operation = "---",
-      name_coin = "---",
-      name_platform = "---",
-      total_bought = 0,
-      total_sold = 0,
-    } = rowData || {};
-    [total_bought, total_sold] = [total_bought, total_sold].map(
-      (v) =>
-        v.toLocaleString(undefined, {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
-        }) ?? "0.00"
-    );
+      render() {
+        const operationRow = driverTables.getOperationRow();
+        const startLabel = driverTables.mapCaseOperationRow("label", "start")
+        const endLabel = driverTables.mapCaseOperationRow("label", "end");
 
-    return (
-      <>
-        <Stack
-          direction="row"
-          sx={{ flexWrap: "wrap", gap: "15px" }}
-          className="mb-10px"
-        >
-          <WaitSkeleton loading={driverTableTransactions.getLoading()}>
-            <Chip
-              icon={<AccountTreeIcon />}
-              label={`CLUSTER: ${id_operation}`}
-              size="small"
-            />
+        let {
+          id_operation = driverTables.NOT_VALUE,
+          name_coin = driverTables.NOT_VALUE,
+          name_platform = driverTables.NOT_VALUE,
+          total_bought = 0,
+          total_sold = 0,
+        } = operationRow || {};
+        [total_bought, total_sold] = [total_bought, total_sold].map(
+          (v) =>
+            v.toLocaleString(undefined, {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            }) ?? "0.00"
+        );
+
+        return (
+          <WaitSkeleton loading={driverTableTransactions.getLoadingOperation()}>
+            <Stack
+              direction="row"
+              sx={{ flexWrap: "wrap", gap: "15px" }}
+              className="mb-10px"
+            >
+              <Chip
+                icon={<AccountTreeIcon />}
+                label={`CLUSTER: ${id_operation}`}
+                size="small"
+              />
+              <Chip
+                icon={<MonetizationOnIcon />}
+                label={`Moneda: ${name_coin}`}
+                size="small"
+              />
+              <Chip
+                icon={<PaidIcon />}
+                label={`Invertido: ${total_bought} USDC`}
+                size="small"
+              />
+              <Chip
+                icon={<SellIcon />}
+                label={`Vendido: ${total_sold} USDC`}
+                size="small"
+              />
+              <Chip
+                icon={<CalendarTodayIcon />}
+                label={`Periodo: ${startLabel} | ${endLabel}`}
+                size="small"
+              />
+              <Chip
+                icon={<ApiIcon />}
+                label={`API: ${name_platform}`}
+                size="small"
+              />
+            </Stack>
           </WaitSkeleton>
-          <WaitSkeleton loading={driverTableTransactions.getLoading()}>
-            <Chip
-              icon={<MonetizationOnIcon />}
-              label={`Moneda: ${name_coin}`}
-              size="small"
-            />
-          </WaitSkeleton>
-          <Chip
-            icon={<PaidIcon />}
-            label={`Invertido: ${total_bought} USDC`}
-            size="small"
-          />
-          <Chip
-            icon={<SellIcon />}
-            label={`Vendido: ${total_sold} USDC`}
-            size="small"
-          />
-          <Chip
-            icon={<CalendarTodayIcon />}
-            label={`Periodo: ${startLabel} / ${endLabel}`}
-            size="small"
-          />
-          <Chip
-            icon={<ApiIcon />}
-            label={`API: ${name_platform}`}
-            size="small"
-          />
-        </Stack>
-      </>
-    );
+        );
+      }
+    };
+    return <RETURN />;
   }
+}
+
+function findByField(columns_config, field) {
+  return columns_config.find((x) => x.field == field) || {};
 }
 
 function Informacion({ columns_config }) {
@@ -293,28 +235,43 @@ function Informacion({ columns_config }) {
         <div className="layer fill d-center">
           <InfoDialog
             isButton={true}
-            dialogDescription={
-              <TableContainer component={Paper} style={{ width: "100%" }}>
-                <Table>
+            dialogDescription={() => {
+              return (
+                <TableContainer component={Paper} style={{ width: "100%" }}>
+                  <Table>
+                    <Headers />
+                    <BodyContent />
+                  </Table>
+                </TableContainer>
+              );
+
+              function Headers() {
+                return (
                   <TableHead>
                     <TableRow
                       sx={{
-                        backgroundColor: `rgba(${getSecondaryColor()
-                          .rgb()
-                          .array()
-                          .map((v) => parseInt(v))
-                          .join(",")}, 0.5)`,
+                        backgroundColor: `d1.main`,
                       }}
                     >
                       <TableCell>Propiedad</TableCell>
                       <TableCell>Valor</TableCell>
                     </TableRow>
                   </TableHead>
+                );
+              }
+
+              function BodyContent() {
+                return (
                   <TableBody>
-                    {columnsExclude(columns_config)
-                      .filter((x) => !x.extra)
-                      .map((column, i) => {
-                        const { field, headerName } = column;
+                    {Object.entries(row)
+                      .filter(([field]) => {
+                        return !findByField(columns_config, field).extra;
+                      })
+                      .map(([field, value], i) => {
+                        const { headerName } = findByField(
+                          columns_config,
+                          field
+                        );
                         return (
                           <TableRow
                             key={i}
@@ -325,23 +282,20 @@ function Informacion({ columns_config }) {
                             }}
                           >
                             <TableCell>
-                              {headerName}
+                              {headerName || field}
                               <br />
-                              <Typography
-                                variant="caption"
-                                color="contrastPaper"
-                              >
+                              <Typography variant="caption" color="secondary">
                                 ({field})
                               </Typography>
                             </TableCell>
-                            <TableCell>{row[field]}</TableCell>
+                            <TableCell>{value}</TableCell>
                           </TableRow>
                         );
                       })}
                   </TableBody>
-                </Table>
-              </TableContainer>
-            }
+                );
+              }
+            }}
           />
         </div>
       );
