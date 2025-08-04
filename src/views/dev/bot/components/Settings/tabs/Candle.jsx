@@ -14,6 +14,7 @@ import {
   WaitSkeleton,
   TooltipGhost,
   ImageLocal,
+  InputNumberDot,
 } from "@jeff-aporta/camaleon";
 import { driverCandle } from "./Candle.driver.js";
 
@@ -22,7 +23,7 @@ export class CandlestickView extends Component {
     driverCandle.addLinkConfig(this);
     driverCandle.addLinkLoading(this);
     driverCandle.addLinkSaving(this);
-    driverCandle.addLinkWasChanged(this);
+
     driverCandle.addLinkSliderPercentDown(this);
     driverCandle.addLinkSliderPercentUp(this);
     driverCandle.loadConfig();
@@ -32,16 +33,13 @@ export class CandlestickView extends Component {
     driverCandle.removeLinkConfig(this);
     driverCandle.removeLinkLoading(this);
     driverCandle.removeLinkSaving(this);
-    driverCandle.removeLinkWasChanged(this);
+
     driverCandle.removeLinkSliderPercentDown(this);
     driverCandle.removeLinkSliderPercentUp(this);
   }
 
   render() {
-    // const config = driverCandle.getConfig(); // No utilizado actualmente
-    // const saving = driverCandle.getSaving(); // No utilizado actualmente
     const loading = driverCandle.getLoading();
-    // const wasChanged = driverCandle.getWasChanged(); // No utilizado actualmente
 
     return (
       <WaitSkeleton loading={loading}>
@@ -68,7 +66,6 @@ export class CandlestickView extends Component {
   FormCandle() {
     const config = driverCandle.getConfig();
     const saving = driverCandle.getSaving();
-    const wasChanged = driverCandle.getWasChanged();
 
     return (
       <Grid item xs={12} md={7}>
@@ -90,7 +87,7 @@ export class CandlestickView extends Component {
           <form
             id="candle-form"
             onChange={() => {
-              driverCandle.updateFromForm();
+              driverCandle.setFromIdFormConfig("candle-form");
             }}
           >
             <Grid container spacing={2}>
@@ -101,34 +98,28 @@ export class CandlestickView extends Component {
                 <Typography variant="subtitle1" gutterBottom sx={{ mt: 2 }}>
                   Baja (%)
                 </Typography>
+                <br />
                 <Slider
-                  value={driverCandle.getSliderPercentDown()}
+                  min={0}
+                  max={10}
+                  step={0.01}
+                  value={config.percent.down}
                   onChange={(e, value) => {
                     driverCandle.updateSliderPercentDown(value);
                   }}
                   valueLabelDisplay="on"
-                  step={0.01}
-                  valueLabelFormat={(value) => `${+value.toFixed(2)}%`}
-                  getAriaValueText={(val) => `${+val.toFixed(2)}%`}
-                  min={0}
-                  max={10}
+                  valueLabelFormat={(value) => `${value}%`}
                   sx={{ mb: 2 }}
                 />
-                <TextField
-                  type="number"
+                <InputNumberDot
+                  min={0}
+                  max={10}
+                  step={0.01}
                   name="percent.down"
                   value={config.percent.down}
-                  onKeyDown={(e) => {
-                    if (e.key === ".") {
-                      e.preventDefault();
-                      showInfo("La separación decimal es con coma");
-                    }
-                    if (e.key === "-") {
-                      e.preventDefault();
-                      showInfo("No se puede ingresar números negativos");
-                    }
+                  onChange={({ newVal }) => {
+                    driverCandle.updateSliderPercentDown(newVal);
                   }}
-                  InputProps={{ inputProps: { min: 0, max: 10, step: 0.01 } }}
                   fullWidth
                 />
               </Grid>
@@ -136,41 +127,38 @@ export class CandlestickView extends Component {
                 <Typography variant="subtitle1" gutterBottom sx={{ mt: 2 }}>
                   Subida (%)
                 </Typography>
+                <br />
                 <Slider
-                  value={driverCandle.getSliderPercentUp()}
+                  min={0}
+                  max={10}
+                  step={0.01}
+                  value={config.percent.up}
                   onChange={(e, value) => {
                     driverCandle.updateSliderPercentUp(value);
                   }}
                   valueLabelDisplay="on"
-                  step={0.01}
-                  valueLabelFormat={(value) => `${+value.toFixed(2)}%`}
-                  getAriaValueText={(val) => `${+val.toFixed(2)}%`}
-                  min={0}
-                  max={10}
+                  valueLabelFormat={(value) => `${value}%`}
                   sx={{ mb: 2 }}
                 />
-                <TextField
-                  type="number"
+                <InputNumberDot
+                  min={0}
+                  max={10}
+                  step={0.01}
                   name="percent.up"
                   value={config.percent.up}
-                  onKeyDown={(e) => {
-                    if (e.key === ".") {
-                      e.preventDefault();
-                      showInfo("La separación decimal es con coma");
-                    }
-                    if (e.key === "-") {
-                      e.preventDefault();
-                      showInfo("No se puede ingresar números negativos");
-                    }
+                  onChange={({ newVal }) => {
+                    driverCandle.updateSliderPercentUp(newVal);
                   }}
-                  InputProps={{ inputProps: { min: 0, max: 10, step: 0.01 } }}
                   fullWidth
                 />
               </Grid>
               <Grid item xs={12}>
                 <div className="flex justify-end" style={{ marginTop: 16 }}>
                   <TooltipGhost
-                    title={driverCandle.mapCaseWasChanged("tooltipSaveButton")}
+                    title={driverCandle.mapCaseConfig(
+                      "tooltipSaveButton",
+                      !driverCandle.isChangedConfig()
+                    )}
                   >
                     <div>
                       <Button
@@ -179,7 +167,7 @@ export class CandlestickView extends Component {
                         startIcon={<SaveIcon />}
                         onClick={() => driverCandle.saveConfig()}
                         loading={saving}
-                        disabled={!wasChanged || saving}
+                        disabled={driverCandle.isChangedConfig() || saving}
                       >
                         {driverCandle.mapCaseSaving("textButtonSave")}
                       </Button>

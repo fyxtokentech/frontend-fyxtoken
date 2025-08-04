@@ -152,3 +152,11 @@ export function onResize(cb, component) {
 export function onScroll(cb, component) {
   addListenerIn("scroll", { fn: cb, component });
 }
+
+export function onBlur(cb, component) {
+  addListenerIn("blur", { fn: cb, component });
+}
+
+export function onFocus(cb, component) {
+  addListenerIn("focus", { fn: cb, component });
+}

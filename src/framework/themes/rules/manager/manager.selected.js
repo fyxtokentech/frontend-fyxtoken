@@ -67,7 +67,13 @@ export function getSelectedPalette({
   name = getThemeName(),
   darkmode = isDark(),
 } = {}) {
-  return getPaletteConfig(name)[["light", "dark"][+darkmode]];
+  const k = ["light", "dark"][+darkmode];
+  const t = getPaletteConfig(name)[k];
+  if (typeof t === "function") {
+    getPaletteConfig(name)[k] = t();
+  }
+  console.log(getPaletteConfig(name)[k])
+  return getPaletteConfig(name)[k];
 }
 
 export function getTheme(props) {

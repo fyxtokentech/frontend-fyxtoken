@@ -101,6 +101,7 @@ class CoinsOperating extends Component {
                   disabled={
                     isPendingDelete || driverCoinsOperating.getActionInProcess()
                   }
+                  variant="elevated"
                   color={colorChip}
                   style={{ color: textColor }}
                   deleteIcon={deleteIcon}

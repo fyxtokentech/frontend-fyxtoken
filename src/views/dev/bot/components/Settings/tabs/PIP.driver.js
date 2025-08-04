@@ -27,86 +27,110 @@ export const driverPIP = DriverComponent({
   },
   config: {
     isObject: true,
-
+    lastRecord: "",
+    _setup_({ makeRecord }) {
+      makeRecord();
+    },
+    makeRecord({ setLastRecord, stringify, notifyLinks }) {
+      setLastRecord(stringify());
+      notifyLinks();
+    },
+    isChanged({ getLastRecord, stringify }) {
+      return getLastRecord() == stringify();
+    },
+    modelForm: {
+      pips: {
+        type: Number,
+        positive: true,
+        label: "Pips",
+        p: [0, 0],
+      },
+      umbral: {
+        type: Number,
+        min: 0,
+        step: 0.01,
+        label: "Umbral",
+        p: [0, 1],
+      },
+      percent_wick: {
+        type: Number,
+        min: 0,
+        step: 0.01,
+        label: "Porcentaje de mecha (%)",
+        p: [1, 0],
+      },
+      percent_stop_loss: {
+        type: Number,
+        min: 0,
+        step: 0.01,
+        label: "Stop Loss (%)",
+        p: [1, 1],
+      },
+    },
     value: {
       pips: 0,
       umbral: 0,
       percent_wick: 0,
       percent_stop_loss: 0,
     },
-  },
-  wasChanged: {
-    isBoolean: true,
-    value: false,
     mapCase: {
       tooltipSaveButton: {
         true: () => "Guardar cambios",
         false: () => "No ha habido cambios para guardar",
       },
     },
-  },
 
-  async loadConfig() {
-    const { user_id } = window.currentUser;
-    const id_coin = driverParams.getOne("id_coin");
-    if (!user_id || !id_coin) {
-      return;
-    }
+    async load() {
+      const { user_id } = window.currentUser;
+      const id_coin = driverParams.getOne("id_coin");
+      if (!user_id || !id_coin) {
+        return;
+      }
 
-    await HTTPGET_USEROPERATION_STRATEGY({
-      user_id,
-      id_coin,
-      strategy: "pips",
-      failure: () => {
-        showError("Error al cargar configuración Pips");
-        this.setLoading(false);
-      },
-      successful: ([data]) => {
-        this.assignConfig(data);
-        this.setWasChanged(false);
-        this.setLoading(false);
-      },
-    });
-  },
-
-  async saveConfig() {
-    const { user_id } = window.currentUser;
-    const id_coin = driverParams.getOne("id_coin");
-    if (!user_id || !id_coin) {
-      return;
-    }
-
-    await showPromise("Guardando configuración PIP...", (resolve) => {
-      HTTPPATCH_USEROPERATION_STRATEGY({
+      await HTTPGET_USEROPERATION_STRATEGY({
         user_id,
         id_coin,
         strategy: "pips",
-        new_config: this.stringifyConfig(),
-        willStart: () => {
-          this.setSaving(true);
+        failure: () => {
+          showError("Error al cargar configuración Pips");
+          this.setLoading(false);
         },
-        willEnd: () => {
-          this.setSaving(false);
-        },
-        successful: () => {
-          this.setWasChanged(false);
-          resolve("Guardado");
-        },
-        failure: (info, rejectPromise) => {
-          rejectPromise("Error al guardar configuración PIP", resolve);
+        successful: ([data]) => {
+          this.assignConfig(data);
+          this.makeRecordConfig();
+          this.setLoading(false);
         },
       });
-    });
-  },
+    },
 
-  updateFromForm() {
-    const originalConfig = JSON.stringify(this.getConfig());
-    this.setFromIdFormConfig("pip-form");
-    const newConfig = JSON.stringify(this.getConfig());
+    async save() {
+      const { user_id } = window.currentUser;
+      const id_coin = driverParams.getOne("id_coin");
+      if (!user_id || !id_coin) {
+        return;
+      }
 
-    // Detectar si hubo cambios
-    if (originalConfig !== newConfig) {
-      this.setWasChanged(true);
-    }
+      await showPromise("Guardando configuración PIP...", (resolve) => {
+        HTTPPATCH_USEROPERATION_STRATEGY({
+          user_id,
+          id_coin,
+          strategy: "pips",
+          new_config: this.stringifyConfig(),
+          willStart: () => {
+            this.setSaving(true);
+          },
+          willEnd: () => {
+            this.setSaving(false);
+          },
+          successful: () => {
+            this.makeRecordConfig();
+            resolve("Guardado");
+          },
+          failure: (info, rejectPromise) => {
+            rejectPromise("Error al guardar configuración PIP", resolve);
+          },
+        });
+      });
+    },
   },
 });

@@ -23,16 +23,19 @@ import {
   ImageLocal,
   WaitSkeleton,
   TooltipGhost,
-  InputNumberDot
+  InputNumberDot,
+  trunc,
 } from "@jeff-aporta/camaleon";
 import { driverRSI } from "./RSI.driver.js";
+
+const decimals = 2;
+const step = 1 / Math.pow(10, decimals);
 
 export class RSIView extends Component {
   componentDidMount() {
     driverRSI.addLinkConfig(this);
     driverRSI.addLinkLoading(this);
     driverRSI.addLinkSaving(this);
-    driverRSI.addLinkWasChanged(this);
     driverRSI.addLinkSliderOversold(this);
     driverRSI.addLinkSliderOverbought(this);
     driverRSI.loadConfig();
@@ -42,7 +45,6 @@ export class RSIView extends Component {
     driverRSI.removeLinkConfig(this);
     driverRSI.removeLinkLoading(this);
     driverRSI.removeLinkSaving(this);
-    driverRSI.removeLinkWasChanged(this);
     driverRSI.removeLinkSliderOversold(this);
     driverRSI.removeLinkSliderOverbought(this);
   }
@@ -51,7 +53,6 @@ export class RSIView extends Component {
     const config = driverRSI.getConfig();
     const saving = driverRSI.getSaving();
     const loading = driverRSI.getLoading();
-    const wasChanged = driverRSI.getWasChanged();
 
     return (
       <WaitSkeleton loading={loading}>
@@ -78,7 +79,6 @@ export class RSIView extends Component {
   FormRSI() {
     const config = driverRSI.getConfig();
     const saving = driverRSI.getSaving();
-    const wasChanged = driverRSI.getWasChanged();
 
     return (
       <Grid item xs={12} md={7}>
@@ -95,7 +95,7 @@ export class RSIView extends Component {
           <form
             id="rsi-form"
             onChange={() => {
-              driverRSI.updateFromForm();
+              driverRSI.setFromIdFormConfig("rsi-form");
             }}
           >
             <Grid container spacing={2}>
@@ -131,7 +131,10 @@ export class RSIView extends Component {
               <Grid item xs={12}>
                 <div className="flex justify-end">
                   <TooltipGhost
-                    title={driverRSI.mapCaseWasChanged("tooltipSaveButton")}
+                    title={driverRSI.mapCaseConfig(
+                      "tooltipSaveButton",
+                      !driverRSI.isChangedConfig()
+                    )}
                   >
                     <div>
                       <Button
@@ -140,7 +143,7 @@ export class RSIView extends Component {
                         startIcon={<SaveIcon />}
                         onClick={() => driverRSI.saveConfig()}
                         loading={saving}
-                        disabled={!wasChanged || saving}
+                        disabled={driverRSI.isChangedConfig() || saving}
                       >
                         {driverRSI.mapCaseSaving("textButtonSave")}
                       </Button>
@@ -185,12 +188,15 @@ export class RSIView extends Component {
     const config = driverRSI.getConfig();
     return (
       <InputNumberDot
+        positive
         label="Delta negativo"
-        min={-20}
         max={100}
-        step={0.01}
+        step={step}
         name="delta.negative"
-        value={config.delta.negative}
+        value={trunc(config.delta.negative, decimals)}
+        onChange={() => {
+          driverRSI.setFromIdFormConfig("rsi-form");
+        }}
       />
     );
   }
@@ -199,19 +205,21 @@ export class RSIView extends Component {
     const config = driverRSI.getConfig();
     return (
       <InputNumberDot
+        positive
         label="Delta positivo"
-        min={0}
         max={100}
-        step={0.01}
+        step={step}
         name="delta.positive"
-        value={config.delta.positive}
+        value={trunc(config.delta.positive, decimals)}
+        onChange={() => {
+          driverRSI.setFromIdFormConfig("rsi-form");
+        }}
       />
     );
   }
 
   TextFieldPeriod() {
     const config = driverRSI.getConfig();
-    console.log(config.period);
     return (
       <TextField
         select
@@ -231,25 +239,22 @@ export class RSIView extends Component {
   }
 
   SliderOversoldOverbought() {
-    const sliderOversold = driverRSI.getSliderOversold();
-    const sliderOverbought = driverRSI.getSliderOverbought();
+    const config = driverRSI.getConfig();
+    const sliderOversold = trunc(config.oversold, decimals);
+    const sliderOverbought = trunc(config.overbought, decimals);
 
     return (
       <Slider
-        getAriaLabel={() => "Sobreventa y Sobrecompra"}
         value={[sliderOversold, sliderOverbought]}
         onChange={(e, newValue) => {
-          console.log(newValue);
           driverRSI.updateSliderValues(newValue);
         }}
         valueLabelDisplay="on"
-        step={0.01}
+        step={step}
         valueLabelFormat={(value, index) =>
-          index === 0
-            ? `Sobreventa: ${+value.toFixed(2)}`
-            : `Sobrecompra: ${+value.toFixed(2)}`
+          `${[`Sobreventa`, `Sobrecompra`][index]}: ${value}`
         }
-        getAriaValueText={(val) => `${+val.toFixed(2)}`}
+        getAriaValueText={(val) => `${val}`}
         min={0}
         max={100}
       />
@@ -263,9 +268,12 @@ export class RSIView extends Component {
         label="Sobreventa"
         min={0}
         max={100}
-        step={0.01}
+        step={step}
         name="oversold"
-        value={config.oversold}
+        value={trunc(config.oversold, decimals)}
+        onChange={({ newVal }) => {
+          driverRSI.setSliderOversold(newVal);
+        }}
       />
     );
   }
@@ -277,9 +285,12 @@ export class RSIView extends Component {
         label="Sobrecompra"
         min={0}
         max={100}
-        step={0.01}
+        step={step}
         name="overbought"
-        value={config.overbought}
+        value={trunc(config.overbought, decimals)}
+        onChange={({ newVal }) => {
+          driverRSI.setSliderOverbought(newVal);
+        }}
       />
     );
   }
@@ -299,7 +310,6 @@ export class RSIView extends Component {
                 operate_intermediate: e.target.checked,
               };
               driverRSI.assignConfig(newConfig);
-              driverRSI.setWasChanged(true);
             }}
           />
         }

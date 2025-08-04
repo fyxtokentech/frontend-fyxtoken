@@ -2,15 +2,23 @@ import React, { Component, useEffect } from "react";
 import { Box, Grid, TextField, Button } from "@mui/material";
 import SaveIcon from "@mui/icons-material/Save";
 import { TitleTab } from "./_repetitive";
-import { WaitSkeleton, TooltipGhost } from "@jeff-aporta/camaleon";
+import {
+  WaitSkeleton,
+  TooltipGhost,
+  trunc,
+  InputNumberDot,
+} from "@jeff-aporta/camaleon";
 import { driverPIP } from "./PIP.driver.js";
+
+const decimals = 2;
+const step = 1 / Math.pow(10, decimals);
 
 export class PIPView extends Component {
   componentDidMount() {
     driverPIP.addLinkConfig(this);
     driverPIP.addLinkLoading(this);
     driverPIP.addLinkSaving(this);
-    driverPIP.addLinkWasChanged(this);
+
     driverPIP.loadConfig();
   }
 
@@ -18,75 +26,93 @@ export class PIPView extends Component {
     driverPIP.removeLinkConfig(this);
     driverPIP.removeLinkLoading(this);
     driverPIP.removeLinkSaving(this);
-    driverPIP.removeLinkWasChanged(this);
   }
 
   render() {
     const config = driverPIP.getConfig();
     const saving = driverPIP.getSaving();
     const loading = driverPIP.getLoading();
-    const wasChanged = driverPIP.getWasChanged();
+    const isChanged = driverPIP.isChangedConfig();
     return (
       <Box sx={{ p: 2 }}>
-        <TitleTab 
-          variant="h5" 
-          title="Configuración Pips" 
+        <TitleTab
+          variant="h5"
+          title="Configuración Pips"
           subtitle="Configuración de puntos de interés y stop loss"
         />
         <WaitSkeleton loading={loading}>
           <form
             id="pip-form"
             onChange={() => {
-              driverPIP.updateFromForm();
+              driverPIP.setFromIdFormConfig("pip-form");
             }}
           >
             <Grid container spacing={2} sx={{ mt: 2 }}>
               <Grid item xs={12} sm={6}>
-                <TextField
-                  label="Pips"
-                  type="number"
+                <InputNumberDot
+                  positive
+                  label="Sobreventa"
+                  max={100}
                   name="pips"
-                  value={config.pips}
-                  InputProps={{ inputProps: { min: 0, step: 1 } }}
-                  fullWidth
+                  step={step}
+                  value={trunc(config.pips, decimals)}
+                  onChange={() => {
+                    driverPIP.setFromIdFormConfig("pip-form");
+                  }}
                 />
               </Grid>
 
               <Grid item xs={12} sm={6}>
-                <TextField
+                <InputNumberDot
+                  positive
+                  fullWidth
+                  max={100}
+                  step={step}
                   label="Umbral"
-                  type="number"
                   name="umbral"
-                  value={config.umbral}
-                  InputProps={{ inputProps: { min: 0, step: 0.01 } }}
-                  fullWidth
+                  value={trunc(config.umbral, decimals)}
+                  onChange={() => {
+                    driverPIP.setFromIdFormConfig("pip-form");
+                  }}
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
-                <TextField
-                  label="Porcentaje de mecha (%)"
-                  type="number"
-                  name="percent_wick"
-                  value={config.percent_wick}
-                  InputProps={{ inputProps: { min: 0, step: 0.01 } }}
+              <InputNumberDot
+                  positive
                   fullWidth
+                  max={100}
+                  label="Porcentaje de mecha (%)"
+                  name="percent_wick"
+                  step={step}
+                  value={trunc(config.percent_wick, decimals)}
+                  onChange={() => {
+                    driverPIP.setFromIdFormConfig("pip-form");
+                  }}
                 />
               </Grid>
 
               <Grid item xs={12} sm={6}>
-                <TextField
-                  label="Stop Loss (%)"
-                  type="number"
-                  name="percent_stop_loss"
-                  value={config.percent_stop_loss}
-                  InputProps={{ inputProps: { min: 0, step: 0.01 } }}
+                <InputNumberDot
+                  positive
                   fullWidth
+                  max={100}
+                  label="Stop Loss (%)"
+                  name="percent_stop_loss"
+                  step={step}
+                  value={trunc(config.percent_stop_loss, decimals)}
+                  onChange={() => {
+                    driverPIP.setFromIdFormConfig("pip-form");
+                  }}
                 />
               </Grid>
+
               <Grid item xs={12}>
                 <div className="flex justify-end">
                   <TooltipGhost
-                    title={driverPIP.mapCaseWasChanged("tooltipSaveButton")}
+                    title={driverPIP.mapCaseConfig(
+                      "tooltipSaveButton",
+                      !isChanged
+                    )}
                   >
                     <div>
                       <Button
@@ -95,7 +121,7 @@ export class PIPView extends Component {
                         startIcon={<SaveIcon />}
                         onClick={() => driverPIP.saveConfig()}
                         loading={saving}
-                        disabled={!wasChanged || saving}
+                        disabled={isChanged || saving}
                       >
                         {driverPIP.mapCaseSaving("textButtonSave")}
                       </Button>

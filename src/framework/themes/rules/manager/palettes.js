@@ -3,6 +3,7 @@ import { Color } from "../colors.js";
 import { firstUppercase, map } from "../../../tools/index.js";
 import { buildHref } from "../../router/index.js";
 import { themeColors } from "../colors.js";
+import { Height } from "@mui/icons-material";
 
 export const registerThemes_PaletteGeneral = {};
 
@@ -52,8 +53,11 @@ export class PaletteGeneral {
   }
 
   components({ darkmode, colors }) {
+    if (this.theComponents) {
+      return this.theComponents;
+    }
     let bgtooltip = Color([["white", "black"][+darkmode]]);
-    return {
+    const components = {
       AccordionDetails: {
         root: {
           padding: 0,
@@ -82,6 +86,8 @@ export class PaletteGeneral {
         },
       },
     };
+    this.theComponents = components;
+    return components;
   }
 
   colors(darkmode) {
@@ -152,23 +158,27 @@ export class PaletteMonochrome extends PaletteGeneral {
     this.paper_light = this.main_bright_color.toWhite(whiten.paper()).hex();
     this.paper_dark = this.main_color.toBlack(blacken.paper()).hex();
 
-    this.light = this.createThemePalette({
-      darkmode: false,
-      palette: this,
-      background: {
-        default: this.getbg(false),
-        paper: this.paper_light,
-      },
-    });
+    this.light = () => {
+      return this.createThemePalette({
+        darkmode: false,
+        palette: this,
+        background: {
+          default: this.getbg(false),
+          paper: this.paper_light,
+        },
+      });
+    };
 
-    this.dark = this.createThemePalette({
-      darkmode: true,
-      palette: this,
-      background: {
-        default: this.getbg(true),
-        paper: this.paper_dark,
-      },
-    });
+    this.dark = () => {
+      return this.createThemePalette({
+        darkmode: true,
+        palette: this,
+        background: {
+          default: this.getbg(true),
+          paper: this.paper_dark,
+        },
+      });
+    };
   }
 
   getbg_pair() {
@@ -209,12 +219,6 @@ export class PaletteMonochrome extends PaletteGeneral {
     };
     return {
       ...this.components({ colors, darkmode }),
-      primary: {
-        color: Color("white").hex(),
-        "&:hover": {
-          backgroundColor: colors.primary.color.hex(),
-        },
-      },
       root: {
         margin: "0",
       },
@@ -237,43 +241,12 @@ export class PaletteBaseMonochrome extends PaletteMonochrome {
   constructor(props) {
     super(props);
   }
-  componentsMUI({ constants_color, darkmode }) {
-    const colors = {
-      ...constants_color,
-      ...this.colors(darkmode),
-      ...themeColors(),
-    };
-
-    function colorized(c) {
-      const { color, text } = c;
-      if (!color || !text) {
-        return;
-      }
-      return {
-        backgroundColor: [color.hex(), color.darken(0.2).hex()][+darkmode],
-        color: text.hex(),
-        "&:hover": {
-          backgroundColor: color[["darken", "lighten"][+darkmode]](0.2).hex(),
-        },
-      };
-    }
-
-    return {
-      ...super.componentsMUI({ colors, darkmode }),
-      Button: {
-        ...Object.entries(colors)
-          .map(([k, v]) => {
-            return {
-              [k]: colorized(v),
-            };
-          })
-          .filter(Boolean)
-          .reduce((a, b) => ({ ...a, ...b }), {}),
-      },
-    };
-  }
 
   adjacentFactor() {
+    if (this.theAdjacentFactor) {
+      // Siempre retorna el mismo objeto, requiere que se genere sólo una vez
+      return this.theAdjacentFactor;
+    }
     let hue = this.main_color.hue();
     let factor = getDirectionAdjacentLight(hue);
     const colorsConflictiveContrast = {
@@ -316,6 +289,7 @@ export class PaletteBaseMonochrome extends PaletteMonochrome {
         factor *= minDiff / tolerance;
       }
     }
+    this.theAdjacentFactor = factor;
     return factor;
   }
 
@@ -334,7 +308,7 @@ export class PaletteBaseMonochrome extends PaletteMonochrome {
 
   getSecondaryColor(darkmode) {
     return this.primary
-      .toLerp(Color("slategray"), 0.5)
+      .toLerp(Color("slategray"), 0.8)
       .toLerp(Color(["black", "white"][+darkmode]), 0.4);
   }
 
@@ -366,10 +340,13 @@ export class PaletteBaseMonochrome extends PaletteMonochrome {
   }
 
   colors(darkmode) {
+    if (this.theColors) {
+      // Siempre retorna el mismo objeto, requiere que se genere sólo una vez
+      return this.theColors;
+    }
     const [blanco, negro] = [Color("white"), Color("black")];
     const colors_contrast = [blanco, negro];
     const color_contrast = colors_contrast[+darkmode];
-    const color_uncontrast = colors_contrast[1 - darkmode];
 
     const primary = this.getPrimaryColor();
     this.primary = primary;
@@ -423,6 +400,7 @@ export class PaletteBaseMonochrome extends PaletteMonochrome {
           getDirectionAdjacentDark(hue) * 10 * [ti, t][+isBgLight]
         );
       }
+      colorOver = colorOver.toLerp(Color(["black", "white"][+isBgDark]), 0.2);
       return colorOver;
     }
 
@@ -444,13 +422,14 @@ export class PaletteBaseMonochrome extends PaletteMonochrome {
       Object.entries(props).forEach(([k, v]) => {
         retorno[k] = {
           color: v,
-          text: color_contrast,
+          text: colors_contrast[+v.isLight()],
         };
       });
       return retorno;
     }
 
     const reds = toColorSteep25("red", this.contrast);
+    const dangers = toColorSteep25("crimson", primary, "danger");
     const paperRed = toColorSteep25("red", this.contrastPaper, "PaperRed");
 
     const colorsCamaleon = {
@@ -496,19 +475,22 @@ export class PaletteBaseMonochrome extends PaletteMonochrome {
       ...toColorSteep25("green", primary),
       ...toColorSteep25("orange", primary),
       ...toColorSteep25("slategray", primary, "secondary"),
-      ...toColorSteep25("crimson", primary, "danger"),
+      ...dangers,
       ...toColorSteep25("limegreen", primary, "safety"),
       ...toColorSteep25("darkorange", primary, "caution"),
       ...toColorSteep25("deepskyblue", primary, "info"),
+      danger: dangers.toDanger75,
       close: reds.toRed50,
       closePaper: paperRed.toPaperRed50,
     };
     this.colorsCamaleonKeys = Object.keys(colorsCamaleon);
 
-    return {
+    this.theColors = {
       ...super.colors(darkmode),
       ...genObjMui(colorsCamaleon),
     };
+
+    return this.theColors;
 
     function toColorSteep25(name_color, from, mask_name_color, color) {
       if (!mask_name_color) {
@@ -556,12 +538,23 @@ export class PaletteBaseMonochrome extends PaletteMonochrome {
     }
     l(darkmode);
   }
+
   componentsMUI({ colors, darkmode }) {
+    if (this.theComponentsMUI) {
+      // Siempre retorna el mismo objeto, requiere que se genere sólo una vez
+      return this.theComponentsMUI;
+    }
     const {
       Button = {},
       Typography = {},
       ...s
     } = super.componentsMUI({ colors, darkmode });
+
+    const theColorsVariant = [
+      ...this.colorsCamaleonKeys,
+      "secondary",
+      "primary",
+    ];
 
     const retorno = {
       ...s,
@@ -577,27 +570,66 @@ export class PaletteBaseMonochrome extends PaletteMonochrome {
       },
       Button: {
         ...Button,
-        ...[...this.colorsCamaleonKeys, "secondary"]
-          .map((state) => {
-            if (!Button[state]) {
-              Button[state] = {};
-            }
-            let color = Color("white");
-            const bg = this.getbgstate(darkmode, state);
-            if (bg && Color(bg).isLight()) {
-              color = Color("black");
-            }
-            return {
-              [state]: {
-                ...Button[state],
-                color: color.hex(),
+        ...getVariantsColor_textContrastFromBG.bind(this)(Button),
+      },
+      Chip: {
+        ...getVariantsColor_textContrastFromBG.bind(this)(),
+        variants: [
+          {
+            props: { variant: "elevated" },
+            style: {
+              boxShadow: "0px 3px 2px rgba(100, 100, 100, 0.5)",
+            },
+          },
+        ],
+      },
+      Badge: {
+        ...getVariantsColor_textContrastFromBG.bind(this)(),
+        variants: [
+          {
+            props: { size: "small" }, // esta prop es arbitraria, no nativa
+            style: {
+              "& .MuiBadge-badge": {
+                height: "fit-content",
+                width: "fit-content",
+                padding: "2px 0",
+                fontWeight: "bold",
+                fontSize: "10px",
+                boxShadow: "0px 3px 2px rgba(128, 128, 128, 0.5)",
+                transition: "filter 0.2s ease-in-out",
+                "&:hover": {
+                  filter: "brightness(1.5)",
+                },
               },
-            };
-          })
-          .reduce((acc, r) => ({ ...acc, ...r }), {}),
+            },
+          },
+        ],
       },
     };
 
+    this.theComponentsMUI = retorno;
+
     return retorno;
+
+    function getVariantsColor_textContrastFromBG(Colect = {}) {
+      return theColorsVariant
+        .map((state) => {
+          if (!Colect[state]) {
+            Colect[state] = {};
+          }
+          let color = Color("white");
+          const bg = this.getbgstate(darkmode, state);
+          if (bg && Color(bg).isLight()) {
+            color = Color("black");
+          }
+          return {
+            [state]: {
+              ...Colect[state],
+              color: color.hex(),
+            },
+          };
+        })
+        .reduce((acc, r) => ({ ...acc, ...r }), {});
+    }
   }
 }

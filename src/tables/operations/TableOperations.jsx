@@ -134,6 +134,7 @@ export default function (props) {
                 >
                   <IconButton
                     size="small"
+                    className="square w-fit"
                     onClick={() => {
                       driverTables.setOperationRow(row);
                       driverParams.set({
@@ -146,8 +147,10 @@ export default function (props) {
                   >
                     <Badge
                       badgeContent={row.number_of_transactions}
-                      color="primary"
-                      sx={{ "& .MuiBadge-badge": { color: "#fff" } }}
+                      color="contrastPaper"
+                      size="small"
+                      max={99}
+                      overlap="circular"
                     >
                       <TransactionsIcon fontSize="small" />
                     </Badge>

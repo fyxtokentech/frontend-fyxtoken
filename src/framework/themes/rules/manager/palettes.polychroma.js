@@ -138,6 +138,7 @@ async function createPolychroma({ color, label, name, whiten, blacken }) {
           })(),
         label,
         name,
+        color,
       };
     }
   }
@@ -155,13 +156,24 @@ async function createPolychroma({ color, label, name, whiten, blacken }) {
           })(),
         name,
         label,
+        color,
       };
     }
   }
 }
 
 export function initializeThemesPolychroma() {
+  console.log({ registerThemes_PaletteGeneral, themeColors: themeColors() });
   const especial = {
+    black: {
+      label: "Carbon",
+    },
+    blackTheme: {
+      label: "Blanco&Negro",
+    },
+    white: {
+      label: "Pureza",
+    },
     tomato: {
       label: "Tomate",
       whiten: {
@@ -271,34 +283,45 @@ export function initializeThemesPolychroma() {
       label: "Gris oscuro",
     },
   };
-  Object.entries(themeColors()).forEach(([key, value]) => {
-    if (["Light", "Accent"].some((x) => key.endsWith(x))) {
-      return;
-    }
-    if (["black", "white"].some((x) => key.startsWith(x))) {
-      return;
-    }
+  Object.entries(themeColors())
+    .filter(([key]) => {
+      if (["Light", "Accent"].some((x) => key.endsWith(x))) {
+        // No se deben fabricar temas de colores secundarios
+        return;
+      }
+      /* if (["black", "white"].some((x) => key.startsWith(x))) {
+        return;
+      } */
+      return true;
+    })
+    .filter(([key]) => {
+      return !Object.values(registerThemes_PaletteGeneral).some(
+        (x) => x.color[key]
+      );
+    })
+    .forEach(([key, value]) => {
+      console.log({ key, value });
 
-    let E = especial[key];
-    let Nombre;
-    let whiten;
-    let blacken;
+      let E = especial[key];
+      let Nombre;
+      let whiten;
+      let blacken;
 
-    if (E) {
-      Nombre = E.label;
-      whiten = E.whiten;
-      blacken = E.blacken;
-    } else {
-      Nombre = key;
-    }
+      if (E) {
+        Nombre = E.label;
+        whiten = E.whiten;
+        blacken = E.blacken;
+      } else {
+        Nombre = key;
+      }
 
-    createPolychroma({
-      color: { [key]: themeColors()[key] },
-      label: Nombre,
-      whiten,
-      blacken,
+      createPolychroma({
+        color: { [key]: themeColors()[key] },
+        label: Nombre,
+        whiten,
+        blacken,
+      });
     });
-  });
 }
 
 export function initializeThemeColors(otherColors = {}) {

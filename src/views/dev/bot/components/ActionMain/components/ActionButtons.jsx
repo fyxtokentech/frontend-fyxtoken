@@ -20,7 +20,7 @@ import {
   Design,
   Layer,
   AnimateComponent,
-  showPromise,
+  showPromise, showPromptDialog,
   WaitSkeleton,
   ButtonShyText,
 } from "@jeff-aporta/camaleon";
@@ -66,7 +66,7 @@ class ActionButtons extends Component {
               <Button
                 color="inherit"
                 size="small"
-                onClick={driverPanelRobot.setToSettingsViewBot}
+                onClick={()=>driverPanelRobot.setToSettingsViewBot()}
               >
                 <div className="flex col-direction align-center">
                   <SettingsIcon />
@@ -184,10 +184,20 @@ class ActionButtons extends Component {
           })()}
           disabled={driverActionButtons.disableStoper()}
           loading={loadingGeneral}
-          color="cancel"
-          onClick={(e) => {
+          color="danger"
+          onClick={async (e) => {
             e.preventDefault();
-            driverCoinsOperating.deleteCoinFromAPI(actualCurrency);
+            const { value } = await showPromptDialog({
+              title: "Confirmación",
+              description: `¿Está seguro de que desea detener la operación (${driverPanelRobot.getCurrency()})?`,
+              input: "confirm",
+              showCancelButton: true,
+              cancelText: "Cancelar",
+              confirmText: "Detener",
+            });
+            if (value) {
+              driverCoinsOperating.deleteCoinFromAPI(actualCurrency);
+            }
           }}
           startIcon={<StopIcon fontSize="small" />}
         >

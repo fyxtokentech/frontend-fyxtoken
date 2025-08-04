@@ -1,6 +1,6 @@
 import { getThemeName, getThemeLuminance } from "./manager.vars.js";
 
-const themeChangeListener = [];
+const _themeChangeListener_ = [];
 let last_theme_values;
 
 function recordLastThemeValues() {
@@ -21,11 +21,11 @@ function themeValuesWasChanged() {
 }
 
 export function addThemeChangeListener(listener) {
-  themeChangeListener.push(listener);
+  _themeChangeListener_.push(listener);
 }
 
 export function removeThemeChangeListener(listener) {
-  themeChangeListener.splice(themeChangeListener.indexOf(listener), 1);
+  _themeChangeListener_.splice(_themeChangeListener_.indexOf(listener), 1);
 }
 
 export function triggerThemeChange() {
@@ -35,7 +35,7 @@ export function triggerThemeChange() {
   recordLastThemeValues();
 
   function execFor() {
-    themeChangeListener.forEach((listener, i, array) =>
+    _themeChangeListener_.forEach((listener, i, array) =>
       listener({
         luminance: getThemeLuminance(),
         name: getThemeName(),

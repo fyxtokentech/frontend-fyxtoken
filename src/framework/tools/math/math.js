@@ -1,5 +1,13 @@
 export const idR = (prefix="R")=>Math.random().toString(36).replace("0.", `${prefix}-`);
 
+export function trunc(value, decimals) {
+  if (decimals === 0) {
+    return Math.trunc(value);
+  }
+  const factor = Math.pow(10, decimals);
+  return Math.trunc(value * factor) / factor;
+}
+
 export function clamp(value, min, max) {
   return Math.min(Math.max(+value, min), max);
 }

@@ -1,23 +1,34 @@
-function modelNullish({ evalFn = true } = {}) {
+function modelNullish({ evalFn = true, nullish = true } = {}) {
+  let candidate;
   return F;
 
   function F(value, ...rest) {
     if (typeof value === "function" && evalFn) {
       value = value();
     }
-    if (!isNullish(value)) {
-      return value;
+    if (nullish) {
+      if (!isNullish(value)) {
+        return value;
+      }
+    } else {
+      if (value) {
+        return value;
+      } else if (!isNullish(value)) {
+        candidate = value;
+      }
     }
     if (rest.length > 0) {
       return F(...rest);
     }
+    return candidate;
   }
 }
 
-export function isNullish(value){
+export function isNullish(value) {
   return value === null || value === undefined;
 }
 export const nullish = modelNullish();
+export const findFirstTruthy = modelNullish({ nullish: false });
 export const nullishFlat = modelNullish({ evalFn: false });
 
 export function assignNullish(dst, src) {
@@ -32,5 +43,6 @@ export function assignNullish(dst, src) {
     nullish,
     nullishFlat,
     assignNullish,
+    findFirstTruthy,
   });
 });

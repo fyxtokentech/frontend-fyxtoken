@@ -21,9 +21,9 @@ export const driverPanelRobot = DriverComponent({
     const coinCurrency = currency || this.getCurrency();
     return coinKey === coinCurrency;
   },
-  loadingCoinMetrics:{
-    isBoolean:true,
-    value:true,
+  loadingCoinMetrics: {
+    isBoolean: true,
+    value: true,
   },
   async fetchCoinMetrics(_) {
     driverPanelBalance.setDefaultUSDTBuy(0);
@@ -90,7 +90,7 @@ export const driverPanelRobot = DriverComponent({
   },
   coinsToOperate: {
     isArray: true,
-    findCurrencyIn(_, { find, SEARCH_COIN_KEY }) {
+    findCurrencyIn({ find, SEARCH_COIN_KEY }) {
       return find((coin) => SEARCH_COIN_KEY({ coin }));
     },
 
@@ -98,7 +98,7 @@ export const driverPanelRobot = DriverComponent({
       return find((coin) => SEARCH_COIN_KEY({ coin, currency: symbol }));
     },
 
-    mapToKeys(_, { map }) {
+    mapToKeys({ map }) {
       return map(this.getCoinKey);
     },
   },
@@ -138,12 +138,12 @@ export const driverPanelRobot = DriverComponent({
         false: () => "close",
       },
       textColor: {
-        true: () => "white",
-        false: () => undefined,
+        true: () => "contrastPaperBOW",
+        false: () => "secondary",
       },
       deleteIcon: {
-        true: () => <DoDisturbOnIcon style={{ color: "white" }} />,
-        false: () => <CircularProgress size="20px" color="white" />,
+        true: () => <DoDisturbOnIcon color="secondary" />,
+        false: () => <CircularProgress size="20px" color="secondary" />,
       },
       tooltipTitle: {
         true: () => "",
@@ -166,13 +166,11 @@ export const driverPanelRobot = DriverComponent({
     _willSet_(newValue) {
       console.log("_willSet_", newValue);
     },
-    setToMain(_, { setValue }) {
-      console.log("setToMain")
+    setToMain({ setValue }) {
       setValue("main");
       driverTables.setViewTable(driverTables.TABLE_OPERATIONS);
     },
-    setToSettings(_, { setValue }) {
-      console.log("setToSettings")
+    setToSettings({ setValue }) {
       setValue("settings");
     },
     mapCase: {

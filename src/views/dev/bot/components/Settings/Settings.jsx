@@ -81,7 +81,7 @@ export default function Settings() {
         <ButtonShyText
           tooltip="Volver al panel principal"
           color="close"
-          onClick={driverPanelRobot.setToMainViewBot}
+          onClick={() => driverPanelRobot.setToMainViewBot()}
           startIcon={<DisabledByDefaultIcon fontSize="small" />}
         >
           Cerrar configuración

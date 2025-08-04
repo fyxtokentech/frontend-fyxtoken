@@ -54,7 +54,7 @@ export function muiColors(palette, darkMode) {
   const retorno = Object.entries(colors).reduce((acc, [key, value]) => {
     const bg = value.color;
     let color = value.text;
-    if(!value.inmutable){
+    if (!value.inmutable) {
       if (bg.isLight() && color.isLight()) {
         color = color.invertnohue();
       }
@@ -148,29 +148,39 @@ export function customizeComponents({ palette, darkmode }) {
   function mapMui(palette) {
     const componentes = palette.componentsMUI({ darkmode });
     const retorno = Object.entries(componentes).reduce(
-      (retorno, [component, contexts]) => {
+      (retorno, [component, rules]) => {
+        const { variants = [], ...styleOverrides } = rules;
+        console.log(rules, variants)
         retorno[`Mui${component}`] = {
+          variants,
           styleOverrides:
-            typeof contexts === "string"
-              ? contexts
-              : Object.entries(contexts).reduce((curr, [context, css]) => {
-                  const s = Object.keys(palette.colors(isDark()))
-                    .concat([
-                      "primary",
-                      "secondary",
-                      "error",
-                      "warning",
-                      "info",
-                      "success",
-                    ])
-                    .includes(context);
-                  if (s) {
-                    curr[`contained${firstUppercase(context)}`] = css;
-                  } else {
-                    curr[context] = css;
-                  }
-                  return curr;
-                }, {}),
+            typeof styleOverrides === "string"
+              ? styleOverrides
+              : Object.entries(styleOverrides).reduce(
+                  (curr, [context, css]) => {
+                    const s = Object.keys(palette.colors(isDark()))
+                      .concat([
+                        "primary",
+                        "secondary",
+                        "error",
+                        "warning",
+                        "info",
+                        "success",
+                      ])
+                      .includes(context);
+                    if (s) {
+                      curr[
+                        `${
+                          component == "Badge" ? "color" : "contained"
+                        }${firstUppercase(context)}`
+                      ] = css;
+                    } else {
+                      curr[context] = css;
+                    }
+                    return curr;
+                  },
+                  {}
+                ),
         };
         return retorno;
       },

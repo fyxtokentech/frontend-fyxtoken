@@ -315,11 +315,9 @@ export class PromptDialog extends Component {
                     step={step}
                     positive={positive}
                     label={label}
-                    onChange={(e) => {
+                    onChange={({newValue}) => {
                       this.setState({
-                        inputValue: Number(
-                          typeof e === "number" ? e : e.target.value
-                        ),
+                        inputValue: newValue,
                       });
                     }}
                     onKeyDown={(e) => {

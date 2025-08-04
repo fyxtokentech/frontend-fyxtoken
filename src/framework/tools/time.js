@@ -53,7 +53,6 @@ export function Delayer(timedelay) {
     isReady(cbIncrement) {
       let ready = ellapsed(delay) >= timedelay;
       cbIncrement && pila.push(cbIncrement);
-      console.log({ pila, ready, equilibrio });
       if (ready) {
         if (pila.length) {
           if (equilibrio == 0) {

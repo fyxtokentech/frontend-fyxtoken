@@ -110,6 +110,7 @@ export async function HTTPGET_USEROPERATION_OPEN({
   return await MAKE_GET({
     ...rest,
     ...httpdebug,
+    useCache: false,
     service: "robot_backend",
     buildEndpoint: ({ genpath }) =>
       genpath(["operations", "open", user_id, id_coin]),

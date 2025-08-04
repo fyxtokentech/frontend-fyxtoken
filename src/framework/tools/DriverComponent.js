@@ -1,18 +1,19 @@
-import { isNullish, nullish } from "../start.js";
+import { isNullish, nullish, findFirstTruthy } from "../start.js";
 import { driverParams, subscribeParam } from "../themes/router/params.js";
 
 import { firstUppercase } from "./tools.js";
 
 import { started } from "../events/events.base.js";
+import { Delayer } from "../tools/index.js";
 
 const allDrivers = { noId: [] };
 
 export function inferStringData(val) {
   // Boolean
-  if (val === "true") {
+  if (val.toString() === "true") {
     return true;
   }
-  if (val === "false") {
+  if (val.toString() === "false") {
     return false;
   }
 
@@ -185,23 +186,21 @@ export function DriverComponent(modelProps) {
 
           if (isVar) {
             if (isFunction) {
-              const optionalPrefixes = ["is", "get"];
               const binder = props.bind(this);
               const isAsync = props.constructor.name === "AsyncFunction";
-              const invoker = function(val) {
-                const optionalVal = optionalPrefixes.some(prefix => key.startsWith(prefix));
+              const invoker = function (val) {
                 const CONTEXT = CONTEXT_GENERAL();
-                if (optionalVal && !val) {
+                if (isNullish(val)) {
                   return binder(CONTEXT);
                 }
                 return binder(val, CONTEXT);
               };
               if (isAsync) {
-                this[key] = async function(val) {
+                this[key] = async function (val) {
                   return await invoker(val);
                 };
               } else {
-                this[key] = function(val) {
+                this[key] = function (val) {
                   return invoker(val);
                 };
               }
@@ -378,9 +377,12 @@ export function DriverComponent(modelProps) {
             }
             const formData = new FormData(form);
 
-            const newData = { ...get() };
+            const newData = JSON.parse(JSON.stringify(get()));
 
-            for (const [key, value] of formData.entries()) {
+            for (let [key, value] of formData.entries()) {
+              if (value == "on") {
+                value = true;
+              }
               if (key.includes(".")) {
                 const [parent, child, child2] = key.split(".");
                 if (!newData[parent]) {
@@ -422,7 +424,7 @@ export function DriverComponent(modelProps) {
             if (!mapCase[key]) {
               return "El key no existe";
             }
-            if (!value) {
+            if (isNullish(value)) {
               value = get();
             }
 
@@ -553,12 +555,11 @@ export function DriverComponent(modelProps) {
 
               function case_function() {
                 value = (props) => {
-                  if (["get", "is"].some((x) => name.startsWith(x))) {
-                    if (isNullish(props)) {
-                      return prop.bind(this)(CONTEXT_GENERAL());
-                    }
+                  const CONTEXT = CONTEXT_GENERAL();
+                  if (isNullish(props)) {
+                    return prop.bind(this)(CONTEXT);
                   }
-                  return prop.bind(this)(props, CONTEXT_GENERAL());
+                  return prop.bind(this)(props, CONTEXT);
                 };
                 this[name] = value;
                 extra_context[originalKey] = value;
@@ -576,6 +577,9 @@ export function DriverComponent(modelProps) {
         function ADDLINK() {
           return (component) => {
             links.push(component);
+            if (component.forceUpdate) {
+              component.delayerUpdate = Delayer(1000 / 20);
+            }
           };
         }
 
@@ -611,7 +615,7 @@ export function DriverComponent(modelProps) {
 
         function GET() {
           return (param) => {
-            let RETURN = nullish(value, getParam, getStorage);
+            let RETURN = findFirstTruthy(value, getParam, getStorage);
             RETURN = filterFromType.bind(this)(RETURN, {
               validateType: _getValidate_,
               applyFilters: true,
@@ -736,7 +740,13 @@ export function DriverComponent(modelProps) {
             async () => {
               const component = get();
               if (component && component.forceUpdate) {
-                component.forceUpdate();
+                if (component.delayerUpdate) {
+                  component.delayerUpdate.isReady(() =>
+                    component.forceUpdate()
+                  );
+                } else {
+                  component.forceUpdate();
+                }
               }
             },
             () => {
@@ -756,17 +766,21 @@ export function DriverComponent(modelProps) {
           };
         }
 
-        async function notifyLinks({ oldValue, newValue }) {
-          links.forEach((c) => {
+        async function notifyLinks({ oldValue, newValue } = {}) {
+          links.forEach((component) => {
             if (!started()) {
               return;
             }
-            if (c.forceUpdate) {
-              c.forceUpdate();
-            } else if (typeof c == "function") {
-              c({ ...CONTEXT_GENERAL(), oldValue, newValue });
+            if (component.forceUpdate) {
+              if (component.delayerUpdate) {
+                component.delayerUpdate.isReady(() => component.forceUpdate());
+              } else {
+                component.forceUpdate();
+              }
+            } else if (typeof component == "function") {
+              component({ ...CONTEXT_GENERAL(), oldValue, newValue });
             } else {
-              console.error("El enlace no es valido " + saneoKey, c);
+              console.error("El enlace no es valido " + saneoKey, component);
             }
           });
         }

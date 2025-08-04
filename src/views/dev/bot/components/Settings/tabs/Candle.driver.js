@@ -27,14 +27,54 @@ export const driverCandle = DriverComponent({
   },
   config: {
     isObject: true,
+    lastRecord: "",
+    _setup_({ makeRecord }) {
+      makeRecord();
+    },
+    makeRecord({ setLastRecord, stringify, notifyLinks }) {
+      setLastRecord(stringify());
+      notifyLinks();
+    },
+    isChanged({ getLastRecord, stringify }) {
+      return getLastRecord() == stringify();
+    },
+    modelForm: {
+      period: {
+        type: "select",
+        label: "Periodo",
+        options: [
+          "5 minutos",
+          "10 minutos",
+          "15 minutos",
+          "30 minutos",
+          "1 hora",
+          "1 día",
+        ],
+        p: [0, 0],
+      },
+      percent: {
+        down: {
+          type: Number,
+          min: 0,
+          max: 10,
+          step: 0.01,
+          label: "Baja (%)",
+          p: [1, 0],
+        },
+        up: {
+          type: Number,
+          min: 0,
+          max: 10,
+          step: 0.01,
+          label: "Subida (%)",
+          p: [1, 1],
+        },
+      },
+    },
     value: {
       period: { unit: "m", value: 5 },
       percent: { down: 0, up: 0 },
     },
-  },
-  wasChanged: {
-    isBoolean: true,
-    value: false,
     mapCase: {
       tooltipSaveButton: {
         true: () => "Guardar cambios",
@@ -42,6 +82,7 @@ export const driverCandle = DriverComponent({
       },
     },
   },
+
   // Variables temporales para los sliders
   sliderPercentDown: {
     isNumber: true,
@@ -75,7 +116,7 @@ export const driverCandle = DriverComponent({
         });
         this.setSliderPercentDown(data.percent?.down ?? 0);
         this.setSliderPercentUp(data.percent?.up ?? 0);
-        this.setWasChanged(false);
+        this.makeRecordConfig();
         this.setLoading(false);
       },
     });
@@ -108,7 +149,7 @@ export const driverCandle = DriverComponent({
           this.setSaving(false);
         },
         successful: () => {
-          this.setWasChanged(false);
+          this.makeRecordConfig();
           resolve("Guardado");
         },
         failure: (info, rejectPromise) => {
@@ -118,58 +159,36 @@ export const driverCandle = DriverComponent({
     });
   },
 
-  updateFromForm() {
-    const originalConfig = JSON.stringify(this.getConfig());
-    this.setFromIdFormConfig("candle-form");
-    if (originalConfig !== JSON.stringify(this.getConfig())) {
-      this.setWasChanged(true);
-    }
-  },
+  
 
   updateSliderPercentDown(value) {
-    const originalConfig = JSON.stringify(this.getConfig());
-
     // Actualizar variable del slider
     this.setSliderPercentDown(value);
 
     // Actualizar config
     const currentConfig = this.getConfig();
-    const newConfig = {
+    this.assignConfig({
       ...currentConfig,
       percent: {
         ...currentConfig.percent,
         down: value,
       },
-    };
-    this.assignConfig(newConfig);
-
-    // Detectar cambios
-    if (originalConfig !== JSON.stringify(newConfig)) {
-      this.setWasChanged(true);
-    }
+    });
   },
 
   updateSliderPercentUp(value) {
-    const originalConfig = JSON.stringify(this.getConfig());
-
     // Actualizar variable del slider
     this.setSliderPercentUp(value);
 
     // Actualizar config
     const currentConfig = this.getConfig();
-    const newConfig = {
+    this.assignConfig({
       ...currentConfig,
       percent: {
         ...currentConfig.percent,
         up: value,
       },
-    };
-    this.assignConfig(newConfig);
-
-    // Detectar cambios
-    if (originalConfig !== JSON.stringify(newConfig)) {
-      this.setWasChanged(true);
-    }
+    });
   },
 
   // Utilidades para conversión periodo texto <-> objeto

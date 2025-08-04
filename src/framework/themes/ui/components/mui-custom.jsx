@@ -161,15 +161,18 @@ export function InputGender({
   } = color ? color.hsv().object() : {};
   let filter = [
     null,
-    `
-          invert(0.7)
-          invert(${1 - luminance / 100})
-          sepia() 
-          contrast(2)
-          saturate(${3 * saturation}%)
-          hue-rotate(${hue - 48}deg) 
-      `,
-  ][+!!isDark()];
+    [
+      null,
+      [
+        "invert(0.7)",
+        `invert(${1 - luminance / 100})`,
+        "sepia()",
+        "contrast(2)",
+        `saturate(${3 * saturation}%)`,
+        `hue-rotate(${hue - 48}deg)`,
+      ].join(" "),
+    ][+!!isDark()],
+  ];
 
   return (
     <Input

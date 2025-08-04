@@ -1,10 +1,5 @@
 import React, { Component } from "react";
-import {
-  Box,
-  Grid,
-  TextField,
-  Button,
-} from "@mui/material";
+import { Box, Grid, TextField, Button } from "@mui/material";
 import PublicIcon from "@mui/icons-material/Public";
 import SaveIcon from "@mui/icons-material/Save";
 import { TitleTab } from "./_repetitive";
@@ -12,15 +7,19 @@ import {
   showInfo,
   WaitSkeleton,
   TooltipGhost,
+  trunc,
+  InputNumberDot,
 } from "@jeff-aporta/camaleon";
 import { driverGlobal } from "./Global.driver.js";
+
+const decimals = 2;
+const step = 1 / Math.pow(10, decimals);
 
 export class GlobalView extends Component {
   componentDidMount() {
     driverGlobal.addLinkConfig(this);
     driverGlobal.addLinkLoading(this);
     driverGlobal.addLinkSaving(this);
-    driverGlobal.addLinkWasChanged(this);
     driverGlobal.loadConfig();
   }
 
@@ -28,14 +27,10 @@ export class GlobalView extends Component {
     driverGlobal.removeLinkConfig(this);
     driverGlobal.removeLinkLoading(this);
     driverGlobal.removeLinkSaving(this);
-    driverGlobal.removeLinkWasChanged(this);
   }
 
   render() {
-    // const config = driverGlobal.getConfig(); // No utilizado actualmente
-    // const saving = driverGlobal.getSaving(); // No utilizado actualmente
     const loading = driverGlobal.getLoading();
-    // const wasChanged = driverGlobal.getWasChanged(); // No utilizado actualmente
 
     return (
       <WaitSkeleton loading={loading}>
@@ -57,10 +52,9 @@ export class GlobalView extends Component {
   }
 
   FormGlobal() {
-    // const config = driverGlobal.getConfig(); // No utilizado actualmente
     const saving = driverGlobal.getSaving();
-    const wasChanged = driverGlobal.getWasChanged();
-    
+    const isChanged = driverGlobal.isChangedConfig();
+
     return (
       <Grid item xs={12}>
         <Box
@@ -92,7 +86,10 @@ export class GlobalView extends Component {
               <Grid item xs={12}>
                 <div className="flex justify-end">
                   <TooltipGhost
-                    title={driverGlobal.mapCaseWasChanged("tooltipSaveButton")}
+                    title={driverGlobal.mapCaseConfig(
+                      "tooltipSaveButton",
+                      !isChanged
+                    )}
                   >
                     <div>
                       <Button
@@ -101,7 +98,7 @@ export class GlobalView extends Component {
                         startIcon={<SaveIcon />}
                         onClick={() => driverGlobal.saveConfig()}
                         loading={saving}
-                        disabled={!wasChanged || saving}
+                        disabled={isChanged || saving}
                       >
                         {driverGlobal.mapCaseSaving("textButtonSave")}
                       </Button>
@@ -129,23 +126,15 @@ export class GlobalView extends Component {
   TextFieldMinProfitPercent() {
     const config = driverGlobal.getConfig();
     return (
-      <TextField
+      <InputNumberDot
         label="Porcentaje mínimo de ganancia (%)"
-        type="number"
-        name="min_profit_percent"
-        value={config.min_profit_percent}
-        onKeyDown={(e) => {
-          if (e.key === ".") {
-            e.preventDefault();
-            showInfo("La separación decimal es con coma");
-          }
-          if (e.key === "-") {
-            e.preventDefault();
-            showInfo("No se puede ingresar números negativos");
-          }
-        }}
-        InputProps={{ inputProps: { min: 0, step: 0.01 } }}
+        positive
         fullWidth
+        name="min_profit_percent"
+        value={trunc(config.min_profit_percent, decimals)}
+        min={0}
+        step={step}
+        onChange={() => driverGlobal.updateFromForm()}
       />
     );
   }
@@ -153,23 +142,16 @@ export class GlobalView extends Component {
   TextFieldRsiPercentDanger() {
     const config = driverGlobal.getConfig();
     return (
-      <TextField
+      <InputNumberDot
         label="Porcentaje de peligro RSI (%)"
-        type="number"
-        name="rsi_percent_danger"
-        value={config.rsi_percent_danger}
-        onKeyDown={(e) => {
-          if (e.key === ".") {
-            e.preventDefault();
-            showInfo("La separación decimal es con coma");
-          }
-          if (e.key === "-") {
-            e.preventDefault();
-            showInfo("No se puede ingresar números negativos");
-          }
-        }}
-        InputProps={{ inputProps: { min: 0, max: 100, step: 0.01 } }}
+        positive
         fullWidth
+        name="rsi_percent_danger"
+        value={trunc(config.rsi_percent_danger, decimals)}
+        min={0}
+        max={100}
+        step={step}
+        onChange={() => driverGlobal.updateFromForm()}
       />
     );
   }
@@ -177,23 +159,15 @@ export class GlobalView extends Component {
   TextFieldMinProfitCurrency() {
     const config = driverGlobal.getConfig();
     return (
-      <TextField
+      <InputNumberDot
         label="Ganancia mínima en moneda"
-        type="number"
-        name="min_profit_currency"
-        value={config.min_profit_currency}
-        onKeyDown={(e) => {
-          if (e.key === ".") {
-            e.preventDefault();
-            showInfo("La separación decimal es con coma");
-          }
-          if (e.key === "-") {
-            e.preventDefault();
-            showInfo("No se puede ingresar números negativos");
-          }
-        }}
-        InputProps={{ inputProps: { min: 0, step: 0.01 } }}
+        positive
         fullWidth
+        name="min_profit_currency"
+        value={trunc(config.min_profit_currency, decimals)}
+        min={0}
+        step={step}
+        onChange={() => driverGlobal.updateFromForm()}
       />
     );
   }
