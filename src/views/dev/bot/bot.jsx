@@ -35,8 +35,6 @@ class PanelRobot extends Component {
 
   render() {
     const ViewBotComponent = () => driverPanelRobot.mapCaseViewBot("component");
-    console.log(driverPanelRobot.getViewBot());
-
     return (
       <Main h_init="20px" h_fin="300px">
         <DivM>

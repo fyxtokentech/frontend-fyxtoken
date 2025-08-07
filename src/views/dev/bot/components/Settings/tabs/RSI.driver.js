@@ -161,7 +161,7 @@ export const driverRSI = DriverComponent({
         period: this.periodTextToObj(config.period),
         operate_intermediate: ["N", "S"][+!!config.operate_intermediate],
       };
-  
+
       await showPromise("Guardando configuración RSI...", (resolve) => {
         HTTPPATCH_USEROPERATION_STRATEGY({
           user_id,

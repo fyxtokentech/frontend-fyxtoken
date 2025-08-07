@@ -69,7 +69,7 @@ export class GlobalView extends Component {
           <br />
           <form
             id="global-form"
-            onChange={() => {
+            onInput={() => {
               driverGlobal.updateFromForm();
             }}
           >
@@ -134,7 +134,6 @@ export class GlobalView extends Component {
         value={trunc(config.min_profit_percent, decimals)}
         min={0}
         step={step}
-        onChange={() => driverGlobal.updateFromForm()}
       />
     );
   }
@@ -151,7 +150,6 @@ export class GlobalView extends Component {
         min={0}
         max={100}
         step={step}
-        onChange={() => driverGlobal.updateFromForm()}
       />
     );
   }
@@ -167,7 +165,6 @@ export class GlobalView extends Component {
         value={trunc(config.min_profit_currency, decimals)}
         min={0}
         step={step}
-        onChange={() => driverGlobal.updateFromForm()}
       />
     );
   }

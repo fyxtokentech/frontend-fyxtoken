@@ -99,6 +99,11 @@
     bottom: 0;
   }
 
+  &.expand {
+    @extend .full-w;
+    @extend .full-h;
+  }
+
   &.center-centralized {
     @extend .center;
     @extend .centralized;

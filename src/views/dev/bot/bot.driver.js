@@ -4,14 +4,21 @@ import {
   HTTPGET_BALANCECOIN,
 } from "@api";
 import { driverTables } from "@tables/tables.js";
-import { DriverComponent, clamp, Delayer } from "@jeff-aporta/camaleon";
+import {
+  DriverComponent,
+  clamp,
+  Delayer,
+  TooltipGhost,
+} from "@jeff-aporta/camaleon";
 import DoDisturbOnIcon from "@mui/icons-material/DoDisturbOn";
 import CircularProgress from "@mui/material/CircularProgress";
+
 import { driverPanelOfProjections } from "./components/ActionMain/components/PanelOfProjections.driver.js";
 import { driverPanelBalance } from "./components/ActionMain/components/PanelBalance.driver.js";
 
 import ActionMain from "./components/ActionMain/ActionMain.jsx";
 import Settings from "./components/Settings/Settings.jsx";
+import { Typography } from "@mui/material";
 
 export const driverPanelRobot = DriverComponent({
   idDriver: "bot",
@@ -129,7 +136,6 @@ export const driverPanelRobot = DriverComponent({
       return some((coin) => SEARCH_COIN_KEY({ coin }));
     },
     isPendingIn(symbol, { someKey }) {
-      console.log({ symbol, someKey });
       return someKey(symbol);
     },
     mapCase: {
@@ -142,11 +148,17 @@ export const driverPanelRobot = DriverComponent({
         false: () => "secondary",
       },
       deleteIcon: {
-        true: () => <DoDisturbOnIcon color="secondary" />,
+        true: () => (
+          <TooltipGhost
+            title={`Dejar de operar (${driverPanelRobot.getCurrency()})`}
+          >
+            <DoDisturbOnIcon color="secondary" />
+          </TooltipGhost>
+        ),
         false: () => <CircularProgress size="20px" color="secondary" />,
       },
       tooltipTitle: {
-        true: () => "",
+        true: () => null,
         false: () => "Pronto dejará de ser operada",
       },
     },
@@ -163,9 +175,6 @@ export const driverPanelRobot = DriverComponent({
   viewBot: {
     nameParam: "view_bot",
     initParam: "main",
-    _willSet_(newValue) {
-      console.log("_willSet_", newValue);
-    },
     setToMain({ setValue }) {
       setValue("main");
       driverTables.setViewTable(driverTables.TABLE_OPERATIONS);

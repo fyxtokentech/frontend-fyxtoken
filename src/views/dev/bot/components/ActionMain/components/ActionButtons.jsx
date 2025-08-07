@@ -20,7 +20,8 @@ import {
   Design,
   Layer,
   AnimateComponent,
-  showPromise, showPromptDialog,
+  showPromise,
+  showPromptDialog,
   WaitSkeleton,
   ButtonShyText,
 } from "@jeff-aporta/camaleon";
@@ -32,9 +33,7 @@ import { driverCoinsOperating } from "./CoinsOperating.driver.js";
 import { driverPanelOfProjections } from "./PanelOfProjections.driver.js";
 import { driverActionButtons } from "./ActionButtons.driver.js";
 
-export default (props) => <ActionButtons {...props} />;
-
-class ActionButtons extends Component {
+export default class ActionButtons extends Component {
   componentDidMount() {
     driverCoinsOperating.addLinkActionInProcess(this);
     driverPanelOfProjections.addLinkLoading(this);
@@ -61,31 +60,10 @@ class ActionButtons extends Component {
       <div className="inline-flex align-end col-direction gap-10px">
         <div className="d-end">
           <UpdateButton frameRate={2} />
-          <TooltipGhost title="Configurar">
-            <div>
-              <Button
-                color="inherit"
-                size="small"
-                onClick={()=>driverPanelRobot.setToSettingsViewBot()}
-              >
-                <div className="flex col-direction align-center">
-                  <SettingsIcon />
-                  <Typography variant="caption">
-                    <small>Configurar</small>
-                  </Typography>
-                </div>
-              </Button>
-            </div>
-          </TooltipGhost>
+          <this.SettingButton />
         </div>
         <WaitSkeleton loading={driverPanelRobot.getLoadingCoinsToOperate()}>
-          <div className="d-end wrap gap-10px" style={{ minWidth: "180px" }}>
-            <ButtonGroup variant="contained" size="small">
-              <ButtonOperate />
-              <ButtonStop />
-              <ButtonPauseResume />
-            </ButtonGroup>
-          </div>
+          <Play_n_Stop />
           <hr />
           <div className="d-end wrap gap-10px">
             <ButtonAutoOp />
@@ -94,52 +72,193 @@ class ActionButtons extends Component {
       </div>
     );
 
-    function ButtonPauseResume() {
+    function Play_n_Stop() {
       return (
-        <ButtonShyText
-          disabled={driverActionButtons.disableStoper()}
-          loading={loadingGeneral}
-          color={driverActionButtons.mapCasePaused("colorButtonPause")}
-          loading={loadingGeneral}
-          tooltip={driverActionButtons.mapCasePaused("textTooltipPause")}
-          onClick={async () => {
-            const coinObj = driverPanelRobot.findCurrencyInCoinsToOperate();
-            const { symbol: symbol_coin, id: id_coin } = coinObj;
-            if (!coinObj) {
-              return;
-            }
-            driverCoinsOperating.setActionInProcess(true);
-            if (!driverActionButtons.isPaused()) {
+        <div className="d-end wrap gap-10px" style={{ minWidth: "180px" }}>
+          <ButtonGroup variant="contained" size="small">
+            {driverActionButtons.disableOperate() ? (
+              <ButtonPauseResume />
+            ) : (
+              <ButtonOperate />
+            )}
+            <ButtonStop />
+          </ButtonGroup>
+        </div>
+      );
+
+      function ButtonPauseResume() {
+        return (
+          <ButtonShyText
+            loading={loadingGeneral}
+            disabled={driverActionButtons.disableStoper()}
+            color={driverActionButtons.mapCasePaused("colorButtonPause")}
+            tooltip={driverActionButtons.mapCasePaused("textTooltipPause")}
+            onClick={async () => {
+              const coinObj = driverPanelRobot.findCurrencyInCoinsToOperate();
+              if (!coinObj) {
+                showWarning("La moneda no está disponible");
+                return;
+              }
+              driverCoinsOperating.setActionInProcess(true);
+              if (!driverActionButtons.isPaused()) {
+                await makePause(coinObj);
+              } else {
+                await makeResume(coinObj);
+              }
+              driverCoinsOperating.setActionInProcess(false);
+            }}
+            startIcon={driverActionButtons.mapCasePaused("iconButtonPause")}
+          >
+            {driverActionButtons.mapCasePaused("textButtonPause")}
+          </ButtonShyText>
+        );
+
+        async function makeResume({ symbol: symbol_coin, id: id_coin }) {
+          await HTTPPUT_COINS_START({
+            user_id,
+            id_coin,
+            successful() {
+              showSuccess(`Se reanudo (${symbol_coin})`);
+              driverActionButtons.setPaused(false);
+            },
+            failure() {
+              showWarning(`Algo salió mal al reanudar (${symbol_coin})`);
+            },
+          });
+        }
+
+        async function makePause({ symbol: symbol_coin, id: id_coin }) {
+          await showPromptDialog({
+            title: "¡Cuidado!",
+            description: [
+              "¿Está seguro de que desea pausar la operación?",
+              `(${driverPanelRobot.getCurrency()})`,
+            ].join(" "),
+            input: "confirm",
+            showCancelButton: true,
+            cancelText: "No",
+            confirmText: "Si, Pausar",
+            async successful(value) {
               await HTTPPUT_COINS_STOP({
                 user_id,
                 id_coin,
-                successful: () => {
-                  showSuccess(`Se detuvo (${symbol_coin})`);
+                successful() {
+                  showSuccess(`Se pauso (${symbol_coin})`);
+                  driverActionButtons.setPaused(true);
                 },
-                failure: () => {
-                  showWarning(`Algo salió mal al detener en (${symbol_coin})`);
-                },
-              });
-            } else {
-              await HTTPPUT_COINS_START({
-                user_id,
-                id_coin,
-                successful: () => {
-                  showSuccess(`Se reanudo (${symbol_coin})`);
-                },
-                failure: () => {
-                  showWarning(`Algo salió mal al reanudar en (${symbol_coin})`);
+                failure() {
+                  showWarning(`Algo salió mal al pausar (${symbol_coin})`);
                 },
               });
-            }
-            driverActionButtons.setPaused((x) => !x);
-            driverCoinsOperating.setActionInProcess(false);
-          }}
-          startIcon={driverActionButtons.mapCasePaused("iconButtonPause")}
-        >
-          {driverActionButtons.mapCasePaused("textButtonPause")}
-        </ButtonShyText>
-      );
+            },
+          });
+        }
+      }
+
+      function ButtonStop() {
+        return (
+          <ButtonShyText
+            tooltip={(() => {
+              if (!driverPanelRobot.existsCurrency()) {
+                return "Seleccione una moneda";
+              }
+              if (driverPanelRobot.isEmptyCoinsOperating()) {
+                return "No hay monedas operando";
+              }
+              if (!driverPanelRobot.isCurrencyInCoinsOperating()) {
+                return "Moneda no operando";
+              }
+              if (driverPanelRobot.isCurrencyInCoinsToDelete()) {
+                return "Moneda en proceso de borrado";
+              }
+              if (driverCoinsOperating.getActionInProcess()) {
+                return "Espere...";
+              }
+              return `Detener la operación (${driverPanelRobot.getCurrency()})`;
+            })()}
+            disabled={driverActionButtons.disableStoper()}
+            loading={loadingGeneral}
+            color="danger"
+            onClick={async (e) => {
+              e.preventDefault();
+              await showPromptDialog({
+                title: "¡Cuidado!",
+                description: [
+                  "¿Está seguro de que desea detener la operación?",
+                  `(${driverPanelRobot.getCurrency()})`,
+                ].join(" "),
+                input: "confirm",
+                showCancelButton: true,
+                cancelText: "No",
+                confirmText: "Si, Detener",
+                successful(value) {
+                  driverCoinsOperating.deleteCoinFromAPI(actualCurrency);
+                },
+              });
+            }}
+            startIcon={<StopIcon fontSize="small" />}
+          >
+            Detener
+          </ButtonShyText>
+        );
+      }
+
+      function ButtonOperate() {
+        return (
+          <ButtonShyText
+            tooltip={(() => {
+              if (!driverPanelRobot.existsCurrency()) {
+                return "Seleccione una moneda";
+              }
+              if (driverPanelRobot.isCurrencyInCoinsOperating()) {
+                return "Moneda ya operando-";
+              }
+              if (loadingGeneral) {
+                return "Espere...";
+              }
+              return `Empieza a operar (${driverPanelRobot.getCurrency()})`;
+            })()}
+            loading={loadingGeneral}
+            disabled={driverActionButtons.disableOperate()}
+            color="ok"
+            onClick={async () => {
+              const coinObj = driverPanelRobot.findCurrencyInCoinsToOperate();
+              const { symbol: symbol_coin, id: id_coin } = coinObj;
+              if (!coinObj) {
+                return;
+              }
+              await showPromise(
+                `Solicitando inicio de operación (${symbol_coin})`,
+                (resolve) => {
+                  HTTPPUT_COINS_START({
+                    id_coin,
+                    willStart() {
+                      driverCoinsOperating.setActionInProcess(true);
+                    },
+                    willEnd() {
+                      driverCoinsOperating.setActionInProcess(false);
+                    },
+                    successful(json, info) {
+                      driverPanelRobot.pushCoinsOperating(coinObj);
+                      resolve(`Se empieza a operar (${symbol_coin})`);
+                    },
+                    failure(info, reject) {
+                      reject(
+                        `Algo salió mal al operar en ${symbol_coin}`,
+                        resolve,
+                        info
+                      );
+                    },
+                  });
+                }
+              );
+            }}
+            startIcon={<PlayArrowIcon fontSize="small" />}
+          >
+            Operar
+          </ButtonShyText>
+        );
+      }
     }
 
     function ButtonAutoOp() {
@@ -160,108 +279,27 @@ class ActionButtons extends Component {
         </TooltipGhost>
       );
     }
+  }
 
-    function ButtonStop() {
-      return (
-        <ButtonShyText
-          tooltip={(() => {
-            if (!driverPanelRobot.existsCurrency()) {
-              return "Seleccione una moneda";
-            }
-            if (driverPanelRobot.isEmptyCoinsOperating()) {
-              return "No hay monedas operando";
-            }
-            if (!driverPanelRobot.isCurrencyInCoinsOperating()) {
-              return "Moneda no operando";
-            }
-            if (driverPanelRobot.isCurrencyInCoinsToDelete()) {
-              return "Moneda en proceso de borrado";
-            }
-            if (driverCoinsOperating.getActionInProcess()) {
-              return "Espere...";
-            }
-            return `Detener la operación (${driverPanelRobot.getCurrency()})`;
-          })()}
-          disabled={driverActionButtons.disableStoper()}
-          loading={loadingGeneral}
-          color="danger"
-          onClick={async (e) => {
-            e.preventDefault();
-            const { value } = await showPromptDialog({
-              title: "Confirmación",
-              description: `¿Está seguro de que desea detener la operación (${driverPanelRobot.getCurrency()})?`,
-              input: "confirm",
-              showCancelButton: true,
-              cancelText: "Cancelar",
-              confirmText: "Detener",
-            });
-            if (value) {
-              driverCoinsOperating.deleteCoinFromAPI(actualCurrency);
-            }
-          }}
-          startIcon={<StopIcon fontSize="small" />}
-        >
-          Detener
-        </ButtonShyText>
-      );
-    }
-
-    function ButtonOperate() {
-      return (
-        <ButtonShyText
-          tooltip={(() => {
-            if (!driverPanelRobot.existsCurrency()) {
-              return "Seleccione una moneda";
-            }
-            if (driverPanelRobot.isCurrencyInCoinsOperating()) {
-              return "Moneda ya operando";
-            }
-            if (loadingGeneral) {
-              return "Espere...";
-            }
-            return `Empieza a operar (${driverPanelRobot.getCurrency()})`;
-          })()}
-          disabled={driverActionButtons.disableOperate()}
-          loading={loadingGeneral}
-          color="ok"
-          onClick={async () => {
-            const coinObj = driverPanelRobot.findCurrencyInCoinsToOperate();
-            const { symbol: symbol_coin, id: id_coin } = coinObj;
-            if (!coinObj) {
-              return;
-            }
-            await showPromise(
-              `Solicitando inicio de operación (${symbol_coin})`,
-              (resolve) => {
-                HTTPPUT_COINS_START({
-                  id_coin,
-                  willStart() {
-                    driverCoinsOperating.setActionInProcess(true);
-                  },
-                  willEnd() {
-                    driverCoinsOperating.setActionInProcess(false);
-                  },
-                  successful(json, info) {
-                    driverPanelRobot.pushCoinsOperating(coinObj);
-                    resolve(`Se empieza a operar (${symbol_coin})`);
-                  },
-                  failure(info, reject) {
-                    reject(
-                      `Algo salió mal al operar en ${symbol_coin}`,
-                      resolve,
-                      info
-                    );
-                  },
-                });
-              }
-            );
-          }}
-          startIcon={<PlayArrowIcon fontSize="small" />}
-        >
-          Operar
-        </ButtonShyText>
-      );
-    }
+  SettingButton() {
+    return (
+      <TooltipGhost title="Configurar">
+        <div>
+          <Button
+            color="inherit"
+            size="small"
+            onClick={() => driverPanelRobot.setToSettingsViewBot()}
+          >
+            <div className="flex col-direction align-center">
+              <SettingsIcon />
+              <Typography variant="caption" color="secondary">
+                <small>Configurar</small>
+              </Typography>
+            </div>
+          </Button>
+        </div>
+      </TooltipGhost>
+    );
   }
 }
 
@@ -287,8 +325,6 @@ class UpdateButton extends AnimateComponent {
   render() {
     this.smartFramerate();
 
-    console.log(this.frameRate);
-
     return (
       <Design>
         <TooltipGhost
@@ -309,7 +345,7 @@ class UpdateButton extends AnimateComponent {
             >
               <div className="flex col-direction align-center">
                 <UpdateIcon />
-                <Typography variant="caption">
+                <Typography variant="caption" color="secondary">
                   <small>Actualizar</small>
                 </Typography>
               </div>

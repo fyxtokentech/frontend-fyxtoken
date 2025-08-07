@@ -163,7 +163,6 @@ async function createPolychroma({ color, label, name, whiten, blacken }) {
 }
 
 export function initializeThemesPolychroma() {
-  console.log({ registerThemes_PaletteGeneral, themeColors: themeColors() });
   const especial = {
     black: {
       label: "Carbon",
@@ -300,8 +299,6 @@ export function initializeThemesPolychroma() {
       );
     })
     .forEach(([key, value]) => {
-      console.log({ key, value });
-
       let E = especial[key];
       let Nombre;
       let whiten;

@@ -19,6 +19,7 @@ export const ARROW_DOWN = 40;
 export const PRINT_SCREEN = 44;
 export const INSERT = 45;
 export const DELETE = 46;
+export const SUPR = 46;
 // Numbers 0-9
 export const DIGIT_0 = 48;
 export const DIGIT_1 = 49;
@@ -83,8 +84,6 @@ export const W_LOWER = 119;
 export const X_LOWER = 120;
 export const Y_LOWER = 121;
 export const Z_LOWER = 122;
-// Espéciales
-export const SUPR = 127;
 // Letters A-Z
 export const KEY_A = 65;
 export const KEY_B = 66;

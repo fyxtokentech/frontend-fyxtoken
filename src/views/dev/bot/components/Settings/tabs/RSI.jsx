@@ -94,22 +94,22 @@ export class RSIView extends Component {
           <br />
           <form
             id="rsi-form"
-            onChange={() => {
+            onInput={() => {
               driverRSI.setFromIdFormConfig("rsi-form");
             }}
           >
             <Grid container spacing={2}>
               <Grid item xs={12} sm={6}>
-                {this.TextFieldDeltaNegative()}
+                <this.TextFieldDeltaNegative />
               </Grid>
               <Grid item xs={12} sm={6}>
-                {this.TextFieldDeltaPositive()}
+                <this.TextFieldDeltaPositive />
               </Grid>
               <Grid item xs={12} sm={12}>
-                {this.TextFieldPeriod()}
+                <this.TextFieldPeriod />
               </Grid>
               <Grid item xs={12}>
-                {this.CheckboxOperateIntermediate()}
+                <this.CheckboxOperateIntermediate />
               </Grid>
               <Grid item xs={12}>
                 <Typography
@@ -120,13 +120,13 @@ export class RSIView extends Component {
                   Configuración de Sobreventa y Sobrecompra
                 </Typography>
                 <br />
-                {this.SliderOversoldOverbought()}
+                <this.SliderOversoldOverbought />
               </Grid>
               <Grid item xs={12} sm={6}>
-                {this.TextFieldOversold()}
+                <this.TextFieldOversold />
               </Grid>
               <Grid item xs={12} sm={6}>
-                {this.TextFieldOverbought()}
+                <this.TextFieldOverbought />
               </Grid>
               <Grid item xs={12}>
                 <div className="flex justify-end">
@@ -193,10 +193,7 @@ export class RSIView extends Component {
         max={100}
         step={step}
         name="delta.negative"
-        value={trunc(config.delta.negative, decimals)}
-        onChange={() => {
-          driverRSI.setFromIdFormConfig("rsi-form");
-        }}
+        value={config.delta.negative}
       />
     );
   }
@@ -210,10 +207,7 @@ export class RSIView extends Component {
         max={100}
         step={step}
         name="delta.positive"
-        value={trunc(config.delta.positive, decimals)}
-        onChange={() => {
-          driverRSI.setFromIdFormConfig("rsi-form");
-        }}
+        value={config.delta.positive}
       />
     );
   }
@@ -271,8 +265,8 @@ export class RSIView extends Component {
         step={step}
         name="oversold"
         value={trunc(config.oversold, decimals)}
-        onChange={({ newVal }) => {
-          driverRSI.setSliderOversold(newVal);
+        onChange={({ newValue }) => {
+          driverRSI.setSliderOversold(newValue);
         }}
       />
     );
@@ -288,8 +282,8 @@ export class RSIView extends Component {
         step={step}
         name="overbought"
         value={trunc(config.overbought, decimals)}
-        onChange={({ newVal }) => {
-          driverRSI.setSliderOverbought(newVal);
+        onChange={({ newValue }) => {
+          driverRSI.setSliderOverbought(newValue);
         }}
       />
     );

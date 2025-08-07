@@ -1,5 +1,5 @@
 import React from "react";
-import { HTTPGET_USER_API, HTTPPATCH_USER_API } from "@api";
+import { HTTPPATCH_USER_API } from "@api";
 
 import {
   Grid,
@@ -36,6 +36,7 @@ import { APIKeyViewExchange } from "./APIKey_ex";
 
 import { ExchangeManagerWithdrawal } from "./APIKey_exwithdrawal";
 import { fluidCSS, IconButtonWithTooltip } from "@jeff-aporta/camaleon";
+import { showPromise } from "src/framework";
 
 class PasswordField extends React.Component {
   constructor(props) {
@@ -175,7 +176,30 @@ export class APIKeyExchange extends React.Component {
           >
             <TooltipGhost title="Guardar cambios">
               <IconButton
-                onClick={onSave || (() => alert("Guardar cambios"))}
+                onClick={async () => {
+                  await showPromise(
+                    `Guardando [${apiKeyInstance.getNameExchange()}]`,
+                    (resolve) => {
+                      const { user_id } = window.currentUser;
+                      HTTPPATCH_USER_API({
+                        user_id,
+                        id_api_user: apiKeyInstance.getIdApiUser(),
+                        enabled: apiKeyInstance.getEnabled(),
+                        new_attributes: apiKeyInstance.getAttributesApi(),
+                        successful(json, info) {
+                          resolve(
+                            `Se guardaron los cambios (${apiKeyInstance.getNameExchange()})`
+                          );
+                        },
+                        failure(info, rejectPromisse) {
+                          showError(
+                            `Algo salió mal al guardar los cambios (${apiKeyInstance.getNameExchange()})`
+                          );
+                        },
+                      });
+                    }
+                  );
+                }}
                 color="default"
                 size="small"
                 aria-label="Guardar cambios"

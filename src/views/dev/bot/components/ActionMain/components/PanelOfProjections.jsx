@@ -68,7 +68,7 @@ export default class PanelOfProjections extends Component {
 
     return (
       <WaitSkeleton loading={driverPanelBalance.getLoadingCoinMetric()}>
-        <div className="flex wrap align-center space-between gap-5px">
+        <div className="flex wrap align-center space-between gap-5px ncols-3">
           <ActualUSD />
 
           <ProjectUSD />
@@ -86,42 +86,32 @@ export default class PanelOfProjections extends Component {
 
     function ProjectUSD() {
       return (
-        <TooltipGhost
-          title={`Proyectado USD: ${getNumberFormat().toCoinDifference(
-            projectedPrice,
-            currentPrice
-          )}`}
-        >
-          <span>
             <PriceCard
               title="Proyectado USD"
               value={projectedPrice}
               value2={currentPrice}
               icon={getPriceProjectionIcon(projectedPrice - currentPrice)}
               color={color}
+              tooltip={`Proyectado USD: ${getNumberFormat().toCoinDifference(
+                projectedPrice,
+                currentPrice
+              )}`}
             />
-          </span>
-        </TooltipGhost>
       );
     }
 
     function ActualUSD() {
       return (
-        <TooltipGhost
-          title={`Actual USD: ${getNumberFormat().toCoinDifference(
+        <PriceCard
+          title="Actual USD"
+          value={currentPrice}
+          value2={projectedPrice}
+          color={color}
+          tooltip={`Actual USD: ${getNumberFormat().toCoinDifference(
             currentPrice,
             projectedPrice
           )}`}
-        >
-          <span>
-            <PriceCard
-              title="Actual USD"
-              value={currentPrice}
-              value2={projectedPrice}
-              color={color}
-            />
-          </span>
-        </TooltipGhost>
+        />
       );
     }
   }
@@ -129,21 +119,33 @@ export default class PanelOfProjections extends Component {
 
 class PriceCard extends Component {
   render() {
-    const { title, value, value2, icon, color } = this.props;
+    const { title, value, value2, icon, color, tooltip } = this.props;
     return (
-      <PaperP pad="small" className="flex col-direction" elevation={3}>
-        <Typography color="text.secondary" variant="caption">
-          <small>{title}</small>
-        </Typography>
-        <Typography color={color} variant="caption">
-          <small className="nowrap flex align-center">
-            {icon && <>{icon}&nbsp;&nbsp;</>}
-            {value != null
-              ? getNumberFormat().toCoinDifference(value, value2)
-              : "---"}
-          </small>
-        </Typography>
-      </PaperP>
+      <TooltipGhost title={tooltip}>
+        <PaperP pad="small" className="flex col-direction cell" elevation={3}>
+          <Typography
+            color="text.secondary"
+            variant="caption"
+            component="div"
+            className="op-50"
+            style={{ marginTop: "-5px" }}
+          >
+            <small>
+              <small>
+                <small>{title}</small>
+              </small>
+            </small>
+          </Typography>
+          <Typography color={color} variant="caption">
+            <small className="nowrap flex align-center">
+              {icon && <>{icon}&nbsp;&nbsp;</>}
+              {value != null
+                ? getNumberFormat().toCoinDifference(value, value2)
+                : "---"}
+            </small>
+          </Typography>
+        </PaperP>
+      </TooltipGhost>
     );
   }
 }
@@ -153,7 +155,6 @@ class ROICard extends Component {
   render() {
     const { roi, isReal = false, totalBought, clase, etiqueta } = this.props;
     const valid = !!roi && typeof roi === "number" && !isNaN(roi);
-    console.log({ roi, valid });
     const displayText = (() => {
       if (valid) {
         return `${+roi.toFixed(2)}%`;
@@ -184,7 +185,7 @@ class ROICard extends Component {
       >
         <PaperP
           pad="small"
-          className={`flex align-stretch p-relative`}
+          className="flex p-relative op-50 cell"
           elevation={5}
           sx={{ opacity: cardOpacity, minWidth: "100px" }}
         >
@@ -198,7 +199,6 @@ class ROICard extends Component {
       return (
         <div>
           <LabelROI />
-          <br />
           <div className="flex align-center gap-5px">
             <ValueROI />
           </div>
@@ -208,7 +208,14 @@ class ROICard extends Component {
       function ValueROI() {
         return (
           <div className="flex align-center gap-5px">
-            {valid && <CurrencyExchangeIcon fontSize="small" />}
+            {valid && (
+              <CurrencyExchangeIcon
+                fontSize="small"
+                style={{
+                  scale: 0.75,
+                }}
+              />
+            )}
             <Typography variant="caption" color={computedColor}>
               <small>{displayText}</small>
             </Typography>
@@ -221,10 +228,16 @@ class ROICard extends Component {
           <Typography
             variant="caption"
             color="text.secondary"
-            className="mb-5px nowrap"
+            className="mb-5px nowrap op-50"
+            component="div"
+            style={{
+              marginTop: "-10px",
+            }}
           >
             <small>
-              <small>{label}</small>
+              <small>
+                <small>{label}</small>
+              </small>
             </small>
           </Typography>
         );
@@ -242,10 +255,9 @@ class ROICard extends Component {
                 variant="filled"
                 style={{
                   position: "absolute",
-                  top: "5px",
                   right: "5px",
                   transform: "scale(0.5)",
-                  transformOrigin: "right center",
+                  transformOrigin: "right top",
                   color: getThemeLuminance() === "dark" ? "white" : "black",
                   fontWeight: "bold",
                   backgroundColor: (() => {

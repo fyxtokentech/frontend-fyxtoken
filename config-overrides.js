@@ -16,6 +16,7 @@ module.exports = override(
     ),
     "@tables": path.resolve(__dirname, "src/tables"),
     "@test": path.resolve(__dirname, "src/tables/test"),
+    "@jeff-aporta/camaleon": path.resolve(__dirname, "src/framework/index.js"),
   }),
   (config) => {
     config.resolve.extensions = config.resolve.extensions.concat([

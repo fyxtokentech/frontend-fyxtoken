@@ -55,7 +55,6 @@ export async function HTTPPUT_USEROPERATION_LIMIT({
   new_limit,
   ...rest
 }) {
-  console.log(user_id, coin_id, new_limit);
   ({ user_id, coin_id } = AUTO_PARAMS({ user_id, coin_id }));
   return await MAKE_PUT({
     ...rest,

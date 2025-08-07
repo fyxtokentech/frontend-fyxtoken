@@ -43,16 +43,16 @@ export default class extends React.Component {
         <br />
         <div className="flex col-direction justify-space-between gap-5px">
           <CoinSelectionOperate />
-          <FronCoinMetrics>
+          <FromCoinMetrics>
             <PanelOfProjections />
-          </FronCoinMetrics>
+          </FromCoinMetrics>
         </div>
       </PaperP>
     );
   }
 }
 
-class FronCoinMetrics extends React.Component {
+class FromCoinMetrics extends React.Component {
   componentDidMount() {
     driverPanelBalance.addLinkLoadingCoinMetric(this);
   }
@@ -83,28 +83,29 @@ class BalanceGeneral extends React.Component {
   }
 
   render() {
-    const { value, label } = this.props;
+    const { value, label, className } = this.props;
     const tooltip = label + ": " + value;
     return (
-      <PaperP
-        elevation={3}
-        pad="small"
-        className={`${fluidCSS().ltX(480, { width: "calc(33% - 5px)" }).end()}`}
-      >
-        <TooltipGhost title={tooltip}>
+      <TooltipGhost title={tooltip}>
+        <PaperP elevation={3} pad="small" className={className}>
           <Typography
             variant="caption"
             color="text.secondary"
-            className="mb-5px nowrap"
+            className="nowrap op-50"
+            style={{ marginTop: "-5px" }}
+            component="div"
           >
-            <small>{label}</small>
+            <small>
+              <small>
+                <small>{label}</small>
+              </small>
+            </small>
           </Typography>
-          <br />
           <Typography variant="caption">
             <small>{value}</small>
           </Typography>
-        </TooltipGhost>
-      </PaperP>
+        </PaperP>
+      </TooltipGhost>
     );
   }
 }
@@ -128,54 +129,67 @@ class CoinSelectionOperate extends React.Component {
     const opns = driverPanelRobot.mapToKeysCoinsToOperate();
 
     return (
-      <div className="flex wrap gap-5px">
-        <WaitSkeleton loading={driverPanelRobot.getLoadingCoinsToOperate()}>
-          {genSelectFast([
-            {
-              value: () => {
-                return driverPanelRobot.getCurrency();
-              },
-              onChange: (e, value) => {
-                if (
-                  driverPanelRobot.stringifyCurrency() == JSON.stringify(value)
-                ) {
-                  return;
-                }
-                driverPanelRobot.setCurrency(value);
-                driverTables.setViewTable(driverTables.TABLE_OPERATIONS);
-                const selected = driverPanelRobot.findKeyInCoinsToOperate([
-                  value,
-                ]);
-                if (selected) {
-                  driverPanelRobot.setIdCoin(selected.id);
-                }
-                driverPanelBalance.setLoadingCoinMetric(true);
-                driverPanelOfProjections.setLoading(true);
-                driverPanelRobot.fetchCoinMetrics();
-                driverTables.refetch(true);
-              },
-              name: "currency",
-              opns,
-              required: true,
-              fem: true,
-            },
-          ])}
-        </WaitSkeleton>
-        <this.infoCoinMetricsBalances />
+      <div className="flex gap-5px ncols-2">
+        <div className="cell">
+          <this.listOfCoinsUser opns={opns} />
+        </div>
+        <div className="cell">
+          <this.infoCoinMetricsBalances />
+        </div>
       </div>
+    );
+  }
+
+  listOfCoinsUser({ opns }) {
+    return (
+      <WaitSkeleton loading={driverPanelRobot.getLoadingCoinsToOperate()}>
+        {genSelectFast([
+          {
+            variant: "outlined",
+            color: "secondary",
+            value: () => {
+              return driverPanelRobot.getCurrency();
+            },
+            onChange: (e, value) => {
+              if (
+                driverPanelRobot.stringifyCurrency() == JSON.stringify(value)
+              ) {
+                return;
+              }
+              driverPanelRobot.setCurrency(value);
+              driverTables.setViewTable(driverTables.TABLE_OPERATIONS);
+              const selected = driverPanelRobot.findKeyInCoinsToOperate([
+                value,
+              ]);
+              if (selected) {
+                driverPanelRobot.setIdCoin(selected.id);
+              }
+              driverPanelBalance.setLoadingCoinMetric(true);
+              driverPanelOfProjections.setLoading(true);
+              driverPanelRobot.fetchCoinMetrics();
+              driverTables.refetch(true);
+            },
+            name: "currency",
+            opns,
+            required: true,
+            fem: true,
+          },
+        ])}
+      </WaitSkeleton>
     );
   }
 
   infoCoinMetricsBalances() {
     return (
-      <FronCoinMetrics>
-        <div className="flex gap-5px">
+      <FromCoinMetrics>
+        <div className="flex justify-space-between gap-5px ncols-2">
           <BalanceGeneral
-            label="Balance USDC"
+            label="Balance (USDC)"
             value={driverPanelOfProjections.mapCaseLoading("balanceUSD")}
+            className="cell"
           />
           <BalanceGeneral
-            label={`Balance ${driverPanelRobot.getCurrency()}`}
+            label={`Balance (${driverPanelRobot.getCurrency()})`}
             value={(() => {
               let total_tokens = "---";
               if (!driverPanelOfProjections.getLoading()) {
@@ -188,9 +202,10 @@ class CoinSelectionOperate extends React.Component {
               }
               return total_tokens;
             })()}
+            className="cell"
           />
         </div>
-      </FronCoinMetrics>
+      </FromCoinMetrics>
     );
   }
 }

@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { HTTPGET_USER_API } from "@api";
-import { showError } from "@jeff-aporta/camaleon";
+import {
+  showError,
+  showPromptDialog,
+  showPromise,
+} from "@jeff-aporta/camaleon";
 import {
   Grid,
   Checkbox,
@@ -15,8 +18,9 @@ import {
   MenuItem,
   TextField,
 } from "@mui/material";
-import { APIKeyExchange } from "./APIKey";
+import { APIKeyExchange } from "./APIKey.jsx";
 import { HTTPPATCH_USER_API } from "@api";
+import { driverAPIKey } from "./APIKey_ex.driver.js";
 
 import AddIcon from "@mui/icons-material/Add";
 const EXCHANGES_AVAILABLE = ["BINANCE", "BITGET"];
@@ -25,9 +29,6 @@ export class APIKeyViewExchange extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      apiKeys: [],
-      dialogOpen: false,
-      newExchange: "BINANCE",
       newApiKey: "",
       newApiSecret: "",
       newPassphrase: "",
@@ -35,22 +36,18 @@ export class APIKeyViewExchange extends React.Component {
   }
 
   componentDidMount() {
-    const { user_id } = window.currentUser;
-    HTTPGET_USER_API({
-      user_id,
-      successful: (data) => {
-        console.log(data);
-        this.setState({ apiKeys: data }, () => {
-          this.forceUpdate();
-        });
-      },
-      failure: () => {
-        showError("Error al obtener las APIs");
-      },
-    });
+    driverAPIKey.addLinkKeysAPI(this);
+    driverAPIKey.loadKeysAPI();
   }
 
-  handleInputChange = (id_api_user, field, value) => {
+  componentWillUnmount() {
+    driverAPIKey.removeLinkKeysAPI(this);
+  }
+
+  handleInputChange = ({ id_api_user, field, value }) => {
+    if (typeof field === "string") {
+      field = field.split(".");
+    }
     if (!Array.isArray(field)) {
       field = [field];
     }
@@ -58,105 +55,138 @@ export class APIKeyViewExchange extends React.Component {
       showError(`El valor no puede estar vacío ${field}`);
       return;
     }
-    // Modifica el array de apiKeys en el estado
-    this.setState((prevState) => ({
-      apiKeys: prevState.apiKeys.map((api) => {
-        if (api.id_api_user !== id_api_user) return api;
-        // Clona el objeto api y actualiza el campo correspondiente
-        if (field.length === 2) {
-          return {
-            ...api,
-            [field[0]]: {
-              ...api[field[0]],
-              [field[1]]: value,
-            },
-          };
-        } else {
-          return {
-            ...api,
-            [field[0]]: value,
-          };
-        }
-      }),
-    }));
-  };
-
-  handleSave = () => {
-    const { user_id } = window.currentUser;
-    this.state.apiKeys.forEach(async (api) => {
-      const response = await HTTPPATCH_USER_API({
-        user_id,
-        id_api_user: api.id_api_user,
-        enabled: api.enabled,
-        new_attributes: api.attributes_api,
-      });
-      if (response.success == "error") {
-        showError(response.message);
+    const api = driverAPIKey.findKeysAPI((x) => x.id_api_user === id_api_user);
+    if (api) {
+      if (field.length === 2) {
+        Object.assign(api[field[0]], { [field[1]]: value });
+      } else {
+        Object.assign(api, { [field[0]]: value });
       }
-    });
+    } else {
+      showError("No se encontro la API");
+    }
   };
 
-  handleCancel = () => this.setState({ dialogOpen: false });
+  handleSave() {
+    const { user_id } = window.currentUser;
+    showPromise("Guardando APIs", async (resolve) => {
+      const conteo = {
+        success: 0,
+        fail: 0,
+      };
+      for (const api of driverAPIKey.getKeysAPI()) {
+        await HTTPPATCH_USER_API({
+          user_id,
+          id_api_user: api.id_api_user,
+          enabled: api.enabled,
+          new_attributes: api.attributes_api,
+          failure: () => {
+            conteo.fail++;
+          },
+          successful: () => {
+            conteo.success++;
+          },
+        });
+      }
+      resolve(
+        `APIs guardadas: ${(() => {
+          if (conteo.fail == 0 && conteo.success > 0) {
+            return "Todas";
+          }
+          if (conteo.fail > 0 && conteo.success == 0) {
+            return "Ninguna";
+          }
+          return `(${conteo.success} exitosas, ${conteo.fail} fallidas)`;
+        })()}`
+      );
+    });
+  }
 
+  
   render() {
     return (
       <>
         <br />
         <br />
-        {this.state.apiKeys.map((exchange) => {
+        {driverAPIKey.mapKeysAPI((exchange) => {
           const { name_api, attributes_api, id_api_user, enabled } = exchange;
-          const { API_KEY_BINANCE, SECRET_KEY_BINANCE, API_KEY, API_SECRET } =
-            attributes_api;
+          const {
+            API_KEY_BINANCE, //
+            SECRET_KEY_BINANCE,
+            API_KEY,
+            API_SECRET,
+          } = attributes_api;
           const general = {
-            getNameExchange: () => name_api,
-            getEnabled: () => enabled === "A",
-            setEnabled: (value) =>
-              this.handleInputChange(
+            getNameExchange() {
+              return name_api;
+            },
+            getEnabled() {
+              return enabled === "A";
+            },
+            setEnabled: (value) => {
+              this.handleInputChange({
                 id_api_user,
-                "enabled",
-                ["I", "A"][+value]
-              ),
-            getAttributesApi: () => attributes_api,
-            getIdApiUser: () => id_api_user,
+                field: "enabled",
+                value: ["I", "A"][+value],
+              });
+            },
+            getAttributesApi() {
+              return attributes_api;
+            },
+            getIdApiUser() {
+              return id_api_user;
+            },
           };
           let apiKeyInstance = {};
           switch (name_api.toUpperCase()) {
             case "BINANCE":
               apiKeyInstance = {
                 ...general,
-                getApiKey: () => API_KEY_BINANCE,
-                getSecretKey: () => SECRET_KEY_BINANCE,
-                setApiKey: (value) =>
-                  this.handleInputChange(
+                getApiKey() {
+                  return API_KEY_BINANCE;
+                },
+                getSecretKey() {
+                  return SECRET_KEY_BINANCE;
+                },
+                setApiKey: (value) => {
+                  this.handleInputChange({
                     id_api_user,
-                    ["attributes_api", "API_KEY_BINANCE"],
-                    value
-                  ),
-                setSecretKey: (value) =>
-                  this.handleInputChange(
+                    field: "attributes_api.API_KEY_BINANCE",
+                    value,
+                  });
+                },
+                setSecretKey: (value) => {
+                  this.handleInputChange({
                     id_api_user,
-                    ["attributes_api", "SECRET_KEY_BINANCE"],
-                    value
-                  ),
+                    field: "attributes_api.SECRET_KEY_BINANCE",
+                    value,
+                  });
+                },
               };
               break;
             case "BITGET":
               apiKeyInstance = {
                 ...general,
-                getApiKey: () => API_KEY,
-                getSecretKey: () => API_SECRET,
-                setApiKey: (value) =>
-                  this.handleInputChange(
+                getApiKey() {
+                  return API_KEY;
+                },
+                getSecretKey() {
+                  return API_SECRET;
+                },
+                setApiKey: (value) => {
+                  this.handleInputChange({
                     id_api_user,
-                    ["attributes_api", "API_KEY"],
-                    value
-                  ),
-                setSecretKey: (value) =>
-                  this.handleInputChange(
+                    field: "attributes_api.API_KEY",
+                    value,
+                  });
+                },
+                setSecretKey: (value) => {
+                  this.handleInputChange({
                     id_api_user,
-                    ["attributes_api", "API_SECRET"],
-                    value
-                  ),
+                    field: "attributes_api.API_SECRET",
+                    value,
+                  });
+                },
               };
               break;
             default:
@@ -166,7 +196,6 @@ export class APIKeyViewExchange extends React.Component {
             <APIKeyExchange
               key={id_api_user || name_api}
               apiKeyInstance={apiKeyInstance}
-              onSave={this.handleSave}
               onDiscard={this.componentDidMount.bind(this)}
             />
           );
@@ -174,70 +203,74 @@ export class APIKeyViewExchange extends React.Component {
 
         <p align="right">
           <br />
-          <Button
-            variant="contained"
-            color="primary"
-            size="large"
-            startIcon={<AddIcon />}
-            onClick={() => this.setState({ dialogOpen: true })}
-          >
-            Agregar nueva API de Operación
-          </Button>
+          <this.buttonAddApi />
         </p>
-
-        <Dialog open={this.state.dialogOpen} onClose={this.handleCancel}>
-          <DialogTitle>Agregar nueva API de Operación</DialogTitle>
-          <DialogContent>
-            <FormControl fullWidth margin="normal">
-              <InputLabel id="exchange-select-label">Exchange</InputLabel>
-              <Select
-                labelId="exchange-select-label"
-                value={this.state.newExchange}
-                label="Exchange"
-                onChange={(e) => this.setState({ newExchange: e.target.value })}
-              >
-                {EXCHANGES_AVAILABLE.map((ex) => (
-                  <MenuItem key={ex} value={ex}>
-                    {ex}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-            <TextField
-              label="API Key"
-              variant="outlined"
-              fullWidth
-              margin="normal"
-              value={this.state.newApiKey}
-              onChange={(e) => this.setState({ newApiKey: e.target.value })}
-            />
-            <TextField
-              label="API Secret"
-              variant="outlined"
-              fullWidth
-              margin="normal"
-              value={this.state.newApiSecret}
-              onChange={(e) => this.setState({ newApiSecret: e.target.value })}
-            />
-            {this.state.newExchange === "BITGET" && (
-              <TextField
-                label="Passphrase"
-                variant="outlined"
-                fullWidth
-                margin="normal"
-                value={this.state.newPassphrase}
-                onChange={(e) =>
-                  this.setState({ newPassphrase: e.target.value })
-                }
-              />
-            )}
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={()=>this.handleSave()}>Guardar</Button>
-            <Button onClick={()=>this.handleCancel()}>Cancelar</Button>
-          </DialogActions>
-        </Dialog>
       </>
+    );
+  }
+
+  buttonAddApi() {
+    return (
+      <Button
+        variant="contained"
+        color="primary"
+        size="large"
+        startIcon={<AddIcon />}
+        onClick={async () => {
+          await showPromptDialog({
+            title: "Agregar nueva API de Operación",
+            input: (
+              <>
+                <FormControl fullWidth margin="normal">
+                  <InputLabel id="exchange-select-label">Exchange</InputLabel>
+                  <Select
+                    labelId="exchange-select-label"
+                    value={driverAPIKey.getNameNewExchange()}
+                    label="Exchange"
+                    onChange={(e) =>
+                      driverAPIKey.setNameNewExchange(e.target.value)
+                    }
+                  >
+                    {EXCHANGES_AVAILABLE.map((ex) => (
+                      <MenuItem key={ex} value={ex}>
+                        {ex}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+                <TextField
+                  fullWidth
+                  label="API Key"
+                  variant="outlined"
+                  margin="normal"
+                  value={driverAPIKey.getApiKeyNewExchange()}
+                  onChange={(e) => driverAPIKey.setApiKeyNewExchange(e.target.value)}
+                />
+                <TextField
+                  fullWidth
+                  label="API Secret"
+                  variant="outlined"
+                  margin="normal"
+                  value={driverAPIKey.getApiSecretNewExchange()}
+                  onChange={(e) => driverAPIKey.setApiSecretNewExchange(e.target.value)}
+                />
+                {driverAPIKey.isBitgetNewExchange() && (
+                  <TextField
+                    label="Passphrase"
+                    variant="outlined"
+                    fullWidth
+                    margin="normal"
+                    value={driverAPIKey.getPassphraseNewExchange()}
+                    onChange={(e) => driverAPIKey.setPassphraseNewExchange(e.target.value)}
+                  />
+                )}
+              </>
+            ),
+          });
+        }}
+      >
+        Agregar nueva API de Operación
+      </Button>
     );
   }
 }

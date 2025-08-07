@@ -3,6 +3,7 @@ import React, { Component } from "react";
 import DoDisturbOnIcon from "@mui/icons-material/DoDisturbOn";
 import PendingIcon from "@mui/icons-material/Pending";
 import CircularProgress from "@mui/material/CircularProgress";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 
 import {
   Tooltip,
@@ -25,9 +26,7 @@ import {
 import { driverCoinsOperating } from "./CoinsOperating.driver.js";
 import { driverPanelRobot } from "../../../bot.driver.js";
 
-export default (props) => <CoinsOperating {...props} />;
-
-class CoinsOperating extends Component {
+export default class CoinsOperating extends Component {
   constructor(props) {
     super(props);
   }
@@ -53,64 +52,77 @@ class CoinsOperating extends Component {
   }
 
   render() {
+    const coinsOperating = driverPanelRobot.getCoinsOperating();
+
     return (
-      <PaperP
-        elevation={3}
-        sx={{
-          width: "100%",
-          minHeight: 56,
-          display: "flex",
-          alignItems: "center",
-          flexWrap: "wrap",
-          gap: "8px",
-          p: 2,
-        }}
-      >
+      <PaperP elevation={3}>
         {(() => {
-          const coinsOperating = driverPanelRobot.getCoinsOperating();
-
-          if (coinsOperating.length === 0) {
-            return this.renderEmptyMessage();
-          }
-
-          return coinsOperating.map((optionCurrency, index) => {
-            const symbol = driverPanelRobot.getCoinKey(optionCurrency);
-            const isPendingDelete =
-              driverPanelRobot.isPendingInCoinsToDelete(symbol);
-
-            const [colorChip, textColor, deleteIcon, tooltipTitle] = [
-              "colorChip",
-              "textColor",
-              "deleteIcon",
-              "tooltipTitle",
-            ].map((key) =>
-              driverPanelRobot.mapCaseCoinsToDelete(key, !isPendingDelete)
-            );
-
+          if (coinsOperating.length > 0) {
             return (
-              <TooltipGhost
-                key={`tooltip-${symbol}-${index}`}
-                title={tooltipTitle}
+              <Typography
+                variant="caption"
+                color="secondary"
+                component="div"
+                style={{ marginTop: "-10px" }}
+                className="op-50"
               >
-                <Chip
-                  label={symbol}
-                  onDelete={(e) => {
-                    e.preventDefault();
-                    driverCoinsOperating.deleteCoinFromAPI(optionCurrency);
-                  }}
-                  disabled={
-                    isPendingDelete || driverCoinsOperating.getActionInProcess()
-                  }
-                  variant="elevated"
-                  color={colorChip}
-                  style={{ color: textColor }}
-                  deleteIcon={deleteIcon}
-                  sx={{ m: 0.5 }}
-                />
-              </TooltipGhost>
+                <small>Monedas en Operación</small>
+              </Typography>
             );
-          });
+          }
         })()}
+        <div className="flex align-center wrap gap-5px">
+          {(() => {
+            if (coinsOperating.length === 0) {
+              return this.renderEmptyMessage();
+            }
+
+            return coinsOperating
+              .sort((a, b) =>
+                driverPanelRobot
+                  .getCoinKey(a)
+                  .localeCompare(driverPanelRobot.getCoinKey(b))
+              )
+              .map((optionCurrency, index) => {
+                const symbol = driverPanelRobot.getCoinKey(optionCurrency);
+                const isPendingDelete =
+                  driverPanelRobot.isPendingInCoinsToDelete(symbol);
+
+                const [colorChip, textColor, deleteIcon, tooltipTitle] = [
+                  "colorChip",
+                  "textColor",
+                  "deleteIcon",
+                  "tooltipTitle",
+                ].map((key) =>
+                  driverPanelRobot.mapCaseCoinsToDelete(key, !isPendingDelete)
+                );
+
+                return (
+                  <TooltipGhost
+                    key={`tooltip-${symbol}-${index}`}
+                    title={tooltipTitle}
+                  >
+                    <Chip
+                      label={symbol}
+                      onDelete={(e) => {
+                        e.preventDefault();
+                        driverCoinsOperating.deleteCoinFromAPI(optionCurrency);
+                      }}
+                      disabled={
+                        isPendingDelete ||
+                        driverCoinsOperating.getActionInProcess()
+                      }
+                      variant="elevated"
+                      color={colorChip}
+                      style={{ color: textColor }}
+                      deleteIcon={deleteIcon}
+                      sx={{ m: 0.5 }}
+                    />
+                  </TooltipGhost>
+                );
+              });
+          })()}
+        </div>
       </PaperP>
     );
   }

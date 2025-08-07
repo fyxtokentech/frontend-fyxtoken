@@ -93,21 +93,19 @@ export const driverGlobal = DriverComponent({
       });
     },
 
-    async save() {
+    async save({stringify}) {
       const { user_id } = window.currentUser;
       const id_coin = driverPanelRobot.getIdCoin();
       if (!user_id || !id_coin) {
         return;
       }
 
-      const config = this.getConfig();
-
       await showPromise("Guardando configuración global...", (resolve) => {
         HTTPPATCH_USEROPERATION_STRATEGY({
           user_id,
           id_coin,
           strategy: "global",
-          new_config: JSON.stringify(config),
+          new_config: stringify(),
           willStart: () => {
             this.setSaving(true);
           },

@@ -120,7 +120,6 @@ export const driverTables = DriverComponent({
       if (driver && driver.setLoading) {
         driver.setLoading(loading);
       }
-      console.log(cb);
       cb && cb({ name, table, driver });
     });
   },

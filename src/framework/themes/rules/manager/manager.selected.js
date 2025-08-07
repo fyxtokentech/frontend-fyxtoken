@@ -72,7 +72,6 @@ export function getSelectedPalette({
   if (typeof t === "function") {
     getPaletteConfig(name)[k] = t();
   }
-  console.log(getPaletteConfig(name)[k])
   return getPaletteConfig(name)[k];
 }
 

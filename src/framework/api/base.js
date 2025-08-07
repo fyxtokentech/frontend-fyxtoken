@@ -95,15 +95,6 @@ function SINGLETON_EFFECT({
       if (applyMock()) {
         return;
       }
-      console.log(
-        {
-          status: "error",
-          message: "Hay promesa pero no hubo respuesta",
-          url,
-          value: responseResults[url],
-          promise: responsePromises[url],
-        },
-      );
     }
   }
 

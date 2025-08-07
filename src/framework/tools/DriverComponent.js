@@ -19,7 +19,7 @@ export function inferStringData(val) {
 
   // Number
   if (
-    (!val.startsWith("0") || val.startsWith("0.")) &&
+    (!val.startsWith("0") || val === "0" || val.startsWith("0.")) &&
     val !== "" &&
     !isNaN(+val)
   ) {
@@ -28,6 +28,175 @@ export function inferStringData(val) {
 
   // String (default)
   return val;
+}
+
+function driverMethods({
+  key,
+  THIS,
+  extra_context_global,
+  props,
+  CONTEXT_GENERAL,
+  extra_context,
+  idDriver,
+  driverId,
+  notifyLinks,
+  nameParam,
+  nameStorage,
+  isArray,
+  isObject,
+  isNumber,
+  isString,
+  isInteger,
+  digits,
+  min,
+  max,
+}) {
+  const saneoKey = firstUppercase(key);
+  const KEY = Object.entries({
+    SOME: "some",
+    EVERY: "every",
+    FIND: "find",
+    FILTER: "filter",
+    MAP: "map",
+    FOR_EACH: "forEach",
+    FROM_FORM: "setFromIdForm",
+    CHECK_EMAIL_RULE: "checkEmailRule",
+    INIT: "init",
+    GET: "get",
+    _SET: "_set",
+    SET: "set",
+    SET_NULLISH: "setNullish",
+    UPDATE: "update",
+    EXISTS: "exists",
+    ADD_LINK: "addLink",
+    REMOVE_LINK: "removeLink",
+    BURN_PARAM: "burnParam",
+    ARRAY_ADD: "add",
+    DELETE: "delete",
+    ARRAY_PUSH: "push",
+    ARRAY_POP: "pop",
+    ARRAY_REMOVEALL: "removeAll",
+    MAPCASE: "mapCase",
+    IS_EMPTY: "isEmpty",
+    IS_BOOLEAN: "is",
+    ASSING: "assign",
+    GET_KEYS: "getKeys",
+    GET_VALUES: "getValues",
+    STRINGIFY: "stringify",
+    ENTRIES: "entries",
+    MIN: "getMin2",
+    MAX: "getMax2",
+    DIGITS: "getDigits2",
+    CLAMP: "clamp2",
+  }).reduce((acc, [key, value]) => {
+    acc[key] = `${value}${saneoKey}`;
+    return acc;
+  }, {});
+
+  const get = () => THIS[KEY.GET]();
+  const set = (value, config) => THIS[KEY.SET](value, config);
+
+  return {
+    KEY,
+    saneoKey,
+    get,
+    set,
+    checkIsFunction,
+    CONTEXT_GENERAL,
+  };
+
+  function CONTEXT_GENERAL(softSet = false) {
+    return {
+      idDriver,
+      driverId,
+      init: THIS[KEY.INIT],
+      getValue: get,
+      setValue: [set, THIS[KEY._SET]][+softSet],
+      _setValue: THIS[KEY._SET],
+      setNullish: THIS[KEY.SET_NULLISH],
+      exists: THIS[KEY.EXISTS],
+      burnParam: THIS[KEY.BURN_PARAM],
+      mapCase: THIS[KEY.MAPCASE],
+      //--- Array methods
+      add: THIS[KEY.ARRAY_ADD],
+      delete: THIS[KEY.DELETE],
+      push: THIS[KEY.ARRAY_PUSH],
+      pop: THIS[KEY.ARRAY_POP],
+      removeAll: THIS[KEY.ARRAY_REMOVEALL],
+      stringify: THIS[KEY.STRINGIFY],
+      some: THIS[KEY.SOME],
+      every: THIS[KEY.EVERY],
+      find: THIS[KEY.FIND],
+      filter: THIS[KEY.FILTER],
+      map: THIS[KEY.MAP],
+      forEach: THIS[KEY.FOR_EACH],
+      ...(() => {
+        const r = {};
+        if (isArray || isObject) {
+          if (isObject) {
+            Object.assign(r, {
+              assign: THIS[KEY.ASSING],
+              getKeys: THIS[KEY.GET_KEYS],
+              getValues: THIS[KEY.GET_VALUES],
+              entries: THIS[KEY.ENTRIES],
+            });
+          }
+        }
+        return r;
+      })(),
+      //--- Component methods
+      notifyLinks,
+      update: THIS[KEY.UPDATE],
+      addLink: THIS[KEY.ADD_LINK],
+      removeLink: THIS[KEY.REMOVE_LINK],
+      //--- Component props
+      nameParam,
+      nameStorage,
+      isNumber,
+      isString,
+      isInteger,
+      digits: THIS[KEY.DIGITS],
+      min: THIS[KEY.MIN],
+      max: THIS[KEY.MAX],
+      clamp: THIS[KEY.CLAMP],
+      ...extra_context_global,
+      ...extra_context,
+    };
+  }
+
+  function checkIsFunction() {
+    const isFunction = typeof props == "function";
+    const isObjectComplex_ = notIsObjectAnonimus(props);
+
+    const isVar = isFunction || isObjectComplex_;
+
+    if (isVar) {
+      if (isFunction) {
+        const binder = props.bind(THIS);
+        const isAsync = props.constructor.name === "AsyncFunction";
+        const invoker = function (val) {
+          const CONTEXT = CONTEXT_GENERAL();
+          if (isNullish(val)) {
+            return binder(CONTEXT);
+          }
+          return binder(val, CONTEXT);
+        };
+        if (isAsync) {
+          THIS[key] = async function (val) {
+            return await invoker(val);
+          };
+        } else {
+          THIS[key] = function (val) {
+            return invoker(val);
+          };
+        }
+      } else {
+        THIS[key] = props;
+      }
+      extra_context_global[key] = THIS[key];
+      return true;
+    }
+  }
 }
 
 export function DriverComponent(modelProps) {
@@ -43,9 +212,16 @@ export function DriverComponent(modelProps) {
         });
       };
       Object.entries(modelRest).forEach(([key, props]) => {
-        const saneoKey = firstUppercase(key);
         let links = [];
         const extra_context = {};
+        for (const _key in props) {
+          if (_key.startsWith("_") && _key.endsWith("_")) {
+            const f = props[_key];
+            if (typeof f == "function") {
+              props[_key] = f.bind(this);
+            }
+          }
+        }
         let {
           value,
           isString,
@@ -69,147 +245,33 @@ export function DriverComponent(modelProps) {
           _getValidate_,
           ...rest
         } = props;
-        [
-          "_willSet_",
-          "_setup_",
-          "_validate_",
-          "_setValidate_",
-          "_getValidate_",
-        ].forEach((key) => {
-          eval(`if(${key}){
-              ${key} = ${key}.bind(this);
-            }`);
-        });
-        const KEY = Object.entries({
-          FROM_FORM: "setFromIdForm",
-          CHECK_EMAIL_RULE: "checkEmailRule",
-          INIT: "init",
-          GET: "get",
-          _SET: "_set",
-          SET: "set",
-          SET_NULLISH: "setNullish",
-          UPDATE: "update",
-          EXISTS: "exists",
-          ADD_LINK: "addLink",
-          REMOVE_LINK: "removeLink",
-          BURN_PARAM: "burnParam",
-          ARRAY_ADD: "add",
-          DELETE: "delete",
-          ARRAY_PUSH: "push",
-          ARRAY_POP: "pop",
-          ARRAY_REMOVEALL: "removeAll",
-          MAPCASE: "mapCase",
-          IS_EMPTY: "isEmpty",
-          IS_BOOLEAN: "is",
-          ASSING: "assign",
-          GET_KEYS: "getKeys",
-          GET_VALUES: "getValues",
-          STRINGIFY: "stringify",
-          ENTRIES: "entries",
-          MIN: "getMin2",
-          MAX: "getMax2",
-          DIGITS: "getDigits2",
-          CLAMP: "clamp2",
-        }).reduce((acc, [key, value]) => {
-          acc[key] = `${value}${saneoKey}`;
-          return acc;
-        }, {});
-        const get = () => this[KEY.GET]();
-        const set = (value, config) => this[KEY.SET](value, config);
-        const CONTEXT_GENERAL = ((softSet = false) => {
-          return {
+
+        const THIS = this;
+
+        const { saneoKey, KEY, get, set, CONTEXT_GENERAL, checkIsFunction } =
+          driverMethods({
+            key,
+            THIS,
+            extra_context_global,
+            props,
+            extra_context,
             idDriver,
             driverId,
-            init: this[KEY.INIT],
-            getValue: get,
-            setValue: [set, this[KEY._SET]][+softSet],
-            _setValue: this[KEY._SET],
-            setNullish: this[KEY.SET_NULLISH],
-            exists: this[KEY.EXISTS],
-            burnParam: this[KEY.BURN_PARAM],
-            mapCase: this[KEY.MAPCASE],
-            //--- Array methods
-            add: this[KEY.ARRAY_ADD],
-            delete: this[KEY.DELETE],
-            push: this[KEY.ARRAY_PUSH],
-            pop: this[KEY.ARRAY_POP],
-            removeAll: this[KEY.ARRAY_REMOVEALL],
-            stringify: this[KEY.STRINGIFY],
-            ...(() => {
-              const r = {};
-              if (isArray || isObject) {
-                if (isArray) {
-                  Object.assign(r, {
-                    some: (cb) => get().some(cb),
-                    every: (cb) => get().every(cb),
-                    find: (cb) => get().find(cb),
-                    filter: (cb) => get().filter(cb),
-                    map: (cb) => get().map(cb),
-                  });
-                }
-                if (isObject) {
-                  Object.assign(r, {
-                    assign: this[KEY.ASSING],
-                    getKeys: this[KEY.GET_KEYS],
-                    getValues: this[KEY.GET_VALUES],
-                    entries: this[KEY.ENTRIES],
-                  });
-                }
-              }
-              return r;
-            })(),
-            //--- Component methods
             notifyLinks,
-            update: this[KEY.UPDATE],
-            addLink: this[KEY.ADD_LINK],
-            removeLink: this[KEY.REMOVE_LINK],
-            //--- Component props
             nameParam,
             nameStorage,
+            isArray,
+            isObject,
             isNumber,
             isString,
             isInteger,
-            digits: this[KEY.DIGITS],
-            min: this[KEY.MIN],
-            max: this[KEY.MAX],
-            clamp: this[KEY.CLAMP],
-            ...extra_context_global,
-            ...extra_context,
-          };
-        }).bind(this);
+            digits,
+            min,
+            max,
+          });
 
-        {
-          const isFunction = typeof props == "function";
-          const isObjectComplex_ = notIsObjectAnonimus(props);
-
-          const isVar = isFunction || isObjectComplex_;
-
-          if (isVar) {
-            if (isFunction) {
-              const binder = props.bind(this);
-              const isAsync = props.constructor.name === "AsyncFunction";
-              const invoker = function (val) {
-                const CONTEXT = CONTEXT_GENERAL();
-                if (isNullish(val)) {
-                  return binder(CONTEXT);
-                }
-                return binder(val, CONTEXT);
-              };
-              if (isAsync) {
-                this[key] = async function (val) {
-                  return await invoker(val);
-                };
-              } else {
-                this[key] = function (val) {
-                  return invoker(val);
-                };
-              }
-            } else {
-              this[key] = props;
-            }
-            extra_context_global[key] = this[key];
-            return;
-          }
+        if (checkIsFunction()) {
+          return;
         }
 
         initValue();
@@ -290,6 +352,13 @@ export function DriverComponent(modelProps) {
             this[KEY.ARRAY_POP] = POPARRAY.bind(this)();
             this[KEY.ARRAY_REMOVEALL] = () => set([]);
             this[KEY.IS_EMPTY] = () => get().length == 0;
+
+            this[KEY.SOME] = (cb) => get().some(cb);
+            this[KEY.EVERY] = (cb) => get().every(cb);
+            this[KEY.FIND] = (cb) => get().find(cb);
+            this[KEY.FILTER] = (cb) => get().filter(cb);
+            this[KEY.MAP] = (cb) => get().map(cb);
+            this[KEY.FOR_EACH] = (cb) => get().forEach(cb);
           }
         }
 
@@ -377,7 +446,7 @@ export function DriverComponent(modelProps) {
             }
             const formData = new FormData(form);
 
-            const newData = JSON.parse(JSON.stringify(get()));
+            const newData = structuredClone(get());
 
             for (let [key, value] of formData.entries()) {
               if (value == "on") {

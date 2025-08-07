@@ -262,6 +262,6 @@ export function ReserveLayer({ children, ...props }) {
   );
 }
 
-export function Reserveme({ children }) {
+export function Reserveme({ children, duplicity=false }) {
   return <div className="ghost hidden">{children}</div>;
 }

@@ -30,7 +30,6 @@ export const driverPanelBalance = DriverComponent({
   },
   defaultUSDTBuy: {
     isNumber: true,
-    delayer: Delayer(250),
     _getValidate_(value, { MAX_VALUE_USDT }) {
       return Math.min(value, this.getLimitUSDTBuy(), MAX_VALUE_USDT);
     },

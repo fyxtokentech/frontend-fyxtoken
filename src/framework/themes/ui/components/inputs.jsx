@@ -17,9 +17,9 @@ import {
 import { mouseLeftPressed } from "../../../events/events.base.js";
 import { onBlur } from "../../../events/events.listeners.js";
 
-import { TextField } from "@mui/material";
-import { Design, Layer } from "./containers";
-import { Delayer, clamp, trunc } from "../../../tools/index.js";
+import { TextField, Typography } from "@mui/material";
+import { Design, Layer, Reserveme } from "./containers.jsx";
+import { Delayer, clamp, trunc, joinClass } from "../../../tools/index.js";
 import { isNullish } from "../../../start.js";
 import { EditNoteRounded } from "@mui/icons-material";
 
@@ -51,11 +51,16 @@ export function InputNumberDot({
   step = 1,
   positive,
   onKeyDown,
+  className = "",
   onChange = () => {},
   ...props
 }) {
   const inputRef = React.useRef(null);
   const delayer = Delayer(1000 / 40);
+
+  if (step < 0) {
+    step = -step;
+  }
 
   const decimals = (() => {
     if (step === 0) {
@@ -70,22 +75,40 @@ export function InputNumberDot({
     min = 0;
   }
 
-  React.useEffect(() => {
-    inputRef.current && (inputRef.current.value = clamp(value, min, max));
-  }, [value]);
+  const { size } = props;
+
+  const isSmall = size == "small";
 
   return (
     <Design className="text-hide-unhover-container">
+      <Reserveme duplicity>
+        <TextField
+          variant="outlined"
+          {...props}
+          className={className}
+          type="text"
+          inputMode="decimal"
+        />
+      </Reserveme>
       <TextField
+        variant="outlined"
+        color="toBOW50"
         {...props}
+        className={joinClass(className, "p-absolute", "expand")}
         onMouseLeave={removeSentence}
         inputRef={inputRef}
-        label={label}
+        label={
+          isSmall ? (
+            <Typography variant="caption" color="secondary">
+              <small>{label}</small>
+            </Typography>
+          ) : (
+            label
+          )
+        }
         InputLabelProps={{ shrink: true }}
         type="text"
         inputMode="decimal"
-        variant="outlined"
-        color="toBOW50"
         name={name}
         defaultValue={clamp(value, min, max)}
         autoComplete="off"
@@ -109,57 +132,90 @@ export function InputNumberDot({
           const { key, keyCode, target } = e;
           const { value, selectionStart: start, selectionEnd: end } = target;
 
-          // Permitir otras teclas de control
-          // (delete, tab, escape, enter, home, end, arrows laterales)
           if (
-            [
-              TAB,
-              ESCAPE,
-              ENTER,
-              DELETE,
-              END,
-              HOME,
-              ARROW_LEFT,
-              ARROW_RIGHT,
-            ].includes(keyCode)
+            [TAB, ESCAPE, ENTER, END, HOME, ARROW_LEFT, ARROW_RIGHT].includes(
+              keyCode
+            )
           ) {
-            return;
-          }
-          // Manejar BACKSPACE y calcular nuevo valor con start/end
-          if ([BACKSPACE, SUPR].includes(keyCode)) {
-            applyNewValue(
-              newTypeValue({
-                indexStart: {
-                  [BACKSPACE]: start === end ? start - 1 : start,
-                  [SUPR]: start,
-                }[keyCode],
-              })
-            );
+            // Se deja actuar con normalidad
             return;
           }
 
-          // Permitir solo números, punto decimal y guión (negativo)
-          if (key === "-") {
-            e.preventDefault();
-            if (min < 0) {
-              applyNewValue(-value);
+          const NEGATIVE_REQUIRED = key == "-";
+          const POSITIVE_REQUIRED = key == "+";
+          const DECIMAL_REQUIRED = key == ".";
+          const NEWDIGIT_ISZERO = key == "0";
+          const IS_LAST_INDEX = start == value.length;
+          const IS_ALREADY_DECIMAL = value.includes(".");
+          const [PART_INTEGER = "", PART_DECIMAL = ""] = value.split(".");
+          const IS_IN_DECIMAL_PART = start > PART_INTEGER.length;
+
+          if ([BACKSPACE, SUPR].includes(keyCode)) {
+            // El usuario ha borrado
+            if (
+              newTypeValue({
+                indexStart: {
+                  [BACKSPACE]: start === end ? start - 1 : start,
+                  [SUPR]: start + 1,
+                }[keyCode],
+              }) == ""
+            ) {
+              // Evita que el input quede vacío ""
+              applyNewValue(0);
             }
             return;
           }
 
-          if (!/[0-9.-]/.test(key)) {
+          if (!/[0-9.\+\-]/.test(key)) {
+            // No es digito númerico
             e.preventDefault();
             return;
           } else {
-            if (value == "0") {
-              applyNewValue(+key);
+            if (value == "0" && !DECIMAL_REQUIRED) {
+              if (NEGATIVE_REQUIRED) {
+                if (min < 0) {
+                  e.preventDefault();
+                  target.value = "-";
+                  return;
+                }
+              } else {
+                applyNewValue(+key);
+              }
               return;
             }
           }
 
-          // Si es un punto, verificar que no haya ya uno
-          if (key === "." && value.includes(".")) {
+          if (NEWDIGIT_ISZERO && IS_LAST_INDEX && IS_ALREADY_DECIMAL) {
+            if (PART_DECIMAL.length >= decimals - 1) {
+              e.preventDefault();
+            }
+            return;
+          }
+
+          if (POSITIVE_REQUIRED || NEGATIVE_REQUIRED) {
             e.preventDefault();
+            const nvalue_ = +value;
+            const nvalue = Math.abs(+nvalue_);
+            if (min < 0 && nvalue > 0 && NEGATIVE_REQUIRED) {
+              applyNewValue(-nvalue);
+            }
+            if (max > 0 && nvalue < 0 && POSITIVE_REQUIRED) {
+              applyNewValue(nvalue);
+            }
+            return;
+          }
+
+          if (DECIMAL_REQUIRED) {
+            // Si es un punto
+            if (decimals == 0) {
+              // No admite decimales
+              e.preventDefault();
+            } else {
+              if (IS_ALREADY_DECIMAL) {
+                // No se permite más de un punto decimal
+                e.preventDefault();
+              }
+            }
             return;
           }
 
@@ -169,50 +225,47 @@ export function InputNumberDot({
           }
 
           function newTypeValue({ replaceValue = "", indexStart = start }) {
-            return value.slice(0, indexStart) + replaceValue + value.slice(end);
+            const s = Math.min(indexStart, end);
+            const e = Math.max(indexStart, end);
+            return value.slice(0, s) + replaceValue + value.slice(e);
           }
 
           function applyNewValue(candidate) {
             e.preventDefault();
-            const num = +candidate;
-            const newVal = (() => {
-              if (Number.isFinite(num)) {
-                return clamp(num, min, max);
-              }
-              return clamp(0, min, max);
-            })();
-            target.value = trunc(newVal, decimals);
-            onChange({ event: e, target, newVal });
-            target.dispatchEvent(new Event("change", { bubbles: true }));
+            if (["-", "."].includes(candidate)) {
+              candidate = 0;
+            }
+            dispatchEvent({ event: e, target: e.target, newValue: candidate });
           }
         }}
         onChange={(e, newValue) =>
-          onChange({ event: e, target: e.target, newVal: +newValue })
+          onChange({ event: e, target: e.target, newValue: +newValue })
         }
         onBlur={(e) => {
           const raw = e.target.value.trim();
-          if (!raw) {
-            const newVal = clamp(0, min, max);
-            inputRef.current.value = trunc(newVal, decimals);
-            const changeEvent = new Event("change", { bubbles: true });
-            inputRef.current.dispatchEvent(changeEvent);
+          if (!raw || ["-", "."].includes(raw)) {
+            dispatchEvent({ event: e, target: e.target, newValue: 0 });
             return;
           }
-          const val = parseFloat(raw);
-          if (!isNaN(val)) {
-            let newVal = clamp(val, min, max);
-            if (newVal !== val) {
-              inputRef.current.value = trunc(newVal, decimals);
-              const changeEvent = new Event("change", { bubbles: true });
-              inputRef.current.dispatchEvent(changeEvent);
-            }
-          }
+          dispatchEvent({ event: e, target: e.target, newValue: raw });
         }}
-        fullWidth
       />
       {step && <Stepers />}
     </Design>
   );
+
+  function dispatchEvent({ event, target, newValue }) {
+    newValue = +newValue;
+    if (!Number.isFinite(newValue)) {
+      newValue = 0;
+    }
+    newValue = trunc(newValue, decimals);
+    newValue = clamp(newValue, min, max);
+    target.value = newValue;
+    // Disparar evento nativo 'input' para capturar el cambio y propagarlo al formulario
+    target.dispatchEvent(new Event("input", { bubbles: true }));
+    onChange({ event, target, newValue });
+  }
 
   function Stepers() {
     const exec_sentence = (value) => {
@@ -239,8 +292,21 @@ export function InputNumberDot({
     return (
       <Layer right centery centralized>
         <div
-          className="flex col-direction text-hide-opacity-unhover select-none"
+          className={[
+            "flex",
+            "col-direction",
+            "text-hide-opacity-unhover",
+            "select-none",
+            isSmall ? "font-smaller" : "",
+          ].join(" ")}
           onMouseLeave={removeSentence}
+          style={
+            isSmall
+              ? {
+                  scale: 0.75,
+                }
+              : null
+          }
         >
           <div
             className="backdropfilter brightnesshover-2 padw-5px c-pointer"
@@ -284,30 +350,19 @@ export function InputNumberDot({
     if ([ARROW_UP, ARROW_DOWN].includes(keyCode)) {
       event && event.preventDefault();
       const currentValue = (() => {
-        const v = parseFloat(input.value);
-        if (isNaN(v)) {
+        const v = +input.value;
+        if (!Number.isFinite(v)) {
           return 0;
         }
         return v;
       })();
-
-      let newValue = (() => {
-        if (keyCode === ARROW_UP) {
-          return Math.min(currentValue + step, max);
-        } else {
-          return Math.max(currentValue - step, min);
-        }
-      })();
-
-      const multiplier = Math.pow(10, decimals);
-
-      newValue = Math.round(newValue * multiplier) / multiplier;
-      input.value = newValue;
-
+      const ds = step * [-1, 1][+(keyCode === ARROW_UP)];
       // Disparar evento de cambio para actualizar el driver
-      const changeEvent = new Event("change", { bubbles: true });
-      input.dispatchEvent(changeEvent);
-      onChange({ event, target: input, newVal: newValue });
+      dispatchEvent({
+        event,
+        target: input,
+        newValue: currentValue + ds,
+      });
       return true;
     }
   }

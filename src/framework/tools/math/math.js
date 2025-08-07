@@ -1,11 +1,12 @@
-export const idR = (prefix="R")=>Math.random().toString(36).replace("0.", `${prefix}-`);
+export const idR = (prefix = "R") =>
+  Math.random().toString(36).replace("0.", `${prefix}-`);
 
 export function trunc(value, decimals) {
   if (decimals === 0) {
     return Math.trunc(value);
   }
   const factor = Math.pow(10, decimals);
-  return Math.trunc(value * factor) / factor;
+  return Math.round(value * factor) / factor;
 }
 
 export function clamp(value, min, max) {
@@ -28,9 +29,9 @@ let _perlin_amp_falloff = 0.5;
 
 // Seedable PRNG (Mulberry32)
 function _mulberry32(a) {
-  return function() {
+  return function () {
     a |= 0;
-    a = (a + 0x6D2B79F5) | 0;
+    a = (a + 0x6d2b79f5) | 0;
     let t = Math.imul(a ^ (a >>> 15), 1 | a);
     t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;

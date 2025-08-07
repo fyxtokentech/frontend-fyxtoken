@@ -66,3 +66,11 @@ $short-times: (
     --time: #{$i}s;
   }
 }
+
+@for $i from 1 through 20 {
+  $val: 5 * $i;
+
+  .op-#{$val} {
+    opacity: $val / 100;
+  }
+}

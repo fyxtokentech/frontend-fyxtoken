@@ -60,7 +60,7 @@ export const driverCoinsOperating = DriverComponent({
             }
           );
         }
-        await showPromise("Vendiendo por exchange", (resolve) => {
+        await showPromise(`Vendiendo por exchange ${coin.symbol}`, (resolve) => {
           HTTPPOST_EXCHANGE_SELL({
             id_operation,
             successful: (json, info) => {

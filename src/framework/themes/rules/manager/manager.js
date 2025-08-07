@@ -150,7 +150,6 @@ export function customizeComponents({ palette, darkmode }) {
     const retorno = Object.entries(componentes).reduce(
       (retorno, [component, rules]) => {
         const { variants = [], ...styleOverrides } = rules;
-        console.log(rules, variants)
         retorno[`Mui${component}`] = {
           variants,
           styleOverrides:

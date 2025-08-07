@@ -1,7 +1,7 @@
 import React, { useState, Component } from "react";
 import { DriverComponent } from "@jeff-aporta/camaleon";
 import PauseIcon from "@mui/icons-material/Pause";
-import PlayArrowIcon from "@mui/icons-material/PlayArrow";
+import ReplayIcon from "@mui/icons-material/Replay";
 
 import { driverPanelRobot } from "../../../bot.driver.js";
 import { driverCoinsOperating } from "./CoinsOperating.driver.js";
@@ -12,17 +12,17 @@ export const driverActionButtons = DriverComponent({
     isBoolean: true,
   },
   disableToggler() {
-    return (
+    return !!(
       this.disableGeneral() || driverPanelRobot.isCurrencyInCoinsToDelete()
     );
   },
   disableOperate() {
-    return (
+    return !!(
       this.disableToggler() || driverPanelRobot.isCurrencyInCoinsOperating()
     );
   },
   disableStoper() {
-    return (
+    return !!(
       this.disableToggler() ||
       driverPanelRobot.isEmptyCoinsOperating() ||
       !driverPanelRobot.isCurrencyInCoinsOperating()
@@ -34,7 +34,7 @@ export const driverActionButtons = DriverComponent({
 
   loadingGeneral() {
     const actualCurrency = driverPanelRobot.getCurrency();
-    return (
+    return !!(
       !actualCurrency ||
       driverPanelRobot.isPendingInCoinsToDelete(actualCurrency) ||
       driverCoinsOperating.getActionInProcess() ||
@@ -54,11 +54,11 @@ export const driverActionButtons = DriverComponent({
       },
       colorButtonPause: {
         false: () => "warning",
-        true: () => "success",
+        true: () => "toSafety50",
       },
       iconButtonPause: {
         false: () => <PauseIcon fontSize="small" />,
-        true: () => <PlayArrowIcon fontSize="small" />,
+        true: () => <ReplayIcon fontSize="small" />,
       },
     },
   },

@@ -15,12 +15,15 @@ import {
   fluidCSS,
   showPromptDialog,
   ButtonShyText,
+  InputNumberDot,
+  TooltipGhost,
+  WaitSkeleton,
 } from "@jeff-aporta/camaleon";
-import { TooltipGhost, WaitSkeleton } from "@jeff-aporta/camaleon";
 
 import { driverPanelBalance } from "./PanelBalance.driver.js";
 import { driverPanelOfInsertMoney } from "./PanelOfInsertMoney.driver.js";
 import { driverPanelOfProjections } from "./PanelOfProjections.driver.js";
+import { driverPanelRobot } from "../../../bot.driver.js";
 
 const marks = [
   { value: driverPanelBalance.MIN_LOG10_VALUE_USD, label: "5" },
@@ -53,22 +56,10 @@ export default class PanelOfInsertMoney extends React.Component {
     driverPanelBalance.removeLinkLoadingCoinMetric(this);
   }
 
-  handleInputChange(e) {
+  handleInputChange(value) {
     driverPanelBalance.setDefaultUSDTBuy(
-      driverPanelBalance.clamp2DefaultUSDTBuy(+e.target.value)
+      driverPanelBalance.clamp2DefaultUSDTBuy(value)
     );
-  }
-
-  handleSliderChange(e, expVal) {
-    if (
-      !driverPanelBalance
-        .getDelayerDefaultUSDTBuy()
-        .isReady(() => this.handleSliderChange(e, expVal))
-    ) {
-      return;
-    }
-    console.log(Math.round(10 ** expVal));
-    driverPanelBalance.setDefaultUSDTBuy(Math.round(10 ** expVal));
   }
 
   render() {
@@ -86,7 +77,6 @@ export default class PanelOfInsertMoney extends React.Component {
           );
 
           function searchFactor(factor, unit) {
-            console.log({ limit, factor });
             if (limit >= factor) {
               const den = limit / factor;
 
@@ -113,11 +103,11 @@ export default class PanelOfInsertMoney extends React.Component {
     const prev = marks_temp[indexF - 1];
     if (prev) {
       const diff = prev.value - f.value;
-      console.log({ diff, prev, f });
       if (diff && Math.abs(diff) < 0.1 + limitLog10 / 22) {
         prev.label = "";
       }
     }
+
     return (
       <PaperP style={{ minWidth: "250px" }}>
         <WaitSkeleton loading={driverPanelBalance.getLoadingCoinMetric()}>
@@ -126,22 +116,20 @@ export default class PanelOfInsertMoney extends React.Component {
               <small className="underline">Inversión</small>
             </Typography>
             <div className="flex align-center gap-10px">
-              <TextField
-                type="number"
-                label="USD"
-                variant="outlined"
-                size="small"
-                inputProps={{
-                  min: driverPanelBalance.getMin2DefaultUSDTBuy(),
-                  max: driverPanelBalance.getMax2DefaultUSDTBuy(),
-                  step: 1,
-                  pattern: "[0-9]*",
-                  inputMode: "numeric",
+              <div
+                style={{
+                  maxWidth: "150px",
                 }}
-                value={driverPanelBalance.getDefaultUSDTBuy()}
-                onChange={this.handleInputChange}
-                sx={{ mt: 1, width: "100%" }}
-              />
+              >
+                <InputNumberDot
+                  size="small"
+                  min={driverPanelBalance.getMin2DefaultUSDTBuy()}
+                  max={driverPanelBalance.getMax2DefaultUSDTBuy()}
+                  label="USD"
+                  value={driverPanelBalance.getDefaultUSDTBuy()}
+                  onChange={({ newValue }) => this.handleInputChange(newValue)}
+                />
+              </div>
               <ButtonGroup variant="contained" size="small">
                 <this.buttonAssignDefaultUSD />
                 <this.buttonAssignLimitUSD />
@@ -161,7 +149,9 @@ export default class PanelOfInsertMoney extends React.Component {
                 valueLabelDisplay="auto"
                 valueLabelFormat={valueText()}
                 marks={marks_temp}
-                onChange={(e, n) => this.handleSliderChange(e, n)}
+                onChange={(e, n) => {
+                  driverPanelBalance.setDefaultUSDTBuy(Math.round(10 ** n));
+                }}
                 sx={{
                   "& .MuiSlider-mark": { width: 4, height: 4 },
                   "& .MuiSlider-markLabel": { fontSize: "0.65rem" },
@@ -219,7 +209,23 @@ export default class PanelOfInsertMoney extends React.Component {
           <ButtonShyText
             startIcon={<AttachMoneyIcon fontSize="small" />}
             disabled={driverPanelOfInsertMoney.getWaitInvestment()}
-            onClick={() => driverPanelOfInsertMoney.handleInvest()}
+            onClick={() => {
+              showPromptDialog({
+                title: "¡Cuidado!",
+                description: [
+                  "¿Está seguro de que desea asignar la inversión",
+                  driverPanelBalance.getDefaultUSDTBuy(),
+                  `en ${driverPanelRobot.getCurrency()}?`,
+                ].join(" "),
+                input: "confirm",
+                showCancelButton: true,
+                cancelText: "No",
+                confirmText: "Si, Asignar",
+                async successful(value) {
+                  driverPanelOfInsertMoney.handleInvest();
+                },
+              });
+            }}
           >
             Asignar
           </ButtonShyText>

@@ -159,7 +159,7 @@ export default class PanelBalance extends Component {
     return (
       <div>
         <TimeCount frameRate={1} />
-        <PaperP elevation={0}>
+        <PaperP elevation={0} className="flex col-direction gap-5px">
           <div className={`flex wrap space-between gap-5px`}>
             <div className="flex wrap gap-5px">
               <PanelCoinSelected />
@@ -167,16 +167,7 @@ export default class PanelBalance extends Component {
             </div>
             <ActionButtons />
           </div>
-          {(() => {
-            if (hayMoneda) {
-              return (
-                <>
-                  <br />
-                  <CoinsOperating />
-                </>
-              );
-            }
-          })()}
+          <CoinsOperating />
         </PaperP>
       </div>
     );

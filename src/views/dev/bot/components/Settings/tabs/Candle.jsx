@@ -86,7 +86,7 @@ export class CandlestickView extends Component {
 
           <form
             id="candle-form"
-            onChange={() => {
+            onInput={() => {
               driverCandle.setFromIdFormConfig("candle-form");
             }}
           >
@@ -101,7 +101,7 @@ export class CandlestickView extends Component {
                 <br />
                 <Slider
                   min={0}
-                  max={10}
+                  max={20}
                   step={0.01}
                   value={config.percent.down}
                   onChange={(e, value) => {
@@ -113,12 +113,12 @@ export class CandlestickView extends Component {
                 />
                 <InputNumberDot
                   min={0}
-                  max={10}
+                  max={20}
                   step={0.01}
                   name="percent.down"
                   value={config.percent.down}
-                  onChange={({ newVal }) => {
-                    driverCandle.updateSliderPercentDown(newVal);
+                  onChange={({ newValue }) => {
+                    driverCandle.updateSliderPercentDown(newValue);
                   }}
                   fullWidth
                 />
@@ -130,7 +130,7 @@ export class CandlestickView extends Component {
                 <br />
                 <Slider
                   min={0}
-                  max={10}
+                  max={20}
                   step={0.01}
                   value={config.percent.up}
                   onChange={(e, value) => {
@@ -142,12 +142,12 @@ export class CandlestickView extends Component {
                 />
                 <InputNumberDot
                   min={0}
-                  max={10}
+                  max={20}
                   step={0.01}
                   name="percent.up"
                   value={config.percent.up}
-                  onChange={({ newVal }) => {
-                    driverCandle.updateSliderPercentUp(newVal);
+                  onChange={({ newValue }) => {
+                    driverCandle.updateSliderPercentUp(newValue);
                   }}
                   fullWidth
                 />

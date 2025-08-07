@@ -43,7 +43,7 @@ export class PIPView extends Component {
         <WaitSkeleton loading={loading}>
           <form
             id="pip-form"
-            onChange={() => {
+            onInput={() => {
               driverPIP.setFromIdFormConfig("pip-form");
             }}
           >
@@ -56,53 +56,38 @@ export class PIPView extends Component {
                   name="pips"
                   step={step}
                   value={trunc(config.pips, decimals)}
-                  onChange={() => {
-                    driverPIP.setFromIdFormConfig("pip-form");
-                  }}
                 />
               </Grid>
 
               <Grid item xs={12} sm={6}>
                 <InputNumberDot
                   positive
-                  fullWidth
                   max={100}
                   step={step}
                   label="Umbral"
                   name="umbral"
                   value={trunc(config.umbral, decimals)}
-                  onChange={() => {
-                    driverPIP.setFromIdFormConfig("pip-form");
-                  }}
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
               <InputNumberDot
                   positive
-                  fullWidth
                   max={100}
                   label="Porcentaje de mecha (%)"
                   name="percent_wick"
                   step={step}
                   value={trunc(config.percent_wick, decimals)}
-                  onChange={() => {
-                    driverPIP.setFromIdFormConfig("pip-form");
-                  }}
                 />
               </Grid>
 
               <Grid item xs={12} sm={6}>
                 <InputNumberDot
                   positive
-                  fullWidth
                   max={100}
                   label="Stop Loss (%)"
                   name="percent_stop_loss"
                   step={step}
                   value={trunc(config.percent_stop_loss, decimals)}
-                  onChange={() => {
-                    driverPIP.setFromIdFormConfig("pip-form");
-                  }}
                 />
               </Grid>
 

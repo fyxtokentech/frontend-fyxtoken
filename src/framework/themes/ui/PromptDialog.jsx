@@ -29,6 +29,8 @@ import {
 
 import { ENTER } from "../../events/events.ids.js";
 
+import { isNullish } from "../../start.js";
+
 const driverDialog = DriverComponent({
   idDriver: "prompt-dialog-camaleon",
   dialog: {
@@ -47,17 +49,21 @@ const driverDialog = DriverComponent({
       return new Promise((resolve) => {
         open({
           ...props,
-          onSuccess: (value) => {
+          async onSuccess(value){
             if (okcancel.includes(input)) {
               value = true;
             }
+            props.successful && await props.successful(value);
+            props.finally && await props.finally();
             resolve({ status: "confirmed", success: true, value });
           },
-          onCancel: (value) => {
+          async onCancel(value) {
             console.log("onCancel", value);
             if (okcancel.includes(input)) {
               value = false;
             }
+            props.failure && await props.failure();
+            props.finally && await props.finally();
             resolve({ status: "canceled", success: false, value });
           },
         });
@@ -95,7 +101,6 @@ export class PromptDialog extends Component {
   }
 
   open(props) {
-    console.log(props);
     this.setState({
       inputValue: props.value || "",
       validationError: null,
@@ -121,7 +126,6 @@ export class PromptDialog extends Component {
       payload = inputValue;
     }
 
-    const callback = onSuccess;
     if (onValidate) {
       const validationResult = onValidate(payload);
       if (!validationResult) {
@@ -140,8 +144,8 @@ export class PromptDialog extends Component {
           return;
       }
     }
-    if (callback) {
-      callback(payload);
+    if (onSuccess) {
+      onSuccess(payload);
     }
     this.onClose();
   }
@@ -207,8 +211,8 @@ export class PromptDialog extends Component {
       title,
       description,
       validationError,
-      onValidate,
-      input = "text",
+      onValidate, // Callback que verifica si todo está bien en el form
+      input = "text", // Tipo de input, text | number | boolean | confirm | JSX
       min,
       max,
       step,
@@ -218,8 +222,8 @@ export class PromptDialog extends Component {
       showConfirmButton = true,
       showCancelButton = true,
       showCloseButton = true,
-      confirmText = "aceptar",
-      cancelText = "cancelar",
+      confirmText = "Aceptar",
+      cancelText = "Cancelar",
       label = "Valor",
       variantConfirmButton = "contained",
       colorConfirmButton = "contrastPaper",
@@ -227,6 +231,7 @@ export class PromptDialog extends Component {
       colorCancelButton = "secondary",
       model,
       dividerTitleBody = <Divider />,
+      successful = () => {},
       ...rest
     } = this.state;
 
@@ -315,7 +320,7 @@ export class PromptDialog extends Component {
                     step={step}
                     positive={positive}
                     label={label}
-                    onChange={({newValue}) => {
+                    onChange={({ newValue }) => {
                       this.setState({
                         inputValue: newValue,
                       });
@@ -323,7 +328,9 @@ export class PromptDialog extends Component {
                     onKeyDown={(e) => {
                       if (e.keyCode === ENTER) {
                         e.preventDefault();
-                        document.getElementById("buttonConfirmOnPromptDialog").click();
+                        document
+                          .getElementById("buttonConfirmOnPromptDialog")
+                          .click();
                         return true;
                       }
                     }}
@@ -383,7 +390,7 @@ export class PromptDialog extends Component {
             </Button>
           )}
           <Button
-          id="buttonConfirmOnPromptDialog"
+            id="buttonConfirmOnPromptDialog"
             onClick={this.handleConfirm}
             variant={variantConfirmButton}
             color={colorConfirmButton}
