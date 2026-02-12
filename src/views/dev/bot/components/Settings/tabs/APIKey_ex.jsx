@@ -23,7 +23,7 @@ import { HTTPPATCH_USER_API } from "@api";
 import { driverAPIKey } from "./APIKey_ex.driver.js";
 
 import AddIcon from "@mui/icons-material/Add";
-const EXCHANGES_AVAILABLE = ["BINANCE", "BITGET"];
+const EXCHANGES_AVAILABLE = ["BINANCE", "BITGET","MEXC"];
 
 export class APIKeyViewExchange extends React.Component {
   constructor(props) {
@@ -165,6 +165,31 @@ export class APIKeyViewExchange extends React.Component {
               };
               break;
             case "BITGET":
+              apiKeyInstance = {
+                ...general,
+                getApiKey() {
+                  return API_KEY;
+                },
+                getSecretKey() {
+                  return API_SECRET;
+                },
+                setApiKey: (value) => {
+                  this.handleInputChange({
+                    id_api_user,
+                    field: "attributes_api.API_KEY",
+                    value,
+                  });
+                },
+                setSecretKey: (value) => {
+                  this.handleInputChange({
+                    id_api_user,
+                    field: "attributes_api.API_SECRET",
+                    value,
+                  });
+                },
+              };
+              break;
+            case "MEXC":
               apiKeyInstance = {
                 ...general,
                 getApiKey() {
