@@ -12,6 +12,7 @@ import { driverPIP } from "./PIP.driver.js";
 
 const decimals = 2;
 const step = 1 / Math.pow(10, decimals);
+const step_default = 1
 
 export class PIPView extends Component {
   componentDidMount() {
@@ -51,10 +52,10 @@ export class PIPView extends Component {
               <Grid item xs={12} sm={6}>
                 <InputNumberDot
                   positive
-                  label="Sobreventa"
-                  max={100}
+                  label="Meta de Pips"
+                  max={100000}
                   name="pips"
-                  step={step}
+                  step={step_default}
                   value={trunc(config.pips, decimals)}
                 />
               </Grid>
@@ -64,7 +65,7 @@ export class PIPView extends Component {
                   positive
                   max={100}
                   step={step}
-                  label="Umbral"
+                  label="Volatibilidad (%)"
                   name="umbral"
                   value={trunc(config.umbral, decimals)}
                 />
