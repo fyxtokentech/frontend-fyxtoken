@@ -2,7 +2,7 @@
 title Despliegue de frontend-fyxtoken
 
 echo ============================================================
-echo 1. Iniciando compilacion de produccion (React)...
+echo 1. Iniciando compilacion de desarrollo (React)...
 echo ============================================================
 :: Usamos 'call' para que el .bat continue despues de ejecutar npm
 call npm run build:prod
