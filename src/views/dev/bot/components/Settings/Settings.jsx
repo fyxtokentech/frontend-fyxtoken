@@ -58,14 +58,12 @@ export default function Settings() {
   const [selectedViewSetting, setSelectedViewSetting] = useState(initialView);
 
   useEffect(() => {
-    /*if (!views.find((v) => v.id === initialView)) {
+    if (!views.find((v) => v.id === initialView)) {
       driverSettings.setViewSetting("apis");
       setSelectedViewSetting("apis");
     } else {
       setSelectedViewSetting(initialView);
-    }*/
-   driverSettings.setViewSetting("apis");
-   setSelectedViewSetting("apis");
+    }
   }, []);
 
   const handleSelect = (id) => {
