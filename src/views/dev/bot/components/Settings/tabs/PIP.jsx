@@ -44,6 +44,7 @@ export class PIPView extends Component {
         <WaitSkeleton loading={loading}>
           <form
             id="pip-form"
+            key={driverPIP.getLastRecordConfig()}
             onInput={() => {
               driverPIP.setFromIdFormConfig("pip-form");
             }}

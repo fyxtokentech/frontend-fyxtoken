@@ -86,6 +86,7 @@ export class CandlestickView extends Component {
 
           <form
             id="candle-form"
+            key={driverCandle.getLastRecordConfig()}
             onInput={() => {
               driverCandle.setFromIdFormConfig("candle-form");
             }}

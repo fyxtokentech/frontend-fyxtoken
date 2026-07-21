@@ -69,6 +69,7 @@ export class GlobalView extends Component {
           <br />
           <form
             id="global-form"
+            key={driverGlobal.getLastRecordConfig()}
             onInput={() => {
               driverGlobal.updateFromForm();
             }}

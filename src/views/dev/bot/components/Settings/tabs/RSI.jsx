@@ -94,6 +94,7 @@ export class RSIView extends Component {
           <br />
           <form
             id="rsi-form"
+            key={driverRSI.getLastRecordConfig()}
             onInput={() => {
               driverRSI.setFromIdFormConfig("rsi-form");
             }}
