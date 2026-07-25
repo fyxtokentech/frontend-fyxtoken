@@ -2,7 +2,7 @@ import { MAKE_PATCH, AUTO_PARAMS } from "@jeff-aporta/camaleon";
 
 import { httpdebug } from "./index.js";
 
-// PATCH /api/id/{id_api_user}
+// PATCH /api/third/id/{id_api_user}
 export async function HTTPPATCH_USER_API({
   id_api_user,
   enabled,
@@ -14,8 +14,15 @@ export async function HTTPPATCH_USER_API({
     ...httpdebug,
     service: "robot_backend",
     buildEndpoint: ({ genpath }) =>
-      genpath(["api", "third", "id", id_api_user]),
-    params: { new_attributes },
+      genpath(["api", "third", "id", id_api_user], {
+        attributes_api: (() => {
+          if (typeof new_attributes == "string") {
+            return new_attributes;
+          }
+          return JSON.stringify(new_attributes);
+        })(),
+        enabled,
+      }),
   });
 }
 

@@ -184,7 +184,7 @@ export class APIKeyExchange extends React.Component {
                       HTTPPATCH_USER_API({
                         user_id,
                         id_api_user: apiKeyInstance.getIdApiUser(),
-                        enabled: apiKeyInstance.getEnabled(),
+                        enabled: ["I", "A"][+apiKeyInstance.getEnabled()],
                         new_attributes: apiKeyInstance.getAttributesApi(),
                         successful(json, info) {
                           resolve(
