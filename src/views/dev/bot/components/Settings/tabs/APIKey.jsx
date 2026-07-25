@@ -38,7 +38,7 @@ import { ExchangeManagerWithdrawal } from "./APIKey_exwithdrawal";
 import { fluidCSS, IconButtonWithTooltip } from "@jeff-aporta/camaleon";
 import { showPromise } from "src/framework";
 
-class PasswordField extends React.Component {
+export class PasswordField extends React.Component {
   constructor(props) {
     super(props);
     this.state = { showPassword: false };

@@ -100,6 +100,16 @@ export async function HTTPGET_USER_API({ user_id, ...rest }) {
   });
 }
 
+// http://localhost:8000/api/third/platforms
+export async function HTTPGET_API_PLATFORMS({ ...rest } = {}) {
+  return await MAKE_GET({
+    ...rest,
+    ...httpdebug,
+    service: "robot_backend",
+    buildEndpoint: ({ genpath }) => genpath(["api", "third", "platforms"]),
+  });
+}
+
 // http://localhost:8000/operations/open/{user_id}/{id_coin}
 export async function HTTPGET_USEROPERATION_OPEN({
   user_id,

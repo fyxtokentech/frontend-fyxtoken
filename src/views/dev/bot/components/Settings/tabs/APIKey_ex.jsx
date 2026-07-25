@@ -1,12 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
+import { showError, showPromise } from "@jeff-aporta/camaleon";
 import {
-  showError,
-  showPromptDialog,
-  showPromise,
-} from "@jeff-aporta/camaleon";
-import {
-  Grid,
-  Checkbox,
   Button,
   Dialog,
   DialogTitle,
@@ -16,32 +10,37 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  TextField,
 } from "@mui/material";
-import { APIKeyExchange } from "./APIKey.jsx";
-import { HTTPPATCH_USER_API } from "@api";
+import { APIKeyExchange, PasswordField } from "./APIKey.jsx";
+import { HTTPPATCH_USER_API, HTTPPOST_USER_API } from "@api";
 import { driverAPIKey } from "./APIKey_ex.driver.js";
 
 import AddIcon from "@mui/icons-material/Add";
-const EXCHANGES_AVAILABLE = ["BINANCE", "BITGET","MEXC"];
+
+function fieldLabel(key) {
+  return key.replace(/_/g, " ");
+}
 
 export class APIKeyViewExchange extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      newApiKey: "",
-      newApiSecret: "",
-      newPassphrase: "",
+      openAddDialog: false,
+      newIdApi: "",
+      newFields: {},
     };
   }
 
   componentDidMount() {
     driverAPIKey.addLinkKeysAPI(this);
+    driverAPIKey.addLinkPlatforms(this);
     driverAPIKey.loadKeysAPI();
+    driverAPIKey.loadPlatforms();
   }
 
   componentWillUnmount() {
     driverAPIKey.removeLinkKeysAPI(this);
+    driverAPIKey.removeLinkPlatforms(this);
   }
 
   handleInputChange = ({ id_api_user, field, value }) => {
@@ -102,7 +101,6 @@ export class APIKeyViewExchange extends React.Component {
     });
   }
 
-  
   render() {
     return (
       <>
@@ -228,11 +226,77 @@ export class APIKeyViewExchange extends React.Component {
 
         <p align="right">
           <br />
-          <this.buttonAddApi />
+          {this.buttonAddApi()}
         </p>
+        {this.dialogAddApi()}
       </>
     );
   }
+
+  handleOpenAddDialog = () => {
+    const platforms = driverAPIKey.getPlatforms();
+    this.setState({
+      openAddDialog: true,
+      newIdApi: platforms[0] ? platforms[0].idapi : "",
+      newFields: {},
+    });
+  };
+
+  handleCloseAddDialog = () => {
+    this.setState({ openAddDialog: false });
+  };
+
+  handleChangeNewIdApi = (idapi) => {
+    this.setState({ newIdApi: idapi, newFields: {} });
+  };
+
+  handleChangeNewField = (key, value) => {
+    this.setState((prev) => ({
+      newFields: { ...prev.newFields, [key]: value },
+    }));
+  };
+
+  handleSubmitNewApi = async () => {
+    const { newIdApi, newFields } = this.state;
+    const platform = driverAPIKey.findByIdPlatforms(newIdApi);
+    if (!platform) {
+      showError("Selecciona un exchange válido");
+      return;
+    }
+    const keys = driverAPIKey.getFieldKeysPlatforms(newIdApi);
+    const missing = keys.filter((key) => !newFields[key]);
+    if (missing.length > 0) {
+      showError(`Completa los campos: ${missing.map(fieldLabel).join(", ")}`);
+      return;
+    }
+    const attributes_api = {};
+    keys.forEach((key) => {
+      attributes_api[key] = newFields[key];
+    });
+
+    const { user_id } = window.currentUser;
+    await showPromise(
+      `Agregando API [${platform.name_platform}]`,
+      (resolve) => {
+        HTTPPOST_USER_API({
+          user_id,
+          id_api: platform.idapi,
+          attributes_api,
+          successful: () => {
+            driverAPIKey.loadKeysAPI();
+            this.handleCloseAddDialog();
+            resolve(`API agregada (${platform.name_platform})`);
+          },
+          failure: (info, rejectPromise) => {
+            rejectPromise(
+              `No se pudo agregar la API (${platform.name_platform})`,
+              resolve
+            );
+          },
+        });
+      }
+    );
+  };
 
   buttonAddApi() {
     return (
@@ -241,61 +305,64 @@ export class APIKeyViewExchange extends React.Component {
         color="primary"
         size="large"
         startIcon={<AddIcon />}
-        onClick={async () => {
-          await showPromptDialog({
-            title: "Agregar nueva API de Operación",
-            input: (
-              <>
-                <FormControl fullWidth margin="normal">
-                  <InputLabel id="exchange-select-label">Exchange</InputLabel>
-                  <Select
-                    labelId="exchange-select-label"
-                    value={driverAPIKey.getNameNewExchange()}
-                    label="Exchange"
-                    onChange={(e) =>
-                      driverAPIKey.setNameNewExchange(e.target.value)
-                    }
-                  >
-                    {EXCHANGES_AVAILABLE.map((ex) => (
-                      <MenuItem key={ex} value={ex}>
-                        {ex}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-                <TextField
-                  fullWidth
-                  label="API Key"
-                  variant="outlined"
-                  margin="normal"
-                  value={driverAPIKey.getApiKeyNewExchange()}
-                  onChange={(e) => driverAPIKey.setApiKeyNewExchange(e.target.value)}
-                />
-                <TextField
-                  fullWidth
-                  label="API Secret"
-                  variant="outlined"
-                  margin="normal"
-                  value={driverAPIKey.getApiSecretNewExchange()}
-                  onChange={(e) => driverAPIKey.setApiSecretNewExchange(e.target.value)}
-                />
-                {driverAPIKey.isBitgetNewExchange() && (
-                  <TextField
-                    label="Passphrase"
-                    variant="outlined"
-                    fullWidth
-                    margin="normal"
-                    value={driverAPIKey.getPassphraseNewExchange()}
-                    onChange={(e) => driverAPIKey.setPassphraseNewExchange(e.target.value)}
-                  />
-                )}
-              </>
-            ),
-          });
-        }}
+        onClick={this.handleOpenAddDialog}
       >
         Agregar nueva API de Operación
       </Button>
+    );
+  }
+
+  dialogAddApi() {
+    const { openAddDialog, newIdApi, newFields } = this.state;
+    const platforms = driverAPIKey.getPlatforms();
+    const keys = driverAPIKey.getFieldKeysPlatforms(newIdApi);
+
+    return (
+      <Dialog
+        open={openAddDialog}
+        onClose={this.handleCloseAddDialog}
+        maxWidth="xs"
+        fullWidth
+      >
+        <DialogTitle>Agregar nueva API de Operación</DialogTitle>
+        <DialogContent>
+          <FormControl fullWidth margin="normal">
+            <InputLabel id="new-exchange-select-label">Exchange</InputLabel>
+            <Select
+              labelId="new-exchange-select-label"
+              value={newIdApi}
+              label="Exchange"
+              onChange={(e) => this.handleChangeNewIdApi(e.target.value)}
+            >
+              {platforms.map((platform) => (
+                <MenuItem key={platform.idapi} value={platform.idapi}>
+                  {platform.name_platform}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          {keys.map((key) => (
+            <PasswordField
+              key={key}
+              label={fieldLabel(key)}
+              value={newFields[key] || ""}
+              onChange={(e) => this.handleChangeNewField(key, e.target.value)}
+            />
+          ))}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={this.handleCloseAddDialog} color="secondary">
+            Cancelar
+          </Button>
+          <Button
+            onClick={this.handleSubmitNewApi}
+            color="primary"
+            variant="contained"
+          >
+            Agregar
+          </Button>
+        </DialogActions>
+      </Dialog>
     );
   }
 }
