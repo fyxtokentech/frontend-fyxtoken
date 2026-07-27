@@ -1,5 +1,5 @@
 import React from "react";
-import { showError, showPromise } from "@jeff-aporta/camaleon";
+import { showError, showPromise, showPromptDialog } from "@jeff-aporta/camaleon";
 import {
   Button,
   Dialog,
@@ -12,7 +12,11 @@ import {
   MenuItem,
 } from "@mui/material";
 import { APIKeyExchange, PasswordField } from "./APIKey.jsx";
-import { HTTPPATCH_USER_API, HTTPPOST_USER_API } from "@api";
+import {
+  HTTPPATCH_USER_API,
+  HTTPPOST_USER_API,
+  HTTPDELETE_USER_API,
+} from "@api";
 import { driverAPIKey } from "./APIKey_ex.driver.js";
 
 import AddIcon from "@mui/icons-material/Add";
@@ -61,6 +65,7 @@ export class APIKeyViewExchange extends React.Component {
       } else {
         Object.assign(api, { [field[0]]: value });
       }
+      this.forceUpdate();
     } else {
       showError("No se encontro la API");
     }
@@ -100,6 +105,32 @@ export class APIKeyViewExchange extends React.Component {
       );
     });
   }
+
+  handleDeleteApi = async (id_api_user, name_api) => {
+    const { success } = await showPromptDialog({
+      title: "¡Cuidado!",
+      description: `¿Está seguro de que desea eliminar la API (${name_api})? Esta acción no se puede deshacer.`,
+      input: "confirm",
+      showCancelButton: true,
+      cancelText: "No",
+      confirmText: "Sí, eliminar",
+    });
+    if (!success) {
+      return;
+    }
+    await showPromise(`Eliminando API [${name_api}]`, (resolve) => {
+      HTTPDELETE_USER_API({
+        id_api_user,
+        successful: () => {
+          driverAPIKey.loadKeysAPI();
+          resolve(`API eliminada (${name_api})`);
+        },
+        failure: (info, rejectPromise) => {
+          rejectPromise(`No se pudo eliminar la API (${name_api})`, resolve);
+        },
+      });
+    });
+  };
 
   render() {
     return (
@@ -220,6 +251,7 @@ export class APIKeyViewExchange extends React.Component {
               key={id_api_user || name_api}
               apiKeyInstance={apiKeyInstance}
               onDiscard={this.componentDidMount.bind(this)}
+              onDelete={() => this.handleDeleteApi(id_api_user, name_api)}
             />
           );
         })}

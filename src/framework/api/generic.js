@@ -4,6 +4,7 @@ import {
   HTTP_PUT,
   HTTP_PATH,
   HTTP_PATCH,
+  HTTP_DELETE,
 } from "./base.js";
 import { failureDefault, getMessageError } from "./utils.js";
 import { driverParams } from "../themes/router/index.js";
@@ -105,6 +106,25 @@ export async function MAKE_POST({ failure = failureDefault, ...rest }) {
         status: "error",
         err,
         message: "Error fatal try-catch al crear POST",
+      },
+      rejectPromise
+    );
+  }
+}
+
+export async function MAKE_DELETE({ failure = failureDefault, ...rest }) {
+  try {
+    const deleteResult = await HTTP_DELETE({
+      failure,
+      ...rest,
+    });
+    return PROCESS_REQUEST_HTTP(deleteResult);
+  } catch (err) {
+    failure(
+      {
+        status: "error",
+        err,
+        message: "Error fatal try-catch al eliminar DELETE",
       },
       rejectPromise
     );

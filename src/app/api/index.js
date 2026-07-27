@@ -28,3 +28,4 @@ export * from "./GET.js";
 export * from "./POST.js";
 export * from "./PUT.js";
 export * from "./PATCH.js";
+export * from "./DELETE.js";

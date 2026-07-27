@@ -327,6 +327,10 @@ export const HTTP_PATCH = async (params) => {
   return await HTTP_REQUEST({ ...params, method: "patch" });
 };
 
+export const HTTP_DELETE = async (params) => {
+  return await HTTP_REQUEST({ ...params, method: "delete" });
+};
+
 export function HTTP_DATA_ERROR(data) {
   return HTTP_IS_ERROR([data, data[0]][+Array.isArray(data)]);
 }

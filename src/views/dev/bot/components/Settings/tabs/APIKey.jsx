@@ -24,6 +24,7 @@ import AutoFixHighIcon from "@mui/icons-material/AutoFixHigh";
 import ExitToAppIcon from "@mui/icons-material/ExitToApp";
 import SaveIcon from "@mui/icons-material/Save";
 import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
+import DeleteIcon from "@mui/icons-material/Delete";
 import SettingsIcon from "@mui/icons-material/Settings";
 import { TooltipGhost } from "@jeff-aporta/camaleon";
 import SmartToyIcon from "@mui/icons-material/SmartToy";
@@ -96,7 +97,7 @@ export class APIKeyExchange extends React.Component {
   };
 
   render() {
-    const { apiKeyInstance, onSave, onDiscard } = this.props;
+    const { apiKeyInstance, onSave, onDiscard, onDelete } = this.props;
     const { openSettingsDialog } = this.state;
 
     return (
@@ -215,6 +216,16 @@ export class APIKeyExchange extends React.Component {
                 aria-label="Descartar cambios"
               >
                 <RemoveCircleOutlineIcon />
+              </IconButton>
+            </TooltipGhost>
+            <TooltipGhost title="Eliminar API">
+              <IconButton
+                onClick={onDelete}
+                color="danger"
+                size="small"
+                aria-label="Eliminar API"
+              >
+                <DeleteIcon />
               </IconButton>
             </TooltipGhost>
             <TooltipGhost title="Ajustes">
