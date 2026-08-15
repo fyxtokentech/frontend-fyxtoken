@@ -2,6 +2,7 @@ import {
   HTTPGET_COINS_BY_USER,
   HTTPGET_COINS_METRICS,
   HTTPGET_BALANCECOIN,
+  HTTPGET_COINS_OPERATIONS_BY_USER
 } from "@api";
 import { driverTables } from "@tables/tables.js";
 import {
@@ -118,7 +119,25 @@ export const driverPanelRobot = DriverComponent({
       return some((coin) => SEARCH_COIN_KEY({ coin }));
     },
     setOnlyActive(value, { setValue }) {
-      setValue(value.filter((coin) => coin.status === "A"));
+      setValue(
+        value.filter((coin) => {
+          const s = coin?.status;
+          if (s === undefined || s === null) return false;
+          if (typeof s === "boolean") return s === true;
+          if (typeof s === "number") return s === 1;
+          const str = String(s).toLowerCase();
+          return (
+            str === "a" ||
+            str === "active" ||
+            str === "enabled" ||
+            str === "t" ||
+            str === "trading" ||
+            str === "1" ||
+            str === "true" ||
+            str === "on"
+          );
+        })
+      );
     },
     filterExcludeId(id, { setValue, filter }) {
       setValue(filter((c) => c.id != id));
@@ -197,18 +216,99 @@ export const driverPanelRobot = DriverComponent({
 
   async loadCoins() {
     await HTTPGET_COINS_BY_USER({
-      successful: (coinsByUser) => {
-        coinsByUser = coinsByUser.sort((a, b) => a.id - b.id);
+      useCache: false,
+      successful: (response) => {
+        const parsedResponse = Array.isArray(response)
+          ? response
+          : Array.isArray(response?.content)
+            ? response.content
+            : Array.isArray(response?.data)
+              ? response.data
+              : [];
+
+        const coinsByUser = parsedResponse
+          .map((coin) => {
+            if (Array.isArray(coin)) {
+              const [id, name, symbol, status, exchangeId] = coin;
+              return {
+                id: id != null ? String(id) : undefined,
+                name,
+                symbol,
+                status,
+                exchange_id: exchangeId,
+              };
+            }
+
+            return {
+              ...coin,
+              id: coin?.id ?? coin?.coin_id ?? coin?.id_coin,
+              name: coin?.name ?? coin?.coin_name,
+              symbol: coin?.symbol ?? coin?.coin_symbol,
+              status: coin?.status ?? coin?.coin_status,
+            };
+          })
+          .filter((coin) => coin?.id != null)
+          .sort((a, b) => Number(a.id) - Number(b.id));
+
+        // Mantener esta lista para el select "Monedas disponibles para operar"
         this.setCoinsToOperate(coinsByUser);
         const coinsToOperate = this.getCoinsToOperate();
         const currency = this.getCurrency();
-        if (!currency && !this.isEmptyCoinsToOperate()) {
+        // If current currency is missing from the refreshed list, pick the first available
+        const hasCurrent = currency && this.findKeyInCoinsToOperate([currency]);
+        if ((!currency || !hasCurrent) && !this.isEmptyCoinsToOperate()) {
           const first = coinsToOperate[0];
           const key = this.getCoinKey(first);
           this.setCurrency(key);
           this.setIdCoin(first.id);
         }
-        this.setOnlyActiveCoinsOperating(coinsByUser);
+      },
+    });
+
+    // Cargar monedas que están en operación (desde user_operations)
+    await HTTPGET_COINS_OPERATIONS_BY_USER({
+      useCache: false,
+      successful: (response) => {
+        const parsedResponse = Array.isArray(response)
+          ? response
+          : Array.isArray(response?.content)
+            ? response.content
+            : Array.isArray(response?.data)
+              ? response.data
+              : [];
+
+        console.debug("HTTPGET_COINS_OPERATIONS_BY_USER: parsedResponse", parsedResponse);
+
+        const opsCoins = parsedResponse
+          .map((coin) => {
+            if (Array.isArray(coin)) {
+              const [id, name, symbol, status] = coin;
+              return {
+                id: id != null ? String(id) : undefined,
+                name,
+                symbol,
+                status,
+              };
+            }
+
+            return {
+              ...coin,
+              id: coin?.id ?? coin?.coin_id ?? coin?.id_coin,
+              name: coin?.name ?? coin?.coin_name,
+              symbol: coin?.symbol ?? coin?.coin_symbol,
+              status: coin?.status ?? coin?.coin_status,
+            };
+          })
+          .filter((coin) => coin?.id != null)
+          .sort((a, b) => Number(a.id) - Number(b.id));
+
+        console.debug("HTTPGET_COINS_OPERATIONS_BY_USER: opsCoins count", opsCoins.length, "preview", opsCoins.slice(0,10));
+
+        // Poblar coinsOperating solo con las activas
+        this.setOnlyActiveCoinsOperating(opsCoins);
+      },
+      failure: () => {
+        // en caso de fallo dejamos la lista como está
       },
     });
     this.setLoadingCoinsToOperate(false);

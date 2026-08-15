@@ -239,8 +239,6 @@ export class PromptDialog extends Component {
       <Dialog
         open={open}
         onClose={this.handleCancel}
-        disablePortal
-        container={document.body}
         {...processModel({ model, ...rest })}
       >
         <DialogTitle sx={{ m: 0, pr: 10 }}>

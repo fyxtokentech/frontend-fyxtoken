@@ -8,9 +8,12 @@ import {
   idR,
   fluidCSS,
   TooltipGhost,
+  showPromptDialog,
+  showPromise,
 } from "@jeff-aporta/camaleon";
 
 import { Typography } from "@mui/material";
+import { HTTPDELETE_COIN_ASSIGNMENT } from "@api";
 import PanelOfProjections from "./PanelOfProjections.jsx";
 import { driverPanelOfProjections } from "./PanelOfProjections.driver.js";
 import { driverTables } from "@tables/tables.js";
@@ -38,7 +41,7 @@ export default class extends React.Component {
     return (
       <PaperP>
         <Typography variant="caption" color="secondary">
-          <small className="underline">Moneda en operación</small>
+          <small className="underline">Monedas disponibles para operar</small>
         </Typography>
         <br />
         <div className="flex col-direction justify-space-between gap-5px">
@@ -150,10 +153,88 @@ class CoinSelectionOperate extends React.Component {
             value: () => {
               return driverPanelRobot.getCurrency();
             },
-            onChange: (e, value) => {
+            onChange: async (e, value) => {
               if (
                 driverPanelRobot.stringifyCurrency() == JSON.stringify(value)
               ) {
+                return;
+              }
+              // handle clear/delete (value == null)
+              if (!value) {
+                const prev = driverPanelRobot.getCurrency();
+                if (!prev) {
+                  driverPanelRobot.setCurrency(value);
+                  return;
+                }
+                const selected = driverPanelRobot.findKeyInCoinsToOperate([
+                  prev,
+                ]);
+                if (!selected) {
+                  driverPanelRobot.setCurrency(value);
+                  return;
+                }
+
+                const inOperation = driverPanelRobot.isCurrencyInCoinsOperating();
+
+                const doDelete = async () => {
+                  await showPromise(`Eliminando ${selected.symbol}`, async (resolve) => {
+                    HTTPDELETE_COIN_ASSIGNMENT({
+                      user_id: window.currentUser.user_id,
+                      coin_id: selected.id,
+                      successful: async (json) => {
+                        // recargar listas y esperar a que terminen
+                        await driverPanelRobot.loadCoins();
+                        resolve(`Eliminada ${selected.symbol}`);
+                      },
+                      failure: (info, reject) => {
+                        reject(`No se pudo eliminar ${selected.symbol}`, resolve, info);
+                      },
+                    });
+                  });
+                };
+
+                if (inOperation) {
+                  const { success } = await showPromptDialog({
+                    title: "La moneda está en operación",
+                    description: `La moneda ${prev} está en operación. ¿Desea quitarla de sus seleccionadas?`,
+                    okText: "Quitar",
+                    cancelText: "Cancelar",
+                  });
+                  if (!success) {
+                    return;
+                  }
+                  await doDelete();
+                  // after reloading, if there are coins, select the first one
+                  const coins = driverPanelRobot.getCoinsToOperate();
+                  if (coins && coins.length > 0) {
+                    const first = coins[0];
+                    const key = driverPanelRobot.getCoinKey(first);
+                    driverPanelRobot.setCurrency(key);
+                    driverPanelRobot.setIdCoin(first.id);
+                    driverPanelBalance.setLoadingCoinMetric(true);
+                    driverPanelOfProjections.setLoading(true);
+                    driverPanelRobot.fetchCoinMetrics();
+                  } else {
+                    driverPanelRobot.setCurrency(null);
+                  }
+                  return;
+                }
+
+                // no está en operación: eliminar directamente
+                await doDelete();
+                // after reloading, if there are coins, select the first one
+                const coins2 = driverPanelRobot.getCoinsToOperate();
+                if (coins2 && coins2.length > 0) {
+                  const first2 = coins2[0];
+                  const key2 = driverPanelRobot.getCoinKey(first2);
+                  driverPanelRobot.setCurrency(key2);
+                  driverPanelRobot.setIdCoin(first2.id);
+                  driverPanelBalance.setLoadingCoinMetric(true);
+                  driverPanelOfProjections.setLoading(true);
+                  driverPanelRobot.fetchCoinMetrics();
+                } else {
+                  driverPanelRobot.setCurrency(null);
+                }
                 return;
               }
               driverPanelRobot.setCurrency(value);

@@ -226,3 +226,54 @@ export async function HTTPGET_COINS_BY_USER({ user_id, ...rest }) {
     },
   });
 }
+
+// http://localhost:8000/coins/operations/user/{user_id}
+export async function HTTPGET_COINS_OPERATIONS_BY_USER({ user_id, ...rest }) {
+  ({ user_id } = AUTO_PARAMS({ user_id }));
+  return await MAKE_GET({
+    ...rest,
+    ...httpdebug,
+    service: "robot_backend",
+    buildEndpoint: ({ genpath }) => genpath(["coins", "operations", "user", user_id]),
+    mock_default: {
+      content: [
+        ["id", "name", "symbol", "status"],
+        ["1", "Bitcoin", "BTC", "A"],
+      ],
+    },
+  });
+}
+
+// http://localhost:8000/coins
+export async function HTTPGET_COINS({ ...rest }) {
+  return await MAKE_GET({
+    ...rest,
+    ...httpdebug,
+    service: "robot_backend",
+    buildEndpoint: ({ genpath }) => genpath(["coins"]),
+    mock_default: {
+      content: [
+        ["id", "name", "symbol", "status"],
+        ["1", "_Bitcoin_", "BTC", "A"],
+      ],
+    },
+  });
+}
+
+// http://localhost:8000/coins/assignments/{user_id}
+export async function HTTPGET_COIN_ASSIGNMENTS({ user_id, ...rest }) {
+  ({ user_id } = AUTO_PARAMS({ user_id }));
+  return await MAKE_GET({
+    ...rest,
+    ...httpdebug,
+    service: "robot_backend",
+    buildEndpoint: ({ genpath }) => genpath(["coins", "assignments", user_id]),
+    mock_default: {
+      content: [
+        ["exchange_id", "coin_id"],
+        ["binance", "1"],
+        ["binance", "2"],
+      ],
+    },
+  });
+}

@@ -16,8 +16,12 @@ import {
   HTTPPATCH_USER_API,
   HTTPPOST_USER_API,
   HTTPDELETE_USER_API,
+  HTTPDELETE_COIN_ASSIGNMENT,
+  HTTPPOST_COIN_ASSIGNMENT,
+  HTTPGET_COIN_ASSIGNMENTS
 } from "@api";
 import { driverAPIKey } from "./APIKey_ex.driver.js";
+import { driverPanelRobot } from "../../../bot.driver.js";
 
 import AddIcon from "@mui/icons-material/Add";
 
@@ -32,6 +36,8 @@ export class APIKeyViewExchange extends React.Component {
       openAddDialog: false,
       newIdApi: "",
       newFields: {},
+      cryptoAssignments: {}, // <- nuevo
+      reloadKey: 0,
     };
   }
 
@@ -40,7 +46,53 @@ export class APIKeyViewExchange extends React.Component {
     driverAPIKey.addLinkPlatforms(this);
     driverAPIKey.loadKeysAPI();
     driverAPIKey.loadPlatforms();
+    this.loadCoinAssignments();
   }
+
+  loadCoinAssignments = async () => {
+    try {
+      const { user_id } = window.currentUser || {};
+      if (!user_id) {
+        return;
+      }
+
+      const response = await HTTPGET_COIN_ASSIGNMENTS({
+        user_id,
+        successful: (data) => data,
+      });
+
+      const rows = Array.isArray(response)
+        ? response
+        : Array.isArray(response?.content)
+          ? response.content
+          : Array.isArray(response?.data)
+            ? response.data
+            : [];
+
+      const assignments = rows.reduce((acc, row) => {
+        if (Array.isArray(row)) {
+          const [exchangeId, coinId] = row;
+          if (exchangeId && coinId) {
+            acc[String(coinId)] = String(exchangeId);
+          }
+          return acc;
+        }
+
+        const exchangeId = row?.exchange_id ?? row?.exchangeId ?? row?.exchange?.id;
+        const coinId = row?.coin_id ?? row?.coinId ?? row?.id_coin ?? row?.idCoin;
+
+        if (exchangeId && coinId) {
+          acc[String(coinId)] = String(exchangeId);
+        }
+
+        return acc;
+      }, {});
+
+      this.setState({ cryptoAssignments: assignments });
+    } catch (error) {
+      console.error("Error cargando asignaciones de monedas:", error);
+    }
+  };
 
   componentWillUnmount() {
     driverAPIKey.removeLinkKeysAPI(this);
@@ -94,10 +146,10 @@ export class APIKeyViewExchange extends React.Component {
       }
       resolve(
         `APIs guardadas: ${(() => {
-          if (conteo.fail == 0 && conteo.success > 0) {
+          if (conteo.fail === 0 && conteo.success > 0) {
             return "Todas";
           }
-          if (conteo.fail > 0 && conteo.success == 0) {
+          if (conteo.fail > 0 && conteo.success === 0) {
             return "Ninguna";
           }
           return `(${conteo.success} exitosas, ${conteo.fail} fallidas)`;
@@ -130,6 +182,73 @@ export class APIKeyViewExchange extends React.Component {
         },
       });
     });
+  };
+
+  handleToggleCrypto = async (exchangeId, cryptoId) => {
+    // Normalizamos a string para evitar problemas de tipo
+    const coinId = String(cryptoId);
+    const exchange = String(exchangeId);
+
+    console.log("✅ handleToggleCrypto", { coinId, exchange });
+
+    const current = this.state.cryptoAssignments[coinId];
+
+    // Ya está asignada a OTRO exchange
+    if (current && current !== exchange) {
+      console.warn(`${coinId} ya está asignada a ${current}`);
+      return;
+    }
+
+    const isRemoving = current === exchange;
+    const newAssignment = isRemoving ? null : exchange;
+
+    // Actualización optimista de la UI
+    this.setState((prev) => ({
+      cryptoAssignments: {
+        ...prev.cryptoAssignments,
+        [coinId]: newAssignment,
+      },
+    }));
+
+    const { user_id } = window.currentUser;
+    let opError = null;
+    try {
+      if (isRemoving) {
+        console.log("→ Eliminando asignación");
+        await HTTPDELETE_COIN_ASSIGNMENT({
+          user_id,
+          coin_id: coinId,
+        });
+      } else {
+        console.log("→ Creando asignación");
+        await HTTPPOST_COIN_ASSIGNMENT({
+          user_id,
+          exchange_id: exchange,
+          coin_id: coinId,
+        });
+      }
+    } catch (error) {
+      opError = error;
+      console.error("Error persistiendo asignación:", error);
+      // Revertir el estado si falla el backend
+      this.setState((prev) => ({
+        cryptoAssignments: {
+          ...prev.cryptoAssignments,
+          [coinId]: current, // volvemos al valor anterior
+        },
+      }));
+    } finally {
+      try {
+        console.log("Calling driverPanelRobot.loadCoins() in finally");
+        await driverPanelRobot.loadCoins();
+        console.log("driverPanelRobot.loadCoins() completed (finally)");
+      } catch (e) {
+        console.warn("No se pudo recargar monedas en el driver (finally):", e);
+      }
+      // Forzar recarga de los componentes hijos para que vuelvan a pedir availableCryptos
+      this.setState({ reloadKey: Date.now() });
+      if (opError) throw opError;
+    }
   };
 
   render() {
@@ -252,6 +371,9 @@ export class APIKeyViewExchange extends React.Component {
               apiKeyInstance={apiKeyInstance}
               onDiscard={this.componentDidMount.bind(this)}
               onDelete={() => this.handleDeleteApi(id_api_user, name_api)}
+              exchangeId={id_api_user}                              // <- nuevo
+              cryptoAssignments={this.state.cryptoAssignments}       // <- nuevo
+              onToggleCrypto={this.handleToggleCrypto}               // <- nuevo
             />
           );
         })}

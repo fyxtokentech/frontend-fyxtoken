@@ -1,14 +1,14 @@
 import React from "react";
-import { HTTPPATCH_USER_API } from "@api";
+import { 
+  HTTPPATCH_USER_API, 
+  HTTPGET_COINS
+} from "@api";
 
 import {
-  Grid,
   Typography,
   Checkbox,
-  Divider,
   Button,
   IconButton,
-  Box,
   TextField,
   InputAdornment,
   FormControlLabel,
@@ -16,7 +16,8 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Tooltip,
+  Autocomplete,   // <- nuevo
+  Chip,           // <- nuevo
 } from "@mui/material";
 import KeyIcon from "@mui/icons-material/Key";
 import CurrencyBitcoinOutlinedIcon from "@mui/icons-material/CurrencyBitcoinOutlined";
@@ -31,12 +32,14 @@ import SmartToyIcon from "@mui/icons-material/SmartToy";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import { TitleTab } from "./_repetitive";
-import { showError } from "@jeff-aporta/camaleon";
+import { showError, showPromptDialog } from "@jeff-aporta/camaleon";
 
 import { APIKeyViewExchange } from "./APIKey_ex";
+import { driverCoinsOperating } from "../../ActionMain/components/CoinsOperating.driver.js";
+import { driverPanelRobot } from "../../../bot.driver.js";
 
 import { ExchangeManagerWithdrawal } from "./APIKey_exwithdrawal";
-import { fluidCSS, IconButtonWithTooltip } from "@jeff-aporta/camaleon";
+import { fluidCSS } from "@jeff-aporta/camaleon";
 import { showPromise } from "src/framework";
 
 export class PasswordField extends React.Component {
@@ -84,9 +87,62 @@ export class PasswordField extends React.Component {
 }
 
 export class APIKeyExchange extends React.Component {
+
+  static defaultProps = {
+    cryptoAssignments: {},
+  };
+
+  
   constructor(props) {
     super(props);
-    this.state = { openSettingsDialog: false };
+    this.state = {
+      openSettingsDialog: false,
+      availableCryptos: [],       // ← array vacío
+      loadingCryptos: true,
+    };
+  }
+
+  async componentDidMount() {
+    try {
+      const response = await HTTPGET_COINS({
+          successful: (data) => {
+            return data;
+          }
+        });
+      
+      console.log("Respuesta del API:", response); // ← mira esto en la consola
+
+      // Versión segura
+      const coins = Array.isArray(response) 
+        ? response 
+        : Array.isArray(response?.content) 
+          ? response.content 
+          : Array.isArray(response?.data) 
+            ? response.data 
+            : [];
+
+      const availableCryptos = coins
+        .filter(coin => coin?.status === "A" || coin?.status === "T")
+        .map(coin => ({
+          id: String(coin.id),
+          symbol: coin?.symbol,
+          label: coin.name 
+            ? `${coin.name} (${coin.symbol})` 
+            : (coin.symbol || coin.id),
+          status: coin?.status,
+        }));
+
+      this.setState({
+        availableCryptos,
+        loadingCryptos: false,
+      });
+    } catch (error) {
+      console.error("Error cargando monedas:", error);
+      this.setState({ 
+        availableCryptos: [],
+        loadingCryptos: false 
+      });
+    }
   }
 
   handleOpenSettings = () => {
@@ -97,8 +153,20 @@ export class APIKeyExchange extends React.Component {
   };
 
   render() {
-    const { apiKeyInstance, onSave, onDiscard, onDelete } = this.props;
-    const { openSettingsDialog } = this.state;
+    const {
+      apiKeyInstance,
+      onDiscard,
+      onDelete,
+      exchangeId,
+      cryptoAssignments = {},
+      onToggleCrypto
+    } = this.props;
+    const { openSettingsDialog, availableCryptos = [], loadingCryptos } = this.state;
+
+    // Monedas actualmente seleccionadas para ESTE exchange
+    const selectedOptions = availableCryptos.filter(
+      (crypto) => cryptoAssignments[crypto.id] === exchangeId
+    );
 
     return (
       <div className="flex wrap justify-space-between">
@@ -243,16 +311,111 @@ export class APIKeyExchange extends React.Component {
         <Dialog
           open={openSettingsDialog}
           onClose={this.handleCloseSettings}
-          maxWidth="xs"
+          maxWidth="md"
           fullWidth
         >
           <DialogTitle>Configuración de Exchange</DialogTitle>
           <DialogContent>
-            {/* Aquí puedes agregar los campos de configuración que desees */}
-            <Typography variant="body1">
+            <Typography variant="body1" gutterBottom>
               Aquí van los ajustes específicos del exchange:{" "}
               <b>{apiKeyInstance.getNameExchange()}</b>
             </Typography>
+
+            <Autocomplete
+              multiple
+              options={availableCryptos}
+              value={selectedOptions}
+              loading={loadingCryptos}
+              getOptionLabel={(option) => option.label}
+              isOptionEqualToValue={(option, value) => option.id === value.id}
+              getOptionDisabled={(option) => {
+                const assignedTo = cryptoAssignments[option.id];
+                return Boolean(assignedTo && assignedTo !== exchangeId);
+              }}
+              onChange={async (event, newValue) => {
+                console.log("🔥 onChange SIMPLE disparado", newValue);
+
+                const currentIds = selectedOptions.map(o => o.id);
+                const newIds = newValue.map(o => o.id);
+
+                // Monedas agregadas
+                newValue.forEach(opt => {
+                  if (!currentIds.includes(opt.id)) {
+                    console.log("Agregando →", opt.id);
+                    console.log("Función que voy a llamar:", onToggleCrypto); // ← importante
+                    console.log("¿Es la misma función?", onToggleCrypto === this.props.onToggleCrypto);
+                    
+                    onToggleCrypto(exchangeId, opt.id);
+                  }
+                });
+
+                // Monedas eliminadas
+                for (const opt of selectedOptions) {
+                  if (!newIds.includes(opt.id)) {
+                    console.log("Eliminando →", opt.id);
+                    // Comprobar si la moneda está realmente en operación según el driver
+                    const op = (driverPanelRobot.getCoinsOperating() || []).find(
+                      (c) => String(c.id) === String(opt.id)
+                    );
+                    const s = op?.status;
+                    const isActive = (() => {
+                      if (s === undefined || s === null) return false;
+                      const str = String(s).toLowerCase();
+                      return str === "a" || str === "t" || str === "active" || str === "trading";
+                    })();
+
+                    if (isActive) {
+                      const { success } = await showPromptDialog({
+                        title: "Confirmar eliminación",
+                        description: `La moneda ${opt.label} está en operación (status ${s}). ¿Deseas eliminarla?`,
+                        input: "confirm",
+                        showCancelButton: true,
+                        cancelText: "Cancelar",
+                        confirmText: "Eliminar",
+                      });
+                      if (!success) return;
+                      try {
+                        await driverCoinsOperating.deleteCoinFromAPI({ id: opt.id, symbol: opt.symbol });
+                      } catch (e) {
+                        console.error("Error deteniendo operación:", e);
+                      }
+                      onToggleCrypto(exchangeId, opt.id);
+                    } else {
+                      onToggleCrypto(exchangeId, opt.id);
+                    }
+                  }
+                }
+              }}
+              renderOption={(props, option) => {
+                const { key, ...optionProps } = props;   // ← extraemos el key
+                const assignedTo = cryptoAssignments[option.id];
+                const isDisabled = assignedTo && assignedTo !== exchangeId;
+
+                return (
+                  <li key={key} {...optionProps}>
+                    {option.label}
+                    {isDisabled ? ` — ya asignada a ${assignedTo}` : ""}
+                  </li>
+                );
+              }}
+              renderTags={(value, getTagProps) =>
+                value.map((option, index) => (
+                  <Chip
+                    label={option.label}
+                    {...getTagProps({ index })}
+                    key={option.id}
+                  />
+                ))
+              }
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  variant="outlined"
+                  label="Buscar criptomonedas"
+                  placeholder="Escribe para buscar..."
+                />
+              )}
+            />
           </DialogContent>
           <DialogActions>
             <Button onClick={this.handleCloseSettings} color="primary">
@@ -300,6 +463,33 @@ export class APIKeyView extends React.Component {
 
         <ExchangeManagerWithdrawal />
       </div>
+    );
+  }
+}
+
+export class APIKeysManager extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      cryptoAssignments: {},
+    };
+  }
+
+  render() {
+    const { apiKeys } = this.props; // array de instancias, ej: [binanceInstance, krakenInstance, ...]
+
+    return (
+      <>
+        {apiKeys.map((apiKeyInstance) => (
+          <APIKeyExchange
+            key={apiKeyInstance.getId()} // ajusta según tu API real
+            exchangeId={apiKeyInstance.getId()}
+            apiKeyInstance={apiKeyInstance}
+            cryptoAssignments={this.state.cryptoAssignments}
+            onToggleCrypto={this.handleToggleCrypto}
+          />
+        ))}
+      </>
     );
   }
 }
