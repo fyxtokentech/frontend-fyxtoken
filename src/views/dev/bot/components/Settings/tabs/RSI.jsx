@@ -79,6 +79,7 @@ export class RSIView extends Component {
   FormRSI() {
     const config = driverRSI.getConfig();
     const saving = driverRSI.getSaving();
+    const id_coin = driverRSI.getIdCoin();
 
     return (
       <Grid item xs={12} md={7}>
@@ -90,6 +91,7 @@ export class RSIView extends Component {
             width: "100%",
           }}
         >
+          <h3>Moneda seleccionada: { id_coin }</h3>
           {this.TitleTabRSI()}
           <br />
           <form

@@ -210,6 +210,10 @@ export const driverRSI = DriverComponent({
       });
     },
   },
+  // Agrega esto:
+  getIdCoin() {
+    return driverPanelRobot.getIdCoin();
+  },
 
   updateSliderValues([oversold, overbought]) {
     // Actualizar variables del slider

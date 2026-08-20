@@ -54,3 +54,18 @@ export async function HTTPPOST_USER_API({
       }),
   });
 }
+
+// POST - Asignar una moneda a un exchange
+// http://localhost:8000/coins/assignments
+export async function HTTPPOST_COIN_ASSIGNMENT({ user_id, exchange_id, coin_id, ...rest }) {
+  return await MAKE_POST({
+    ...rest,
+    service: "robot_backend",
+    buildEndpoint: ({ genpath }) => genpath(["coins", "assignments"]),
+    payload: {
+      user_id,
+      exchange_id,
+      coin_id,
+    },
+  });
+}
