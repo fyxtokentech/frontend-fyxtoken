@@ -22,17 +22,19 @@ import UserApisTable from "./actions/UserApisTable";
 import SalesTable from "./actions/SalesTable";
 import PurchasesTable from "./actions/PurchasesTable";
 import WithdrawalsTable from "./actions/WithdrawalsTable"; // Nuevo componente para retiros
+import Dashboard from "./actions/Dashboard";
 
 import { Main } from "@theme/main.jsx";
 
 const tabMapping = {
-  deposits: 0,
-  investments: 1,
-  operations: 2,
-  withdrawals: 3, // Nueva pestaña de retiros
-  purchases: 4, // Compra antes que venta
-  sales: 5, // Venta después de compra
-  apis: 6, // APIs al final
+  dashboard: 0,
+  deposits: 1,
+  investments: 2,
+  operations: 3,
+  withdrawals: 4, // Nueva pestaña de retiros
+  purchases: 5, // Compra antes que venta
+  sales: 6, // Venta después de compra
+  apis: 7, // APIs al final
 };
 
 const { lemonGreen } = window.themeColors;
@@ -46,7 +48,7 @@ export default () => <Resume />;
 class Resume extends React.Component {
   constructor(props) {
     super(props);
-    const key = driverParams.get("view_resume")[0] || "deposits";
+    const key = driverParams.get("view_resume")[0] || "dashboard";
     const idx = tabMapping.hasOwnProperty(key) ? tabMapping[key] : 0;
     this.state = { activeTab: idx };
   }
@@ -60,6 +62,8 @@ class Resume extends React.Component {
   renderTabContent() {
     const { activeTab } = this.state;
     switch (reverseTabMapping[activeTab]) {
+      case "dashboard":
+        return <Dashboard />;
       case "deposits":
         return <DepositsTable />;
       case "investments":
@@ -103,6 +107,11 @@ class Resume extends React.Component {
                   },
                 }}
               >
+                <Tab
+                  label="Dashboard"
+                  id="tab-dashboard"
+                  aria-controls="tabpanel-dashboard"
+                />
                 <Tab
                   label="Depósitos"
                   id="tab-deposits"
