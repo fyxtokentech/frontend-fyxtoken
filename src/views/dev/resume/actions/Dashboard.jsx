@@ -47,44 +47,24 @@ const formatPercentValue = (value) => {
   }).format(numericValue)}%`;
 };
 
-const assets = [
-  {
-    symbol: "TAO",
-    name: "Bittensor · Cripto",
-    quantity: "0,31434",
-    currentValue: "73,15 US$",
-    purchased: "124,56 US$",
-    sold: "53,24 US$",
-    pnl: "+1,82 US$",
-    operations: "3 abiertas · 5 cerradas",
-    badge: "TAO",
+const normalizeBalanceAsset = (asset) => {
+  const quantity = Number(asset?.quantity ?? 0);
+  const currentPrice = Number(asset?.currentPrice ?? 0);
+
+  return {
+    symbol: asset?.name || "",
+    name: `${asset?.name || "Activo"} · Cripto`,
+    quantity,
+    currentValue: quantity * currentPrice,
+    purchased: Number(asset?.purchases ?? 0),
+    sold: Number(asset?.sales ?? 0),
+    pnl: Number(asset?.variation ?? 0),
+    operations: `${Number(asset?.openedOperations ?? 0)} abiertas · ${Number(asset?.closedOperations ?? 0)} cerradas`,
+    badge: asset?.name || "-",
     badgeColor: "#d4af37",
-  },
-  {
-    symbol: "ACH",
-    name: "Alchemy Pay · Cripto",
-    quantity: "8456,87",
-    currentValue: "43,13 US$",
-    purchased: "83,56 US$",
-    sold: "43,42 US$",
-    pnl: "+2,99 US$",
-    operations: "2 abiertas · 4 cerradas",
-    badge: "ACH",
-    badgeColor: "#e7b10a",
-  },
-  {
-    symbol: "XVG",
-    name: "Verge · Cripto",
-    quantity: "16",
-    currentValue: "47,91 US$",
-    purchased: "31,00 US$",
-    sold: "23,05 US$",
-    pnl: "+1,50 US$",
-    operations: "2 abiertas · 4 cerradas",
-    badge: "XVG",
-    badgeColor: "#58c2ff",
-  },
-];
+    currency: asset?.currency || "USDT",
+  };
+};
 
 const feeCards = [
   {
@@ -109,11 +89,15 @@ const feeCards = [
 
 export default function Dashboard() {
   const [selectedAsset, setSelectedAsset] = useState("all");
+  const [balanceAssets, setBalanceAssets] = useState([]);
   const [sortBy, setSortBy] = useState("currentValue");
   const [feeView, setFeeView] = useState({ exchange: "percent", fyx: "percent" });
   const [selectedExchange, setSelectedExchange] = useState("binance");
   const [startDate, setStartDate] = useState(() => dayjs().startOf("year"));
   const [endDate, setEndDate] = useState(dayjs());
+  const [balancePeriod, setBalancePeriod] = useState("most_recent");
+  const [balanceMonth, setBalanceMonth] = useState(dayjs().month());
+  const [balanceWeek, setBalanceWeek] = useState(Math.ceil(dayjs().date() / 7));
   const [portfolioBalance, setPortfolioBalance] = useState(0);
   const [portfolioCurrency, setPortfolioCurrency] = useState("USDT");
   const [portfolioMetrics, setPortfolioMetrics] = useState({
@@ -122,6 +106,77 @@ export default function Dashboard() {
     utilityCurrent: 0,
     currency: "USDT",
   });
+
+  const setBalanceDateRange = (start, end, period = balancePeriod) => {
+    setStartDate(dayjs(start));
+    setEndDate(dayjs(end));
+    setBalancePeriod(period);
+  };
+
+  const handleBalancePeriodChange = (event) => {
+    const period = event.target.value;
+    const today = dayjs();
+
+    if (period === "day") {
+      const date = today.format("YYYY-MM-DD");
+      setBalanceDateRange(date, date, period);
+      return;
+    }
+
+    if (period === "week") {
+      const week = Math.min(4, Math.ceil(today.date() / 7));
+      const start = today.startOf("month").date((week - 1) * 7 + 1);
+      const end = week === 4
+        ? today.endOf("month")
+        : today.startOf("month").date(week * 7);
+      setBalanceMonth(today.month());
+      setBalanceWeek(week);
+      setBalanceDateRange(start.format("YYYY-MM-DD"), end.format("YYYY-MM-DD"), period);
+      return;
+    }
+
+    if (period === "month") {
+      setBalanceMonth(today.month());
+      setBalanceDateRange(
+        today.startOf("month").format("YYYY-MM-DD"),
+        today.endOf("month").format("YYYY-MM-DD"),
+        period
+      );
+      return;
+    }
+
+    setBalancePeriod(period);
+  };
+
+  const handleBalanceMonthChange = (event) => {
+    const month = Number(event.target.value);
+    const monthDate = dayjs().month(month);
+    setBalanceMonth(month);
+    setBalanceWeek(Math.min(4, Math.ceil(monthDate.date() / 7)));
+    setBalanceDateRange(
+      monthDate.startOf("month").format("YYYY-MM-DD"),
+      monthDate.endOf("month").isAfter(dayjs()) ? dayjs().format("YYYY-MM-DD") : monthDate.endOf("month").format("YYYY-MM-DD"),
+      balancePeriod
+    );
+  };
+
+  const handleBalanceWeekChange = (event) => {
+    const week = Number(event.target.value);
+    const monthDate = dayjs().month(balanceMonth);
+    const start = monthDate.startOf("month").date((week - 1) * 7 + 1);
+    const end = week === 4 ? monthDate.endOf("month") : monthDate.startOf("month").date(week * 7);
+    setBalanceWeek(week);
+    setBalanceDateRange(
+      start.format("YYYY-MM-DD"),
+      end.isAfter(dayjs()) ? dayjs().format("YYYY-MM-DD") : end.format("YYYY-MM-DD"),
+      "week"
+    );
+  };
+
+  const handleBalanceDayChange = (value) => {
+    const date = value || dayjs();
+    setBalanceDateRange(date.format("YYYY-MM-DD"), date.format("YYYY-MM-DD"), "day");
+  };
 
   useEffect(() => {
     let isActive = true;
@@ -140,10 +195,10 @@ export default function Dashboard() {
       }
 
       try {
-        const startDateValue = startDate?.format ? startDate.format("YYYY-MM-DD 00:00:00") : dayjs().format("YYYY-MM-DD 00:00:00");
-        const endDateValue = endDate?.format ? endDate.format("YYYY-MM-DD 00:00:00") : dayjs().format("YYYY-MM-DD 00:00:00");
+        const startDateValue = startDate?.format ? startDate.format("YYYY-MM-DD") : dayjs().format("YYYY-MM-DD");
+        const endDateValue = endDate?.format ? endDate.format("YYYY-MM-DD") : dayjs().format("YYYY-MM-DD");
         const response = await fetch(
-          `http://168.231.97.207:8081/exchange/user/${userId}/api/1?startDate=${encodeURIComponent(startDateValue)}&endDate=${encodeURIComponent(endDateValue)}`
+          `http://168.231.97.207:8081/exchange/user/${userId}/balance/actives?startDate=${encodeURIComponent(startDateValue)}&endDate=${encodeURIComponent(endDateValue)}&idApi=1`
         );
 
         if (!response.ok) {
@@ -154,14 +209,19 @@ export default function Dashboard() {
         const data = payload?.data ?? {};
 
         if (isActive) {
-          setPortfolioBalance(Number(data?.balance ?? 0));
-          setPortfolioCurrency(data?.currency || "USDT");
+          if (Array.isArray(data)) {
+            setBalanceAssets(data.map(normalizeBalanceAsset).filter((asset) => asset.symbol));
+          } else {
+            setPortfolioBalance(Number(data?.balance ?? 0));
+            setPortfolioCurrency(data?.currency || "USDT");
+          }
         }
       } catch (error) {
         console.error("Error cargando el balance del exchange:", error);
         if (isActive) {
           setPortfolioBalance(0);
           setPortfolioCurrency("USDT");
+          setBalanceAssets([]);
         }
       }
     };
@@ -237,22 +297,21 @@ export default function Dashboard() {
   const filteredAssets = useMemo(() => {
     const activeAssets =
       selectedAsset === "all"
-        ? assets
-        : assets.filter((asset) => asset.symbol === selectedAsset);
+        ? balanceAssets
+        : balanceAssets.filter((asset) => asset.symbol === selectedAsset);
 
     return [...activeAssets].sort((a, b) => {
-      const aValue = Number.parseFloat(a.currentValue.replace(/[\sUS$.,]/g, "")) || 0;
-      const bValue = Number.parseFloat(b.currentValue.replace(/[\sUS$.,]/g, "")) || 0;
-      const aPnl = Number.parseFloat(a.pnl.replace(/[+\sUS$.,]/g, "")) || 0;
-      const bPnl = Number.parseFloat(b.pnl.replace(/[+\sUS$.,]/g, "")) || 0;
-      const aQty = Number.parseFloat(a.quantity.replace(/[\s.,]/g, "")) || 0;
-      const bQty = Number.parseFloat(b.quantity.replace(/[\s.,]/g, "")) || 0;
-
-      if (sortBy === "pnl") return bPnl - aPnl;
-      if (sortBy === "quantity") return bQty - aQty;
-      return bValue - aValue;
+      if (sortBy === "pnl") return b.pnl - a.pnl;
+      if (sortBy === "quantity") return b.quantity - a.quantity;
+      return b.currentValue - a.currentValue;
     });
-  }, [selectedAsset, sortBy]);
+  }, [balanceAssets, selectedAsset, sortBy]);
+
+  useEffect(() => {
+    if (selectedAsset !== "all" && !balanceAssets.some((asset) => asset.symbol === selectedAsset)) {
+      setSelectedAsset("all");
+    }
+  }, [balanceAssets, selectedAsset]);
 
   return (
     <Box sx={{ color: "#f5f0e8", width: "100%" }}>
@@ -284,14 +343,20 @@ export default function Dashboard() {
             <DatePicker
               label="Desde"
               value={startDate}
-              onChange={(value) => setStartDate(value || dayjs().startOf("year"))}
+              onChange={(value) => {
+                setStartDate(value || dayjs().startOf("year"));
+                setBalancePeriod("most_recent");
+              }}
               format="DD/MM/YYYY"
               slotProps={{ textField: { size: "small", sx: { minWidth: 170, "& .MuiInputBase-root": { color: "#f5f0e8", background: "rgba(255,255,255,0.02)", borderRadius: 1 }, "& .MuiOutlinedInput-notchedOutline": { borderColor: "rgba(255,255,255,0.12)" }, "& .MuiInputLabel-root": { color: "#d8bf7a" }, "& .MuiSvgIcon-root": { color: "#d8bf7a" } } } }}
             />
             <DatePicker
               label="Hasta"
               value={endDate}
-              onChange={(value) => setEndDate(value || dayjs())}
+              onChange={(value) => {
+                setEndDate(value || dayjs());
+                setBalancePeriod("most_recent");
+              }}
               format="DD/MM/YYYY"
               slotProps={{ textField: { size: "small", sx: { minWidth: 170, "& .MuiInputBase-root": { color: "#f5f0e8", background: "rgba(255,255,255,0.02)", borderRadius: 1 }, "& .MuiOutlinedInput-notchedOutline": { borderColor: "rgba(255,255,255,0.12)" }, "& .MuiInputLabel-root": { color: "#d8bf7a" }, "& .MuiSvgIcon-root": { color: "#d8bf7a" } } } }}
             />
@@ -452,6 +517,94 @@ export default function Dashboard() {
         </Typography>
 
         <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5} alignItems="center">
+          <FormControl size="small" sx={{ minWidth: 150 }}>
+            <InputLabel id="balance-period-filter-label" sx={{ color: "#d8bf7a" }}>Período</InputLabel>
+            <Select
+              labelId="balance-period-filter-label"
+              value={balancePeriod}
+              label="Período"
+              onChange={handleBalancePeriodChange}
+              sx={{
+                color: "#f5f0e8",
+                background: "rgba(255,255,255,0.02)",
+                ".MuiOutlinedInput-notchedOutline": { borderColor: "rgba(255,255,255,0.12)" },
+                ".MuiSvgIcon-root": { color: "#d8bf7a" },
+              }}
+              MenuProps={{ disableScrollLock: true }}
+            >
+              <MenuItem value="most_recent">Más recientes</MenuItem>
+              <MenuItem value="day">1 día</MenuItem>
+              <MenuItem value="week">1 semana</MenuItem>
+              <MenuItem value="month">1 mes</MenuItem>
+            </Select>
+          </FormControl>
+
+          {balancePeriod === "day" && (
+            <LocalizationProvider dateAdapter={AdapterDayjs}>
+              <DatePicker
+                label="Seleccionar día"
+                value={dayjs(startDate)}
+                onChange={handleBalanceDayChange}
+                format="DD/MM/YYYY"
+                maxDate={dayjs()}
+                slotProps={{ textField: { size: "small", sx: { minWidth: 160, "& .MuiInputBase-root": { color: "#f5f0e8", background: "rgba(255,255,255,0.02)", borderRadius: 1 }, "& .MuiOutlinedInput-notchedOutline": { borderColor: "rgba(255,255,255,0.12)" }, "& .MuiInputLabel-root": { color: "#d8bf7a" }, "& .MuiSvgIcon-root": { color: "#d8bf7a" } } } }}
+              />
+            </LocalizationProvider>
+          )}
+
+          {balancePeriod === "week" && (
+            <>
+              <FormControl size="small" sx={{ minWidth: 130 }}>
+                <InputLabel id="balance-month-filter-label" sx={{ color: "#d8bf7a" }}>Mes</InputLabel>
+                <Select
+                  labelId="balance-month-filter-label"
+                  value={balanceMonth}
+                  label="Mes"
+                  onChange={handleBalanceMonthChange}
+                  sx={{ color: "#f5f0e8", background: "rgba(255,255,255,0.02)", ".MuiOutlinedInput-notchedOutline": { borderColor: "rgba(255,255,255,0.12)" }, ".MuiSvgIcon-root": { color: "#d8bf7a" } }}
+                >
+                  {Array.from({ length: 12 }, (_, month) => (
+                    <MenuItem key={month} value={month}>{dayjs().month(month).format("MMMM YYYY")}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+              <FormControl size="small" sx={{ minWidth: 130 }}>
+                <InputLabel id="balance-week-filter-label" sx={{ color: "#d8bf7a" }}>Semana</InputLabel>
+                <Select
+                  labelId="balance-week-filter-label"
+                  value={balanceWeek}
+                  label="Semana"
+                  onChange={handleBalanceWeekChange}
+                  sx={{ color: "#f5f0e8", background: "rgba(255,255,255,0.02)", ".MuiOutlinedInput-notchedOutline": { borderColor: "rgba(255,255,255,0.12)" }, ".MuiSvgIcon-root": { color: "#d8bf7a" } }}
+                >
+                  {[1, 2, 3, 4].map((week) => (
+                    <MenuItem key={week} value={week}>Semana {week}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </>
+          )}
+
+          {balancePeriod === "month" && (
+            <FormControl size="small" sx={{ minWidth: 170 }}>
+              <InputLabel id="balance-month-only-filter-label" sx={{ color: "#d8bf7a" }}>Mes</InputLabel>
+              <Select
+                labelId="balance-month-only-filter-label"
+                value={balanceMonth}
+                label="Mes"
+                onChange={handleBalanceMonthChange}
+                sx={{ color: "#f5f0e8", background: "rgba(255,255,255,0.02)", ".MuiOutlinedInput-notchedOutline": { borderColor: "rgba(255,255,255,0.12)" }, ".MuiSvgIcon-root": { color: "#d8bf7a" } }}
+              >
+                {Array.from({ length: 12 }, (_, month) => (
+                  <MenuItem key={month} value={month}>{dayjs().month(month).format("MMMM YYYY")}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          )}
+
+        </Stack>
+
+        <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5} alignItems="center">
           <FormControl size="small" sx={{ minWidth: 170 }}>
             <InputLabel id="asset-filter-label" sx={{ color: "#d8bf7a" }}>Activo</InputLabel>
             <Select
@@ -467,7 +620,7 @@ export default function Dashboard() {
               }}
             >
               <MenuItem value="all">Todos los activos</MenuItem>
-              {assets.map((asset) => (
+              {balanceAssets.map((asset) => (
                 <MenuItem key={asset.symbol} value={asset.symbol}>{asset.symbol}</MenuItem>
               ))}
             </Select>
@@ -547,10 +700,10 @@ export default function Dashboard() {
                   </Stack>
                 </TableCell>
                 <TableCell sx={{ color: "#f0efeb", py: 2.2, borderBottom: "1px solid rgba(255,255,255,0.06)" }}>{asset.quantity}</TableCell>
-                <TableCell sx={{ color: "#f0efeb", py: 2.2, borderBottom: "1px solid rgba(255,255,255,0.06)" }}>{asset.currentValue}</TableCell>
-                <TableCell sx={{ color: "#f0efeb", py: 2.2, borderBottom: "1px solid rgba(255,255,255,0.06)" }}>{asset.purchased}</TableCell>
-                <TableCell sx={{ color: "#f0efeb", py: 2.2, borderBottom: "1px solid rgba(255,255,255,0.06)" }}>{asset.sold}</TableCell>
-                <TableCell sx={{ color: "#d7f28d", fontWeight: 700, py: 2.2, borderBottom: "1px solid rgba(255,255,255,0.06)" }}>{asset.pnl}</TableCell>
+                <TableCell sx={{ color: "#f0efeb", py: 2.2, borderBottom: "1px solid rgba(255,255,255,0.06)" }}>{formatBalanceValue(asset.currentValue, asset.currency)}</TableCell>
+                <TableCell sx={{ color: "#f0efeb", py: 2.2, borderBottom: "1px solid rgba(255,255,255,0.06)" }}>{formatBalanceValue(asset.purchased, asset.currency)}</TableCell>
+                <TableCell sx={{ color: "#f0efeb", py: 2.2, borderBottom: "1px solid rgba(255,255,255,0.06)" }}>{formatBalanceValue(asset.sold, asset.currency)}</TableCell>
+                <TableCell sx={{ color: "#d7f28d", fontWeight: 700, py: 2.2, borderBottom: "1px solid rgba(255,255,255,0.06)" }}>{formatBalanceValue(asset.pnl, asset.currency)}</TableCell>
                 <TableCell sx={{ color: "#b7b2a9", py: 2.2, borderBottom: "1px solid rgba(255,255,255,0.06)" }}>{asset.operations}</TableCell>
               </TableRow>
             ))}
