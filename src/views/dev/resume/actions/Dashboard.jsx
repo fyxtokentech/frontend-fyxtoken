@@ -19,6 +19,12 @@ import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs from "dayjs";
 
+import {
+  HTTPGET_EXCHANGE_USER_BALANCE,
+  HTTPGET_EXCHANGE_USER_BALANCE_ACTIVES,
+  HTTPGET_EXCHANGE_USER_METRICS,
+} from "@api";
+
 const formatBalanceValue = (value, currency = "USDT") => {
   const numericValue = Number(value ?? 0);
   if (!Number.isFinite(numericValue)) {
@@ -195,32 +201,57 @@ export default function Dashboard() {
       }
 
       try {
-        const startDateValue = startDate?.format ? startDate.format("YYYY-MM-DD") : dayjs().format("YYYY-MM-DD");
-        const endDateValue = endDate?.format ? endDate.format("YYYY-MM-DD") : dayjs().format("YYYY-MM-DD");
-        const response = await fetch(
-          `http://168.231.97.207:8081/exchange/user/${userId}/balance/actives?startDate=${encodeURIComponent(startDateValue)}&endDate=${encodeURIComponent(endDateValue)}&idApi=1`
-        );
-
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}`);
-        }
-
-        const payload = await response.json();
-        const data = payload?.data ?? {};
-
-        if (isActive) {
-          if (Array.isArray(data)) {
-            setBalanceAssets(data.map(normalizeBalanceAsset).filter((asset) => asset.symbol));
-          } else {
-            setPortfolioBalance(Number(data?.balance ?? 0));
-            setPortfolioCurrency(data?.currency || "USDT");
-          }
-        }
+        const startDateValue = startDate?.format ? startDate.format("YYYY-MM-DD 00:00:00") : dayjs().format("YYYY-MM-DD 00:00:00");
+        const endDateValue = endDate?.format ? endDate.format("YYYY-MM-DD 00:00:00") : dayjs().format("YYYY-MM-DD 00:00:00");
+        await HTTPGET_EXCHANGE_USER_BALANCE({
+          user_id: userId,
+          startDate: startDateValue,
+          endDate: endDateValue,
+          successful: (payload) => {
+            const data = payload?.data ?? payload ?? {};
+            if (isActive) {
+              setPortfolioBalance(Number(data?.balance ?? 0));
+              setPortfolioCurrency(data?.currency || "USDT");
+            }
+          },
+        });
       } catch (error) {
         console.error("Error cargando el balance del exchange:", error);
         if (isActive) {
           setPortfolioBalance(0);
           setPortfolioCurrency("USDT");
+          setBalanceAssets([]);
+        }
+      }
+    };
+
+    const loadBalanceAssets = async () => {
+      const userProfile = window.currentUser || {};
+      const appConfig = typeof window !== "undefined" ? window.configApp : undefined;
+      const userId = userProfile.user_id || appConfig?.userID || "";
+
+      if (!userId) {
+        return;
+      }
+
+      try {
+        const startDateValue = startDate?.format ? startDate.format("YYYY-MM-DD") : dayjs().format("YYYY-MM-DD");
+        const endDateValue = endDate?.format ? endDate.format("YYYY-MM-DD") : dayjs().format("YYYY-MM-DD");
+        await HTTPGET_EXCHANGE_USER_BALANCE_ACTIVES({
+          user_id: userId,
+          startDate: startDateValue,
+          endDate: endDateValue,
+          idApi: 1,
+          successful: (payload) => {
+            const data = payload?.data ?? payload ?? [];
+            if (isActive && Array.isArray(data)) {
+              setBalanceAssets(data.map(normalizeBalanceAsset).filter((asset) => asset.symbol));
+            }
+          },
+        });
+      } catch (error) {
+        console.error("Error cargando el balance por activo del exchange:", error);
+        if (isActive) {
           setBalanceAssets([]);
         }
       }
@@ -241,24 +272,22 @@ export default function Dashboard() {
       try {
         const startDateValue = startDate?.format ? startDate.format("YYYY-MM-DD 00:00:00") : dayjs().format("YYYY-MM-DD 00:00:00");
         const endDateValue = endDate?.format ? endDate.format("YYYY-MM-DD 00:00:00") : dayjs().format("YYYY-MM-DD 00:00:00");
-        const endpoint = `http://168.231.97.207:8081/exchange/user/${userId}?startDate=${encodeURIComponent(startDateValue)}&endDate=${encodeURIComponent(endDateValue)}`;
-        const response = await fetch(endpoint);
-
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}`);
-        }
-
-        const payload = await response.json();
-        const data = payload?.data ?? {};
-
-        if (isActive) {
-          setPortfolioMetrics({
-            investment: Number(data?.investment ?? 0),
-            utility: Number(data?.utility ?? 0),
-            utilityCurrent: Number(data?.utilityCurrent ?? 0),
-            currency: data?.currency || "USDT",
-          });
-        }
+        await HTTPGET_EXCHANGE_USER_METRICS({
+          user_id: userId,
+          startDate: startDateValue,
+          endDate: endDateValue,
+          successful: (payload) => {
+            const data = payload?.data ?? payload ?? {};
+            if (isActive) {
+              setPortfolioMetrics({
+                investment: Number(data?.investment ?? 0),
+                utility: Number(data?.utility ?? 0),
+                utilityCurrent: Number(data?.utilityCurrent ?? 0),
+                currency: data?.currency || "USDT",
+              });
+            }
+          },
+        });
       } catch (error) {
         console.error("Error cargando el resumen del exchange:", error);
         if (isActive) {
@@ -268,6 +297,7 @@ export default function Dashboard() {
     };
 
     loadPortfolioBalance();
+    loadBalanceAssets();
     loadPortfolioMetrics();
 
     return () => {

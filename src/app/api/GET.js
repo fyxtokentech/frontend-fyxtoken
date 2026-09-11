@@ -2,6 +2,42 @@ import { MAKE_GET, AUTO_PARAMS } from "@jeff-aporta/camaleon";
 
 import { httpdebug } from "./index.js";
 
+// http://localhost:8001/exchange/user/{user_id}/api/1?startDate={startDate}&endDate={endDate}
+export async function HTTPGET_EXCHANGE_USER_BALANCE({ user_id, startDate, endDate, ...rest }) {
+  ({ user_id } = AUTO_PARAMS({ user_id }));
+  return await MAKE_GET({
+    ...rest,
+    ...httpdebug,
+    service: "robot_prototype",
+    buildEndpoint: ({ genpath }) =>
+      genpath(["exchange", "user", user_id, "api", "1"], { startDate, endDate }),
+  });
+}
+
+// http://localhost:8001/exchange/user/{user_id}/balance/actives?startDate={startDate}&endDate={endDate}&idApi={idApi}
+export async function HTTPGET_EXCHANGE_USER_BALANCE_ACTIVES({ user_id, startDate, endDate, idApi = 1, ...rest }) {
+  ({ user_id } = AUTO_PARAMS({ user_id }));
+  return await MAKE_GET({
+    ...rest,
+    ...httpdebug,
+    service: "robot_prototype",
+    buildEndpoint: ({ genpath }) =>
+      genpath(["exchange", "user", user_id, "balance", "actives"], { startDate, endDate, idApi }),
+  });
+}
+
+// http://localhost:8001/exchange/user/{user_id}?startDate={startDate}&endDate={endDate}
+export async function HTTPGET_EXCHANGE_USER_METRICS({ user_id, startDate, endDate, ...rest }) {
+  ({ user_id } = AUTO_PARAMS({ user_id }));
+  return await MAKE_GET({
+    ...rest,
+    ...httpdebug,
+    service: "robot_prototype",
+    buildEndpoint: ({ genpath }) =>
+      genpath(["exchange", "user", user_id], { startDate, endDate }),
+  });
+}
+
 // http://localhost:8000/transactions/most_recent/user/{user_id}/coin/{id_coin}
 export async function HTTPGET_TRANSACTION_MOST_RECENT({
   user_id,
