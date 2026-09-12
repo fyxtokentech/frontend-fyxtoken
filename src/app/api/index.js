@@ -1,17 +1,26 @@
 import { setURLMapAPI, IS_LOCAL } from "@jeff-aporta/camaleon";
 
+const runtimeContext = window.RUNTIME_CONFIG?.API_CONTEXT;
+
 setURLMapAPI({
   getContext: () => {
-    const RETURN = IS_LOCAL && window.isDev() ? "local" : "web";
-    return RETURN;
+    if (runtimeContext === "prov") {
+      return "prov";
+    }
+    //Check is local
+    return IS_LOCAL && window.isDev() ? "local" : "web";
   },
   local: {
     robot_backend: "http://localhost:8000",
-    robot_prototype: "http://168.231.97.207:8001",
+    robot_prototype: "http://localhost:8081",
   },
   web: {
     robot_backend: "http://168.231.97.207:8000", //Cambiar a 8080 y a 8081 para el ambiente de desarrollo
     robot_prototype: "http://168.231.97.207:8001",
+  },
+  prov: {
+    robot_backend: "http://168.231.97.207:8080",
+    robot_prototype: "http://168.231.97.207:8081",
   },
 });
 
