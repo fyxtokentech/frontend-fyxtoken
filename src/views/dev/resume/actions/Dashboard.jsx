@@ -202,7 +202,7 @@ export default function Dashboard() {
 
       try {
         const startDateValue = startDate?.format ? startDate.format("YYYY-MM-DD 00:00:00") : dayjs().format("YYYY-MM-DD 00:00:00");
-        const endDateValue = endDate?.format ? endDate.format("YYYY-MM-DD 00:00:00") : dayjs().format("YYYY-MM-DD 00:00:00");
+        const endDateValue = endDate?.format ? endDate.format("YYYY-MM-DD 23:59:59") : dayjs().format("YYYY-MM-DD 23:59:59");
         await HTTPGET_EXCHANGE_USER_BALANCE({
           user_id: userId,
           startDate: startDateValue,
@@ -236,7 +236,7 @@ export default function Dashboard() {
 
       try {
         const startDateValue = startDate?.format ? startDate.format("YYYY-MM-DD") : dayjs().format("YYYY-MM-DD");
-        const endDateValue = endDate?.format ? endDate.format("YYYY-MM-DD") : dayjs().format("YYYY-MM-DD");
+        const endDateValue = endDate?.format ? endDate.format("YYYY-MM-DD 23:59:59") : dayjs().format("YYYY-MM-DD 23:59:59");
         await HTTPGET_EXCHANGE_USER_BALANCE_ACTIVES({
           user_id: userId,
           startDate: startDateValue,
@@ -271,7 +271,7 @@ export default function Dashboard() {
 
       try {
         const startDateValue = startDate?.format ? startDate.format("YYYY-MM-DD 00:00:00") : dayjs().format("YYYY-MM-DD 00:00:00");
-        const endDateValue = endDate?.format ? endDate.format("YYYY-MM-DD 00:00:00") : dayjs().format("YYYY-MM-DD 00:00:00");
+        const endDateValue = endDate?.format ? endDate.format("YYYY-MM-DD 23:59:59") : dayjs().format("YYYY-MM-DD 23:59:59");
         await HTTPGET_EXCHANGE_USER_METRICS({
           user_id: userId,
           startDate: startDateValue,
