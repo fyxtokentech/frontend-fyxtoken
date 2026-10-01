@@ -12,10 +12,10 @@ setURLMapAPI({
   },
   local: {
     robot_backend: "http://localhost:8000",
-    robot_prototype: "http://localhost:8081",
+    robot_prototype: "http://localhost:8001",
   },
   web: {
-    robot_backend: "http://168.231.97.207:8000", //Cambiar a 8080 y a 8081 para el ambiente de desarrollo
+    robot_backend: "http://168.231.97.207:8000",
     robot_prototype: "http://168.231.97.207:8001",
   },
   prov: {
@@ -23,6 +23,7 @@ setURLMapAPI({
     robot_prototype: "http://168.231.97.207:8081",
   },
 });
+
 
 export const httpdebug = {
   newfetch: ({ url }) => console.log(`NEW fetching URL: ${url}`),

@@ -106,6 +106,7 @@ export default function Dashboard() {
   const [balanceWeek, setBalanceWeek] = useState(Math.ceil(dayjs().date() / 7));
   const [portfolioBalance, setPortfolioBalance] = useState(0);
   const [portfolioCurrency, setPortfolioCurrency] = useState("USDT");
+  const [profitToday, setProfitToday] = useState(0);
   const [portfolioMetrics, setPortfolioMetrics] = useState({
     investment: 0,
     utility: 0,
@@ -203,6 +204,7 @@ export default function Dashboard() {
       try {
         const startDateValue = startDate?.format ? startDate.format("YYYY-MM-DD 00:00:00") : dayjs().format("YYYY-MM-DD 00:00:00");
         const endDateValue = endDate?.format ? endDate.format("YYYY-MM-DD 23:59:59") : dayjs().format("YYYY-MM-DD 23:59:59");
+
         await HTTPGET_EXCHANGE_USER_BALANCE({
           user_id: userId,
           startDate: startDateValue,
@@ -216,7 +218,7 @@ export default function Dashboard() {
           },
         });
       } catch (error) {
-        console.error("Error cargando el balance del exchange:", error);
+        console.error("Error cargando el balance del exchange : ", error);
         if (isActive) {
           setPortfolioBalance(0);
           setPortfolioCurrency("USDT");
@@ -231,6 +233,10 @@ export default function Dashboard() {
       const userId = userProfile.user_id || appConfig?.userID || "";
 
       if (!userId) {
+        if (isActive) {
+          setBalanceAssets([]);
+          setProfitToday(0);
+        }
         return;
       }
 
@@ -244,8 +250,15 @@ export default function Dashboard() {
           idApi: 1,
           successful: (payload) => {
             const data = payload?.data ?? payload ?? [];
-            if (isActive && Array.isArray(data)) {
-              setBalanceAssets(data.map(normalizeBalanceAsset).filter((asset) => asset.symbol));
+            if (isActive) {
+              const assets = Array.isArray(data) ? data : [];
+              const totalProfitToday = assets.reduce((total, asset) => {
+                const assetProfit = Number(asset?.profit_today ?? 0);
+                return total + (Number.isFinite(assetProfit) ? assetProfit : 0);
+              }, 0);
+
+              setBalanceAssets(assets.map(normalizeBalanceAsset).filter((asset) => asset.symbol));
+              setProfitToday(totalProfitToday);
             }
           },
         });
@@ -253,6 +266,7 @@ export default function Dashboard() {
         console.error("Error cargando el balance por activo del exchange:", error);
         if (isActive) {
           setBalanceAssets([]);
+          setProfitToday(0);
         }
       }
     };
@@ -319,9 +333,13 @@ export default function Dashboard() {
         label: "VALOR ACTUAL EN CARTERA",
         value: formatBalanceValue(portfolioBalance, portfolioCurrency),
       },
-      { label: "GANANCIA SI VENDIERAS HOY", value: "-1,54 US$", tone: "danger" },
+      {
+        label: "GANANCIA SI VENDIERAS HOY",
+        value: formatBalanceValue(profitToday, portfolioCurrency),
+        tone: profitToday < 0 ? "danger" : "success",
+      },
     ],
-    [portfolioBalance, portfolioCurrency, portfolioMetrics]
+    [portfolioBalance, portfolioCurrency, portfolioMetrics, profitToday]
   );
 
   const filteredAssets = useMemo(() => {
