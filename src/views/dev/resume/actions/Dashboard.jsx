@@ -733,7 +733,7 @@ export default function Dashboard() {
                 <TableCell sx={{ color: "#f0efeb", py: 2.2, borderBottom: "1px solid rgba(255,255,255,0.06)" }}>{formatBalanceValue(asset.currentValue, asset.currency)}</TableCell>
                 <TableCell sx={{ color: "#f0efeb", py: 2.2, borderBottom: "1px solid rgba(255,255,255,0.06)" }}>{formatBalanceValue(asset.purchased, asset.currency)}</TableCell>
                 <TableCell sx={{ color: "#f0efeb", py: 2.2, borderBottom: "1px solid rgba(255,255,255,0.06)" }}>{formatBalanceValue(asset.sold, asset.currency)}</TableCell>
-                <TableCell sx={{ color: "#d7f28d", fontWeight: 700, py: 2.2, borderBottom: "1px solid rgba(255,255,255,0.06)" }}>{formatBalanceValue(asset.pnl, asset.currency)}</TableCell>
+                <TableCell sx={{ color: asset.pnl <= 0 ? "#ef5350" : "#d7f28d", fontWeight: 700, py: 2.2, borderBottom: "1px solid rgba(255,255,255,0.06)" }}>{formatBalanceValue(asset.pnl, asset.currency)}</TableCell>
                 <TableCell sx={{ color: "#b7b2a9", py: 2.2, borderBottom: "1px solid rgba(255,255,255,0.06)" }}>{asset.operations}</TableCell>
               </TableRow>
             ))}
