@@ -14,15 +14,20 @@ export async function HTTPGET_EXCHANGE_USER_BALANCE({ user_id, startDate, endDat
   });
 }
 
-// http://localhost:8001/exchange/user/{user_id}/balance/actives?startDate={startDate}&endDate={endDate}&idApi={idApi}
-export async function HTTPGET_EXCHANGE_USER_BALANCE_ACTIVES({ user_id, startDate, endDate, idApi = 1, ...rest }) {
+// http://localhost:8001/exchange/user/{user_id}/balance/actives?startDate={startDate}&endDate={endDate}&idApi={idApi}&idCoin={idCoin}
+export async function HTTPGET_EXCHANGE_USER_BALANCE_ACTIVES({ user_id, startDate, endDate, idApi = 1, idCoin, ...rest }) {
   ({ user_id } = AUTO_PARAMS({ user_id }));
   return await MAKE_GET({
     ...rest,
     ...httpdebug,
     service: "robot_prototype",
     buildEndpoint: ({ genpath }) =>
-      genpath(["exchange", "user", user_id, "balance", "actives"], { startDate, endDate, idApi }),
+      genpath(["exchange", "user", user_id, "balance", "actives"], {
+        startDate,
+        endDate,
+        idApi,
+        ...(idCoin != null && idCoin !== "" ? { idCoin } : {}),
+      }),
   });
 }
 

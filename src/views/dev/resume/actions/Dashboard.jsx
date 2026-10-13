@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import {
   Box,
+  CircularProgress,
   Divider,
   FormControl,
   InputLabel,
@@ -56,17 +57,20 @@ const formatPercentValue = (value) => {
 const normalizeBalanceAsset = (asset) => {
   const quantity = Number(asset?.quantity ?? 0);
   const currentPrice = Number(asset?.currentPrice ?? 0);
+  const symbol = asset?.name || asset?.symbol || asset?.coin_symbol || "";
 
   return {
-    symbol: asset?.name || "",
-    name: `${asset?.name || "Activo"} · Cripto`,
+    idCoin: asset?.idCoin ?? asset?.idcoin ?? asset?.id_coin ?? asset?.coinId ?? asset?.coin_id,
+    symbol,
+    name: `${symbol || "Activo"} · Cripto`,
     quantity,
     currentValue: quantity * currentPrice,
     purchased: Number(asset?.purchases ?? 0),
     sold: Number(asset?.sales ?? 0),
     pnl: Number(asset?.variation ?? 0),
+    profitToday: Number(asset?.profit_today ?? 0),
     operations: `${Number(asset?.openedOperations ?? 0)} abiertas · ${Number(asset?.closedOperations ?? 0)} cerradas`,
-    badge: asset?.name || "-",
+    badge: symbol || "-",
     badgeColor: "#d4af37",
     currency: asset?.currency || "USDT",
   };
@@ -94,8 +98,10 @@ const feeCards = [
 ];
 
 export default function Dashboard() {
-  const [selectedAsset, setSelectedAsset] = useState("all");
+  const [selectedCoin, setSelectedCoin] = useState("all");
   const [balanceAssets, setBalanceAssets] = useState([]);
+  const [availableCoins, setAvailableCoins] = useState([]);
+  const [isLoadingBalanceAssets, setIsLoadingBalanceAssets] = useState(false);
   const [sortBy, setSortBy] = useState("currentValue");
   const [feeView, setFeeView] = useState({ exchange: "percent", fyx: "percent" });
   const [selectedExchange, setSelectedExchange] = useState("binance");
@@ -152,7 +158,11 @@ export default function Dashboard() {
       return;
     }
 
-    setBalancePeriod(period);
+    setBalanceDateRange(
+      today.startOf("year").format("YYYY-MM-DD"),
+      today.format("YYYY-MM-DD"),
+      period
+    );
   };
 
   const handleBalanceMonthChange = (event) => {
@@ -227,50 +237,6 @@ export default function Dashboard() {
       }
     };
 
-    const loadBalanceAssets = async () => {
-      const userProfile = window.currentUser || {};
-      const appConfig = typeof window !== "undefined" ? window.configApp : undefined;
-      const userId = userProfile.user_id || appConfig?.userID || "";
-
-      if (!userId) {
-        if (isActive) {
-          setBalanceAssets([]);
-          setProfitToday(0);
-        }
-        return;
-      }
-
-      try {
-        const startDateValue = startDate?.format ? startDate.format("YYYY-MM-DD") : dayjs().format("YYYY-MM-DD");
-        const endDateValue = endDate?.format ? endDate.format("YYYY-MM-DD 23:59:59") : dayjs().format("YYYY-MM-DD 23:59:59");
-        await HTTPGET_EXCHANGE_USER_BALANCE_ACTIVES({
-          user_id: userId,
-          startDate: startDateValue,
-          endDate: endDateValue,
-          idApi: 1,
-          successful: (payload) => {
-            const data = payload?.data ?? payload ?? [];
-            if (isActive) {
-              const assets = Array.isArray(data) ? data : [];
-              const totalProfitToday = assets.reduce((total, asset) => {
-                const assetProfit = Number(asset?.profit_today ?? 0);
-                return total + (Number.isFinite(assetProfit) ? assetProfit : 0);
-              }, 0);
-
-              setBalanceAssets(assets.map(normalizeBalanceAsset).filter((asset) => asset.symbol));
-              setProfitToday(totalProfitToday);
-            }
-          },
-        });
-      } catch (error) {
-        console.error("Error cargando el balance por activo del exchange:", error);
-        if (isActive) {
-          setBalanceAssets([]);
-          setProfitToday(0);
-        }
-      }
-    };
-
     const loadPortfolioMetrics = async () => {
       const userProfile = window.currentUser || {};
       const appConfig = typeof window !== "undefined" ? window.configApp : undefined;
@@ -311,13 +277,84 @@ export default function Dashboard() {
     };
 
     loadPortfolioBalance();
-    loadBalanceAssets();
     loadPortfolioMetrics();
 
     return () => {
       isActive = false;
     };
   }, [startDate, endDate]);
+
+  useEffect(() => {
+    let isActive = true;
+
+    const loadBalanceAssets = async () => {
+      const userProfile = window.currentUser || {};
+      const appConfig = typeof window !== "undefined" ? window.configApp : undefined;
+      const userId = userProfile.user_id || appConfig?.userID || "";
+
+      if (!userId) {
+        setBalanceAssets([]);
+        setProfitToday(0);
+        setAvailableCoins([]);
+        setIsLoadingBalanceAssets(false);
+        return;
+      }
+
+      setIsLoadingBalanceAssets(true);
+      try {
+        const startDateValue = startDate?.format ? startDate.format("YYYY-MM-DD") : dayjs().format("YYYY-MM-DD");
+        const endDateValue = endDate?.format ? endDate.format("YYYY-MM-DD 23:59:59") : dayjs().format("YYYY-MM-DD 23:59:59");
+        await HTTPGET_EXCHANGE_USER_BALANCE_ACTIVES({
+          user_id: userId,
+          startDate: startDateValue,
+          endDate: endDateValue,
+          idApi: 1,
+          ...(selectedCoin !== "all" ? { idCoin: selectedCoin } : {}),
+          successful: (payload) => {
+            const data = payload?.data ?? payload ?? [];
+            if (isActive) {
+              const assets = Array.isArray(data)
+                ? data
+                : Array.isArray(data?.content)
+                  ? data.content
+                  : [];
+              const normalizedAssets = assets.map(normalizeBalanceAsset).filter((asset) => asset.symbol);
+              const totalProfitToday = normalizedAssets.reduce((total, asset) => {
+                const assetProfit = Number(asset.profitToday ?? 0);
+                return total + (Number.isFinite(assetProfit) ? assetProfit : 0);
+              }, 0);
+
+              setBalanceAssets(normalizedAssets);
+              setProfitToday(totalProfitToday);
+
+              if (selectedCoin === "all") {
+                const coins = normalizedAssets
+                  .filter((asset) => asset.idCoin != null)
+                  .map((asset) => ({ id: String(asset.idCoin), symbol: asset.symbol }));
+                setAvailableCoins([...new Map(coins.map((coin) => [coin.id, coin])).values()]);
+              }
+            }
+          },
+        });
+      } catch (error) {
+        console.error("Error cargando el balance por activo del exchange:", error);
+        if (isActive) {
+          setBalanceAssets([]);
+          setProfitToday(0);
+        }
+      } finally {
+        if (isActive) {
+          setIsLoadingBalanceAssets(false);
+        }
+      }
+    };
+
+    loadBalanceAssets();
+
+    return () => {
+      isActive = false;
+    };
+  }, [startDate, endDate, selectedCoin]);
 
   const summaryCards = useMemo(
     () => [
@@ -343,23 +380,12 @@ export default function Dashboard() {
   );
 
   const filteredAssets = useMemo(() => {
-    const activeAssets =
-      selectedAsset === "all"
-        ? balanceAssets
-        : balanceAssets.filter((asset) => asset.symbol === selectedAsset);
-
-    return [...activeAssets].sort((a, b) => {
+    return [...balanceAssets].sort((a, b) => {
       if (sortBy === "pnl") return b.pnl - a.pnl;
       if (sortBy === "quantity") return b.quantity - a.quantity;
       return b.currentValue - a.currentValue;
     });
-  }, [balanceAssets, selectedAsset, sortBy]);
-
-  useEffect(() => {
-    if (selectedAsset !== "all" && !balanceAssets.some((asset) => asset.symbol === selectedAsset)) {
-      setSelectedAsset("all");
-    }
-  }, [balanceAssets, selectedAsset]);
+  }, [balanceAssets, sortBy]);
 
   return (
     <Box sx={{ color: "#f5f0e8", width: "100%" }}>
@@ -657,9 +683,9 @@ export default function Dashboard() {
             <InputLabel id="asset-filter-label" sx={{ color: "#d8bf7a" }}>Activo</InputLabel>
             <Select
               labelId="asset-filter-label"
-              value={selectedAsset}
+              value={selectedCoin}
               label="Activo"
-              onChange={(event) => setSelectedAsset(event.target.value)}
+              onChange={(event) => setSelectedCoin(event.target.value)}
               sx={{
                 color: "#f5f0e8",
                 background: "rgba(255,255,255,0.02)",
@@ -668,10 +694,23 @@ export default function Dashboard() {
               }}
             >
               <MenuItem value="all">Todos los activos</MenuItem>
-              {balanceAssets.map((asset) => (
-                <MenuItem key={asset.symbol} value={asset.symbol}>{asset.symbol}</MenuItem>
+              {availableCoins.map((coin) => (
+                <MenuItem key={coin.id} value={coin.id}>{coin.symbol}</MenuItem>
               ))}
             </Select>
+            {isLoadingBalanceAssets && (
+              <Stack
+                direction="row"
+                spacing={1}
+                alignItems="center"
+                role="status"
+                aria-live="polite"
+                sx={{ mt: 1, color: "#d8bf7a" }}
+              >
+                <CircularProgress size={16} sx={{ color: "#d8bf7a" }} />
+                <Typography sx={{ fontSize: 12 }}>Actualizando activos…</Typography>
+              </Stack>
+            )}
           </FormControl>
 
           <FormControl size="small" sx={{ minWidth: 170 }}>
