@@ -2,15 +2,15 @@ import { MAKE_GET, AUTO_PARAMS } from "@jeff-aporta/camaleon";
 
 import { httpdebug } from "./index.js";
 
-// http://localhost:8001/exchange/user/{user_id}/api/1?startDate={startDate}&endDate={endDate}
-export async function HTTPGET_EXCHANGE_USER_BALANCE({ user_id, startDate, endDate, ...rest }) {
+// http://localhost:8001/exchange/user/{user_id}/api/{idApi}?startDate={startDate}&endDate={endDate}
+export async function HTTPGET_EXCHANGE_USER_BALANCE({ user_id, startDate, endDate, idApi = 1, ...rest }) {
   ({ user_id } = AUTO_PARAMS({ user_id }));
   return await MAKE_GET({
     ...rest,
     ...httpdebug,
     service: "robot_prototype",
     buildEndpoint: ({ genpath }) =>
-      genpath(["exchange", "user", user_id, "api", "1"], { startDate, endDate }),
+      genpath(["exchange", "user", user_id, "api", idApi], { startDate, endDate }),
   });
 }
 
@@ -31,15 +31,20 @@ export async function HTTPGET_EXCHANGE_USER_BALANCE_ACTIVES({ user_id, startDate
   });
 }
 
-// http://localhost:8001/exchange/user/{user_id}?startDate={startDate}&endDate={endDate}
-export async function HTTPGET_EXCHANGE_USER_METRICS({ user_id, startDate, endDate, ...rest }) {
+// http://localhost:8001/exchange/user/{user_id}?startDate={startDate}&endDate={endDate}&idApi={idApi}&idCoin={idCoin}
+export async function HTTPGET_EXCHANGE_USER_METRICS({ user_id, startDate, endDate, idApi, idCoin, ...rest }) {
   ({ user_id } = AUTO_PARAMS({ user_id }));
   return await MAKE_GET({
     ...rest,
     ...httpdebug,
     service: "robot_prototype",
     buildEndpoint: ({ genpath }) =>
-      genpath(["exchange", "user", user_id], { startDate, endDate }),
+      genpath(["exchange", "user", user_id], {
+        startDate,
+        endDate,
+        ...(idApi != null && idApi !== "" ? { idApi } : {}),
+        ...(idCoin != null && idCoin !== "" ? { idCoin } : {}),
+      }),
   });
 }
 
@@ -148,6 +153,16 @@ export async function HTTPGET_API_PLATFORMS({ ...rest } = {}) {
     ...httpdebug,
     service: "robot_backend",
     buildEndpoint: ({ genpath }) => genpath(["api", "third", "platforms"]),
+  });
+}
+
+// http://localhost:8000/api/third/platforms/options
+export async function HTTPGET_API_PLATFORM_OPTIONS({ ...rest } = {}) {
+  return await MAKE_GET({
+    ...rest,
+    ...httpdebug,
+    service: "robot_backend",
+    buildEndpoint: ({ genpath }) => genpath(["api", "third", "platforms", "options"]),
   });
 }
 

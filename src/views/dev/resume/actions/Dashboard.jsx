@@ -21,10 +21,52 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs from "dayjs";
 
 import {
+  HTTPGET_API_PLATFORM_OPTIONS,
   HTTPGET_EXCHANGE_USER_BALANCE,
   HTTPGET_EXCHANGE_USER_BALANCE_ACTIVES,
   HTTPGET_EXCHANGE_USER_METRICS,
 } from "@api";
+
+const normalizeApiPlatformOptions = (payload) => {
+  const data = payload?.data ?? payload ?? [];
+  const rows = Array.isArray(data?.content) ? data.content : data;
+
+  if (!Array.isArray(rows)) {
+    throw new TypeError("La respuesta de plataformas de API no tiene un formato válido.");
+  }
+
+  if (rows.length === 0) {
+    return [];
+  }
+
+  if (!Array.isArray(rows[0])) {
+    if (rows.some((platform) =>
+      !platform
+      || platform.idapi === undefined
+      || platform.idapi === null
+      || !platform.name_platform
+    )) {
+      throw new TypeError("La respuesta de plataformas no contiene identificadores y nombres válidos.");
+    }
+    return rows;
+  }
+
+  const [headers, ...values] = rows;
+  if (!headers.includes("idapi") || !headers.includes("name_platform")) {
+    throw new TypeError("La respuesta de plataformas no contiene las columnas esperadas.");
+  }
+  const platforms = values.map((row) =>
+    Object.fromEntries(headers.map((header, index) => [header, row[index]]))
+  );
+  if (platforms.some((platform) =>
+    platform.idapi === undefined
+    || platform.idapi === null
+    || !platform.name_platform
+  )) {
+    throw new TypeError("La respuesta de plataformas no contiene identificadores y nombres válidos.");
+  }
+  return platforms;
+};
 
 const formatBalanceValue = (value, currency = "USDT") => {
   const numericValue = Number(value ?? 0);
@@ -98,6 +140,9 @@ const feeCards = [
 ];
 
 export default function Dashboard() {
+  const [selectedApi, setSelectedApi] = useState("");
+  const [apiPlatforms, setApiPlatforms] = useState([]);
+  const [isLoadingApiPlatforms, setIsLoadingApiPlatforms] = useState(true);
   const [selectedCoin, setSelectedCoin] = useState("all");
   const [balanceAssets, setBalanceAssets] = useState([]);
   const [availableCoins, setAvailableCoins] = useState([]);
@@ -119,6 +164,70 @@ export default function Dashboard() {
     utilityCurrent: 0,
     currency: "USDT",
   });
+
+  useEffect(() => {
+    let isActive = true;
+
+    const loadApiPlatforms = async () => {
+      try {
+        await HTTPGET_API_PLATFORM_OPTIONS({
+          successful: (payload) => {
+            try {
+              const platforms = normalizeApiPlatformOptions(payload)
+                .map((platform) => ({
+                  id: String(platform?.idapi ?? ""),
+                  name: platform?.name_platform || "",
+                }))
+                .filter((platform) => platform.id && platform.name);
+
+              if (isActive) {
+                setApiPlatforms(platforms);
+                setSelectedApi((currentApi) => {
+                  if (platforms.some((platform) => platform.id === currentApi)) {
+                    return currentApi;
+                  }
+                  return platforms.find((platform) => platform.id === "1")?.id
+                    || platforms[0]?.id
+                    || "";
+                });
+              }
+            } catch (error) {
+              console.error("Error procesando las plataformas de API:", error);
+              if (isActive) {
+                setApiPlatforms([]);
+                setSelectedApi("");
+              }
+            } finally {
+              if (isActive) {
+                setIsLoadingApiPlatforms(false);
+              }
+            }
+          },
+          failure: (error) => {
+            console.error("Error cargando las plataformas de API:", error);
+            if (isActive) {
+              setApiPlatforms([]);
+              setSelectedApi("");
+              setIsLoadingApiPlatforms(false);
+            }
+          },
+        });
+      } catch (error) {
+        console.error("Error cargando las plataformas de API:", error);
+        if (isActive) {
+          setApiPlatforms([]);
+          setSelectedApi("");
+          setIsLoadingApiPlatforms(false);
+        }
+      }
+    };
+
+    loadApiPlatforms();
+
+    return () => {
+      isActive = false;
+    };
+  }, []);
 
   const setBalanceDateRange = (start, end, period = balancePeriod) => {
     setStartDate(dayjs(start));
@@ -203,7 +312,7 @@ export default function Dashboard() {
       const appConfig = typeof window !== "undefined" ? window.configApp : undefined;
       const userId = userProfile.user_id || appConfig?.userID || "";
 
-      if (!userId) {
+      if (!userId || !selectedApi) {
         if (isActive) {
           setPortfolioBalance(0);
           setPortfolioCurrency("USDT");
@@ -217,6 +326,7 @@ export default function Dashboard() {
 
         await HTTPGET_EXCHANGE_USER_BALANCE({
           user_id: userId,
+          idApi: selectedApi,
           startDate: startDateValue,
           endDate: endDateValue,
           successful: (payload) => {
@@ -242,7 +352,7 @@ export default function Dashboard() {
       const appConfig = typeof window !== "undefined" ? window.configApp : undefined;
       const userId = userProfile.user_id || appConfig?.userID || "";
 
-      if (!userId) {
+      if (!userId || !selectedApi) {
         if (isActive) {
           setPortfolioMetrics({ investment: 0, utility: 0, utilityCurrent: 0, currency: "USDT" });
         }
@@ -254,8 +364,10 @@ export default function Dashboard() {
         const endDateValue = endDate?.format ? endDate.format("YYYY-MM-DD 23:59:59") : dayjs().format("YYYY-MM-DD 23:59:59");
         await HTTPGET_EXCHANGE_USER_METRICS({
           user_id: userId,
+          idApi: selectedApi,
           startDate: startDateValue,
           endDate: endDateValue,
+          ...(selectedCoin !== "all" ? { idCoin: selectedCoin } : {}),
           successful: (payload) => {
             const data = payload?.data ?? payload ?? {};
             if (isActive) {
@@ -282,7 +394,7 @@ export default function Dashboard() {
     return () => {
       isActive = false;
     };
-  }, [startDate, endDate]);
+  }, [startDate, endDate, selectedCoin, selectedApi]);
 
   useEffect(() => {
     let isActive = true;
@@ -292,7 +404,7 @@ export default function Dashboard() {
       const appConfig = typeof window !== "undefined" ? window.configApp : undefined;
       const userId = userProfile.user_id || appConfig?.userID || "";
 
-      if (!userId) {
+      if (!userId || !selectedApi) {
         setBalanceAssets([]);
         setProfitToday(0);
         setAvailableCoins([]);
@@ -308,7 +420,7 @@ export default function Dashboard() {
           user_id: userId,
           startDate: startDateValue,
           endDate: endDateValue,
-          idApi: 1,
+          idApi: selectedApi,
           ...(selectedCoin !== "all" ? { idCoin: selectedCoin } : {}),
           successful: (payload) => {
             const data = payload?.data ?? payload ?? [];
@@ -354,7 +466,7 @@ export default function Dashboard() {
     return () => {
       isActive = false;
     };
-  }, [startDate, endDate, selectedCoin]);
+  }, [startDate, endDate, selectedCoin, selectedApi]);
 
   const summaryCards = useMemo(
     () => [
@@ -386,6 +498,11 @@ export default function Dashboard() {
       return b.currentValue - a.currentValue;
     });
   }, [balanceAssets, sortBy]);
+  const selectedCoinSymbol = selectedCoin === "all"
+    ? ""
+    : availableCoins.find((coin) => coin.id === selectedCoin)?.symbol
+      || balanceAssets.find((asset) => String(asset.idCoin) === selectedCoin)?.symbol
+      || "";
 
   return (
     <Box sx={{ color: "#f5f0e8", width: "100%" }}>
@@ -404,7 +521,7 @@ export default function Dashboard() {
           Operación real
         </Typography>
         <Typography sx={{ fontWeight: 800, fontSize: { xs: 34, md: 46 }, lineHeight: 1.1, color: "#f3f0eb" }}>
-          Balance de tus operaciones
+          Balance de tus operaciones{selectedCoinSymbol ? ` - ${selectedCoinSymbol}` : ""}
         </Typography>
         <Typography sx={{ color: "#b7b2a9", mt: 1.5, fontSize: 18 }}>
           Compras y ventas reales que el Uninvet ejecutó en tus cuentas.
@@ -680,6 +797,33 @@ export default function Dashboard() {
 
         <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5} alignItems="center">
           <FormControl size="small" sx={{ minWidth: 170 }}>
+            <InputLabel id="exchange-filter-label" sx={{ color: "#d8bf7a" }}>Exchange</InputLabel>
+            <Select
+              labelId="exchange-filter-label"
+              value={selectedApi}
+              label="Exchange"
+              onChange={(event) => setSelectedApi(event.target.value)}
+              disabled={isLoadingApiPlatforms || apiPlatforms.length === 0}
+              sx={{
+                color: "#f5f0e8",
+                background: "rgba(255,255,255,0.02)",
+                ".MuiOutlinedInput-notchedOutline": { borderColor: "rgba(255,255,255,0.12)" },
+                ".MuiSvgIcon-root": { color: "#d8bf7a" },
+              }}
+            >
+              {isLoadingApiPlatforms ? (
+                <MenuItem value="">Cargando exchanges…</MenuItem>
+              ) : apiPlatforms.length === 0 ? (
+                <MenuItem value="">Sin exchanges disponibles</MenuItem>
+              ) : (
+                apiPlatforms.map((platform) => (
+                  <MenuItem key={platform.id} value={platform.id}>{platform.name}</MenuItem>
+                ))
+              )}
+            </Select>
+          </FormControl>
+
+          <FormControl size="small" sx={{ minWidth: 170 }}>
             <InputLabel id="asset-filter-label" sx={{ color: "#d8bf7a" }}>Activo</InputLabel>
             <Select
               labelId="asset-filter-label"
@@ -698,19 +842,6 @@ export default function Dashboard() {
                 <MenuItem key={coin.id} value={coin.id}>{coin.symbol}</MenuItem>
               ))}
             </Select>
-            {isLoadingBalanceAssets && (
-              <Stack
-                direction="row"
-                spacing={1}
-                alignItems="center"
-                role="status"
-                aria-live="polite"
-                sx={{ mt: 1, color: "#d8bf7a" }}
-              >
-                <CircularProgress size={16} sx={{ color: "#d8bf7a" }} />
-                <Typography sx={{ fontSize: 12 }}>Actualizando activos…</Typography>
-              </Stack>
-            )}
           </FormControl>
 
           <FormControl size="small" sx={{ minWidth: 170 }}>
@@ -799,6 +930,51 @@ export default function Dashboard() {
       </TableContainer>
 
       <Divider sx={{ my: 3, borderColor: "rgba(255,255,255,0.08)" }} />
+      {isLoadingBalanceAssets && (
+        <Box
+          role="status"
+          aria-live="polite"
+          sx={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 1500,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            p: 2,
+            background: "rgba(10, 10, 10, 0.72)",
+            backdropFilter: "blur(5px)",
+          }}
+        >
+          <Stack
+            spacing={2}
+            alignItems="center"
+            sx={{
+              minWidth: 240,
+              px: 4,
+              py: 3.5,
+              borderRadius: 2,
+              border: "1px solid rgba(216, 191, 122, 0.3)",
+              background: "linear-gradient(145deg, rgba(30, 29, 26, 0.98), rgba(19, 19, 18, 0.98))",
+              boxShadow: "0 16px 48px rgba(0, 0, 0, 0.5)",
+              color: "#f5f0e8",
+            }}
+          >
+            <CircularProgress
+              size={64}
+              thickness={3.5}
+              sx={{ color: "#d8bf7a" }}
+              aria-label="Cargando información de activos"
+            />
+            <Typography sx={{ fontWeight: 700, fontSize: 16 }}>
+              Actualizando información
+            </Typography>
+            <Typography sx={{ color: "#b7b2a9", fontSize: 13, textAlign: "center" }}>
+              Estamos cargando los datos del activo seleccionado…
+            </Typography>
+          </Stack>
+        </Box>
+      )}
     </Box>
   );
 }
