@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   Box,
   CircularProgress,
@@ -26,6 +26,59 @@ import {
   HTTPGET_EXCHANGE_USER_BALANCE_ACTIVES,
   HTTPGET_EXCHANGE_USER_METRICS,
 } from "@api";
+
+const BALANCE_DATE_RANGE_STORAGE_KEY = "fyxtoken-dashboard-balance-date-range";
+const BALANCE_DATE_RANGE_TTL_MS = 60 * 60 * 1000;
+
+const readStoredBalanceDateRange = () => {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  try {
+    const storedValue = window.localStorage.getItem(BALANCE_DATE_RANGE_STORAGE_KEY);
+    if (!storedValue) {
+      return null;
+    }
+
+    const savedRange = JSON.parse(storedValue);
+    const startDate = dayjs(savedRange?.startDate);
+    const endDate = dayjs(savedRange?.endDate);
+    if (
+      !Number.isFinite(savedRange?.expiresAt)
+      || savedRange.expiresAt <= Date.now()
+      || !startDate.isValid()
+      || !endDate.isValid()
+    ) {
+      window.localStorage.removeItem(BALANCE_DATE_RANGE_STORAGE_KEY);
+      return null;
+    }
+
+    return { startDate, endDate };
+  } catch (error) {
+    console.error("Error leyendo el rango de fechas guardado:", error);
+    return null;
+  }
+};
+
+const storeBalanceDateRange = (startDate, endDate) => {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  try {
+    window.localStorage.setItem(
+      BALANCE_DATE_RANGE_STORAGE_KEY,
+      JSON.stringify({
+        startDate: startDate.format("YYYY-MM-DD"),
+        endDate: endDate.format("YYYY-MM-DD"),
+        expiresAt: Date.now() + BALANCE_DATE_RANGE_TTL_MS,
+      })
+    );
+  } catch (error) {
+    console.error("Error guardando el rango de fechas:", error);
+  }
+};
 
 const normalizeApiPlatformOptions = (payload) => {
   const data = payload?.data ?? payload ?? [];
@@ -150,12 +203,14 @@ export default function Dashboard() {
   const [sortBy, setSortBy] = useState("currentValue");
   const [feeView, setFeeView] = useState({ exchange: "percent", fyx: "percent" });
   const [selectedExchange, setSelectedExchange] = useState("binance");
-  const [startDate, setStartDate] = useState(() => dayjs().startOf("year"));
-  const [endDate, setEndDate] = useState(dayjs());
+  const [initialBalanceDateRange] = useState(readStoredBalanceDateRange);
+  const [startDate, setStartDate] = useState(() => initialBalanceDateRange?.startDate || dayjs().startOf("month"));
+  const [endDate, setEndDate] = useState(() => initialBalanceDateRange?.endDate || dayjs());
   const [balancePeriod, setBalancePeriod] = useState("most_recent");
   const [balanceMonth, setBalanceMonth] = useState(dayjs().month());
   const [balanceWeek, setBalanceWeek] = useState(Math.ceil(dayjs().date() / 7));
   const [portfolioBalance, setPortfolioBalance] = useState(0);
+  const hasLoadedPortfolioBalance = useRef(false);
   const [portfolioCurrency, setPortfolioCurrency] = useState("USDT");
   const [profitToday, setProfitToday] = useState(0);
   const [portfolioMetrics, setPortfolioMetrics] = useState({
@@ -230,9 +285,12 @@ export default function Dashboard() {
   }, []);
 
   const setBalanceDateRange = (start, end, period = balancePeriod) => {
-    setStartDate(dayjs(start));
-    setEndDate(dayjs(end));
+    const nextStartDate = dayjs(start);
+    const nextEndDate = dayjs(end);
+    setStartDate(nextStartDate);
+    setEndDate(nextEndDate);
     setBalancePeriod(period);
+    storeBalanceDateRange(nextStartDate, nextEndDate);
   };
 
   const handleBalancePeriodChange = (event) => {
@@ -307,46 +365,6 @@ export default function Dashboard() {
   useEffect(() => {
     let isActive = true;
 
-    const loadPortfolioBalance = async () => {
-      const userProfile = window.currentUser || {};
-      const appConfig = typeof window !== "undefined" ? window.configApp : undefined;
-      const userId = userProfile.user_id || appConfig?.userID || "";
-
-      if (!userId || !selectedApi) {
-        if (isActive) {
-          setPortfolioBalance(0);
-          setPortfolioCurrency("USDT");
-        }
-        return;
-      }
-
-      try {
-        const startDateValue = startDate?.format ? startDate.format("YYYY-MM-DD 00:00:00") : dayjs().format("YYYY-MM-DD 00:00:00");
-        const endDateValue = endDate?.format ? endDate.format("YYYY-MM-DD 23:59:59") : dayjs().format("YYYY-MM-DD 23:59:59");
-
-        await HTTPGET_EXCHANGE_USER_BALANCE({
-          user_id: userId,
-          idApi: selectedApi,
-          startDate: startDateValue,
-          endDate: endDateValue,
-          successful: (payload) => {
-            const data = payload?.data ?? payload ?? {};
-            if (isActive) {
-              setPortfolioBalance(Number(data?.balance ?? 0));
-              setPortfolioCurrency(data?.currency || "USDT");
-            }
-          },
-        });
-      } catch (error) {
-        console.error("Error cargando el balance del exchange : ", error);
-        if (isActive) {
-          setPortfolioBalance(0);
-          setPortfolioCurrency("USDT");
-          setBalanceAssets([]);
-        }
-      }
-    };
-
     const loadPortfolioMetrics = async () => {
       const userProfile = window.currentUser || {};
       const appConfig = typeof window !== "undefined" ? window.configApp : undefined;
@@ -388,13 +406,52 @@ export default function Dashboard() {
       }
     };
 
-    loadPortfolioBalance();
     loadPortfolioMetrics();
 
     return () => {
       isActive = false;
     };
   }, [startDate, endDate, selectedCoin, selectedApi]);
+
+  useEffect(() => {
+    if (!selectedApi || hasLoadedPortfolioBalance.current) {
+      return;
+    }
+
+    const userProfile = window.currentUser || {};
+    const appConfig = typeof window !== "undefined" ? window.configApp : undefined;
+    const userId = userProfile.user_id || appConfig?.userID || "";
+
+    if (!userId) {
+      return;
+    }
+
+    hasLoadedPortfolioBalance.current = true;
+    const startDateValue = startDate?.format ? startDate.format("YYYY-MM-DD 00:00:00") : dayjs().format("YYYY-MM-DD 00:00:00");
+    const endDateValue = endDate?.format ? endDate.format("YYYY-MM-DD 23:59:59") : dayjs().format("YYYY-MM-DD 23:59:59");
+
+    const loadPortfolioBalance = async () => {
+      try {
+        await HTTPGET_EXCHANGE_USER_BALANCE({
+          user_id: userId,
+          idApi: selectedApi,
+          startDate: startDateValue,
+          endDate: endDateValue,
+          successful: (payload) => {
+            const data = payload?.data ?? payload ?? {};
+            setPortfolioBalance(Number(data?.balance ?? 0));
+            setPortfolioCurrency(data?.currency || "USDT");
+          },
+        });
+      } catch (error) {
+        console.error("Error cargando el balance del exchange : ", error);
+        setPortfolioBalance(0);
+        setPortfolioCurrency("USDT");
+      }
+    };
+
+    loadPortfolioBalance();
+  }, [selectedApi, startDate, endDate]);
 
   useEffect(() => {
     let isActive = true;
@@ -535,8 +592,7 @@ export default function Dashboard() {
               label="Desde"
               value={startDate}
               onChange={(value) => {
-                setStartDate(value || dayjs().startOf("year"));
-                setBalancePeriod("most_recent");
+                setBalanceDateRange(value || dayjs().startOf("month"), endDate, "most_recent");
               }}
               format="DD/MM/YYYY"
               slotProps={{ textField: { size: "small", sx: { minWidth: 170, "& .MuiInputBase-root": { color: "#f5f0e8", background: "rgba(255,255,255,0.02)", borderRadius: 1 }, "& .MuiOutlinedInput-notchedOutline": { borderColor: "rgba(255,255,255,0.12)" }, "& .MuiInputLabel-root": { color: "#d8bf7a" }, "& .MuiSvgIcon-root": { color: "#d8bf7a" } } } }}
@@ -545,8 +601,7 @@ export default function Dashboard() {
               label="Hasta"
               value={endDate}
               onChange={(value) => {
-                setEndDate(value || dayjs());
-                setBalancePeriod("most_recent");
+                setBalanceDateRange(startDate, value || dayjs(), "most_recent");
               }}
               format="DD/MM/YYYY"
               slotProps={{ textField: { size: "small", sx: { minWidth: 170, "& .MuiInputBase-root": { color: "#f5f0e8", background: "rgba(255,255,255,0.02)", borderRadius: 1 }, "& .MuiOutlinedInput-notchedOutline": { borderColor: "rgba(255,255,255,0.12)" }, "& .MuiInputLabel-root": { color: "#d8bf7a" }, "& .MuiSvgIcon-root": { color: "#d8bf7a" } } } }}
@@ -866,14 +921,15 @@ export default function Dashboard() {
         </Stack>
       </Box>
 
-      <TableContainer
-        sx={{
-          background: "rgba(255,255,255,0.01)",
-          borderRadius: 1.5,
-          border: "1px solid rgba(255,255,255,0.08)",
-          overflow: "hidden",
-        }}
-      >
+      <Box sx={{ position: "relative", borderRadius: 1.5 }}>
+        <TableContainer
+          sx={{
+            background: "rgba(255,255,255,0.01)",
+            borderRadius: 1.5,
+            border: "1px solid rgba(255,255,255,0.08)",
+            overflow: "hidden",
+          }}
+        >
         <Table>
           <TableHead>
             <TableRow sx={{ background: "rgba(255,255,255,0.02)" }}>
@@ -927,54 +983,56 @@ export default function Dashboard() {
             ))}
           </TableBody>
         </Table>
-      </TableContainer>
-
-      <Divider sx={{ my: 3, borderColor: "rgba(255,255,255,0.08)" }} />
-      {isLoadingBalanceAssets && (
-        <Box
-          role="status"
-          aria-live="polite"
-          sx={{
-            position: "fixed",
-            inset: 0,
-            zIndex: 1500,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            p: 2,
-            background: "rgba(10, 10, 10, 0.72)",
-            backdropFilter: "blur(5px)",
-          }}
-        >
-          <Stack
-            spacing={2}
-            alignItems="center"
+        </TableContainer>
+        {isLoadingBalanceAssets && (
+          <Box
+            role="status"
+            aria-live="polite"
             sx={{
-              minWidth: 240,
-              px: 4,
-              py: 3.5,
-              borderRadius: 2,
-              border: "1px solid rgba(216, 191, 122, 0.3)",
-              background: "linear-gradient(145deg, rgba(30, 29, 26, 0.98), rgba(19, 19, 18, 0.98))",
-              boxShadow: "0 16px 48px rgba(0, 0, 0, 0.5)",
-              color: "#f5f0e8",
+              position: "absolute",
+              inset: 0,
+              zIndex: 1,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              p: 2,
+              borderRadius: 1.5,
+              background: "rgba(10, 10, 10, 0.5)",
+              backdropFilter: "blur(5px)",
             }}
           >
-            <CircularProgress
-              size={64}
-              thickness={3.5}
-              sx={{ color: "#d8bf7a" }}
-              aria-label="Cargando información de activos"
-            />
-            <Typography sx={{ fontWeight: 700, fontSize: 16 }}>
-              Actualizando información
-            </Typography>
-            <Typography sx={{ color: "#b7b2a9", fontSize: 13, textAlign: "center" }}>
-              Estamos cargando los datos del activo seleccionado…
-            </Typography>
-          </Stack>
-        </Box>
-      )}
+            <Stack
+              spacing={1}
+              alignItems="center"
+              sx={{
+                minWidth: 190,
+                px: 2.5,
+                py: 2,
+                borderRadius: 1.5,
+                border: "1px solid rgba(216, 191, 122, 0.3)",
+                background: "linear-gradient(145deg, rgba(30, 29, 26, 0.98), rgba(19, 19, 18, 0.98))",
+                boxShadow: "0 10px 28px rgba(0, 0, 0, 0.4)",
+                color: "#f5f0e8",
+              }}
+            >
+              <CircularProgress
+                size={36}
+                thickness={4}
+                sx={{ color: "#d8bf7a" }}
+                aria-label="Cargando información de activos"
+              />
+              <Typography sx={{ fontWeight: 700, fontSize: 14 }}>
+                Actualizando información
+              </Typography>
+              <Typography sx={{ color: "#b7b2a9", fontSize: 11, textAlign: "center" }}>
+                Estamos cargando los datos del activo seleccionado…
+              </Typography>
+            </Stack>
+          </Box>
+        )}
+      </Box>
+
+      <Divider sx={{ my: 3, borderColor: "rgba(255,255,255,0.08)" }} />
     </Box>
   );
 }
