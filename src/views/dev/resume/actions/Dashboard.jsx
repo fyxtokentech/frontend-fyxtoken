@@ -174,19 +174,17 @@ const normalizeBalanceAsset = (asset) => {
 const feeCards = [
   {
     key: "exchange",
-    title: "FEE CARGADO POR EL EXCHANGE",
-    exchanges: [
-      { key: "binance", label: "Binance", percentValue: "0.10%", usdValue: "2.75 US$" },
-      { key: "kraken", label: "Kraken", percentValue: "0.12%", usdValue: "3.30 US$" },
-    ],
+    title: "FEE CARGADO POR",
+    amountField: "fee",
+    percentValue: "0.10%",
     description: "Comisión estimada aplicada por el exchange en operaciones.",
     accent: "#f7d98c",
   },
   {
     key: "fyx",
     title: "FEE CARGADO POR FYXTOKEN",
+    amountField: "companyFee",
     percentValue: "0.05%",
-    usdValue: "1.37 US$",
     description: "Comisión aplicada por FyxToken por gestión y soporte.",
     accent: "#d7f28d",
   },
@@ -201,8 +199,7 @@ export default function Dashboard() {
   const [availableCoins, setAvailableCoins] = useState([]);
   const [isLoadingBalanceAssets, setIsLoadingBalanceAssets] = useState(false);
   const [sortBy, setSortBy] = useState("currentValue");
-  const [feeView, setFeeView] = useState({ exchange: "percent", fyx: "percent" });
-  const [selectedExchange, setSelectedExchange] = useState("binance");
+  const [feeView, setFeeView] = useState({ exchange: "usdt", fyx: "usdt" });
   const [initialBalanceDateRange] = useState(readStoredBalanceDateRange);
   const [startDate, setStartDate] = useState(() => initialBalanceDateRange?.startDate || dayjs().startOf("month"));
   const [endDate, setEndDate] = useState(() => initialBalanceDateRange?.endDate || dayjs());
@@ -218,6 +215,8 @@ export default function Dashboard() {
     utility: 0,
     utilityCurrent: 0,
     currency: "USDT",
+    fee: 0,
+    companyFee: 0,
   });
 
   useEffect(() => {
@@ -372,7 +371,7 @@ export default function Dashboard() {
 
       if (!userId || !selectedApi) {
         if (isActive) {
-          setPortfolioMetrics({ investment: 0, utility: 0, utilityCurrent: 0, currency: "USDT" });
+          setPortfolioMetrics({ investment: 0, utility: 0, utilityCurrent: 0, currency: "USDT", fee: 0, companyFee: 0 });
         }
         return;
       }
@@ -394,6 +393,8 @@ export default function Dashboard() {
                 utility: Number(data?.utility ?? 0),
                 utilityCurrent: Number(data?.utilityCurrent ?? 0),
                 currency: data?.currency || "USDT",
+                fee: Number(data?.fee ?? 0),
+                companyFee: Number(data?.companyFee ?? 0),
               });
             }
           },
@@ -401,7 +402,7 @@ export default function Dashboard() {
       } catch (error) {
         console.error("Error cargando el resumen del exchange:", error);
         if (isActive) {
-          setPortfolioMetrics({ investment: 0, utility: 0, utilityCurrent: 0, currency: "USDT" });
+          setPortfolioMetrics({ investment: 0, utility: 0, utilityCurrent: 0, currency: "USDT", fee: 0, companyFee: 0 });
         }
       }
     };
@@ -651,10 +652,13 @@ export default function Dashboard() {
 
       <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "repeat(3, minmax(0, 1fr))" }, gap: 2, mb: 4 }}>
         {feeCards.map((card) => {
-          const selectedExchangeData = card.exchanges?.find((exchange) => exchange.key === selectedExchange) ?? card.exchanges?.[0];
-          const currentValue = feeView[card.key] === "usd"
-            ? (selectedExchangeData?.usdValue ?? card.usdValue)
-            : (selectedExchangeData?.percentValue ?? card.percentValue);
+          const selectedPlatform = apiPlatforms.find((platform) => platform.id === selectedApi);
+          const currentValue = feeView[card.key] === "usdt"
+            ? formatBalanceValue(portfolioMetrics[card.amountField], "USDT")
+            : card.percentValue;
+          const cardTitle = card.key === "exchange"
+            ? `${card.title} ${selectedPlatform?.name || "EL EXCHANGE"}`
+            : card.title;
 
           return (
             <Box
@@ -672,33 +676,8 @@ export default function Dashboard() {
             >
               <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 1, mb: 1, flexWrap: "wrap" }}>
                 <Typography sx={{ textTransform: "uppercase", letterSpacing: 1.2, color: "#a6a29d", fontSize: 11, fontWeight: 700 }}>
-                  {card.title}
+                  {cardTitle}
                 </Typography>
-
-                {card.exchanges && (
-                  <FormControl size="small" sx={{ minWidth: 125 }}>
-                    <InputLabel id="exchange-fee-filter-label" sx={{ color: "#d8bf7a", fontSize: 12 }}>
-                      Exchange
-                    </InputLabel>
-                    <Select
-                      labelId="exchange-fee-filter-label"
-                      value={selectedExchange}
-                      label="Exchange"
-                      onChange={(event) => setSelectedExchange(event.target.value)}
-                      sx={{
-                        color: "#f5f0e8",
-                        background: "rgba(255,255,255,0.02)",
-                        ".MuiOutlinedInput-notchedOutline": { borderColor: "rgba(255,255,255,0.12)" },
-                        ".MuiSvgIcon-root": { color: "#d8bf7a" },
-                        fontSize: 12,
-                      }}
-                    >
-                      {card.exchanges.map((exchange) => (
-                        <MenuItem key={exchange.key} value={exchange.key}>{exchange.label}</MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                )}
 
                 <FormControl size="small" sx={{ minWidth: 110 }}>
                   <Select
@@ -718,7 +697,7 @@ export default function Dashboard() {
                     }}
                   >
                     <MenuItem value="percent">%</MenuItem>
-                    <MenuItem value="usd">USD</MenuItem>
+                    <MenuItem value="usdt">USDT</MenuItem>
                   </Select>
                 </FormControl>
               </Box>
