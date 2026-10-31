@@ -135,6 +135,21 @@ const formatBalanceValue = (value, currency = "USDT") => {
   return `${formattedValue} ${currency}`;
 };
 
+const formatExecutionTime = (value) => {
+  const totalSeconds = Math.max(0, Math.floor(Number(value) || 0));
+  const days = Math.floor(totalSeconds / 86400);
+  const hours = Math.floor((totalSeconds % 86400) / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+
+  return [
+    days > 0 ? `${days} d` : null,
+    hours > 0 ? `${hours} h` : null,
+    minutes > 0 ? `${minutes} min` : null,
+    seconds > 0 || totalSeconds === 0 ? `${seconds} s` : null,
+  ].filter(Boolean).join(" ");
+};
+
 const formatPercentValue = (value) => {
   const numericValue = Number(value ?? 0);
   if (!Number.isFinite(numericValue)) {
@@ -164,6 +179,7 @@ const normalizeBalanceAsset = (asset) => {
     sold: Number(asset?.sales ?? 0),
     pnl: Number(asset?.variation ?? 0),
     profitToday: Number(asset?.profit_today ?? 0),
+    executionTimeSeconds: Number(asset?.executionTimeSeconds ?? 0),
     operations: `${Number(asset?.openedOperations ?? 0)} abiertas · ${Number(asset?.closedOperations ?? 0)} cerradas`,
     badge: symbol || "-",
     badgeColor: "#d4af37",
@@ -906,7 +922,8 @@ export default function Dashboard() {
             background: "rgba(255,255,255,0.01)",
             borderRadius: 1.5,
             border: "1px solid rgba(255,255,255,0.08)",
-            overflow: "hidden",
+            overflowX: "auto",
+            overflowY: "hidden",
           }}
         >
         <Table>
@@ -918,6 +935,7 @@ export default function Dashboard() {
               <TableCell sx={{ color: "#a6a29d", fontWeight: 700, textTransform: "uppercase", fontSize: 11, py: 1.5, borderBottom: "1px solid rgba(255,255,255,0.08)" }}>Comprado</TableCell>
               <TableCell sx={{ color: "#a6a29d", fontWeight: 700, textTransform: "uppercase", fontSize: 11, py: 1.5, borderBottom: "1px solid rgba(255,255,255,0.08)" }}>Vendido</TableCell>
               <TableCell sx={{ color: "#a6a29d", fontWeight: 700, textTransform: "uppercase", fontSize: 11, py: 1.5, borderBottom: "1px solid rgba(255,255,255,0.08)" }}>P&L</TableCell>
+              <TableCell sx={{ color: "#a6a29d", fontWeight: 700, textTransform: "uppercase", fontSize: 11, py: 1.5, borderBottom: "1px solid rgba(255,255,255,0.08)" }}>Tiempo de ejecución</TableCell>
               <TableCell sx={{ color: "#a6a29d", fontWeight: 700, textTransform: "uppercase", fontSize: 11, py: 1.5, borderBottom: "1px solid rgba(255,255,255,0.08)" }}>Operaciones</TableCell>
             </TableRow>
           </TableHead>
@@ -957,6 +975,7 @@ export default function Dashboard() {
                 <TableCell sx={{ color: "#f0efeb", py: 2.2, borderBottom: "1px solid rgba(255,255,255,0.06)" }}>{formatBalanceValue(asset.purchased, asset.currency)}</TableCell>
                 <TableCell sx={{ color: "#f0efeb", py: 2.2, borderBottom: "1px solid rgba(255,255,255,0.06)" }}>{formatBalanceValue(asset.sold, asset.currency)}</TableCell>
                 <TableCell sx={{ color: asset.pnl < 0 ? "#ef5350" : asset.pnl === 0 ? "#fff" : "#d7f28d", fontWeight: 700, py: 2.2, borderBottom: "1px solid rgba(255,255,255,0.06)" }}>{formatBalanceValue(asset.pnl, asset.currency)}</TableCell>
+                <TableCell sx={{ color: "#b7b2a9", py: 2.2, borderBottom: "1px solid rgba(255,255,255,0.06)" }}>{formatExecutionTime(asset.executionTimeSeconds)}</TableCell>
                 <TableCell sx={{ color: "#b7b2a9", py: 2.2, borderBottom: "1px solid rgba(255,255,255,0.06)" }}>{asset.operations}</TableCell>
               </TableRow>
             ))}
