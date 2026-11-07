@@ -192,8 +192,7 @@ const feeCards = [
     key: "exchange",
     title: "FEE CARGADO POR",
     amountField: "fee",
-    percentValue: "0.10%",
-    description: "Comisión estimada aplicada por el exchange en operaciones.",
+    description: "Comisión del exchange como porcentaje del reinvestment del período.",
     accent: "#f7d98c",
   },
   {
@@ -231,6 +230,7 @@ export default function Dashboard() {
     utility: 0,
     utilityCurrent: 0,
     currency: "USDT",
+    reinvestment: 0,
     fee: 0,
     companyFee: 0,
   });
@@ -387,7 +387,7 @@ export default function Dashboard() {
 
       if (!userId || !selectedApi) {
         if (isActive) {
-          setPortfolioMetrics({ investment: 0, utility: 0, utilityCurrent: 0, currency: "USDT", fee: 0, companyFee: 0 });
+          setPortfolioMetrics({ investment: 0, utility: 0, utilityCurrent: 0, currency: "USDT", reinvestment: 0, fee: 0, companyFee: 0 });
         }
         return;
       }
@@ -409,6 +409,7 @@ export default function Dashboard() {
                 utility: Number(data?.utility ?? 0),
                 utilityCurrent: Number(data?.utilityCurrent ?? 0),
                 currency: data?.currency || "USDT",
+                reinvestment: Number(data?.reinvestment ?? 0),
                 fee: Number(data?.fee ?? 0),
                 companyFee: Number(data?.companyFee ?? 0),
               });
@@ -418,7 +419,7 @@ export default function Dashboard() {
       } catch (error) {
         console.error("Error cargando el resumen del exchange:", error);
         if (isActive) {
-          setPortfolioMetrics({ investment: 0, utility: 0, utilityCurrent: 0, currency: "USDT", fee: 0, companyFee: 0 });
+          setPortfolioMetrics({ investment: 0, utility: 0, utilityCurrent: 0, currency: "USDT", reinvestment: 0, fee: 0, companyFee: 0 });
         }
       }
     };
@@ -669,9 +670,18 @@ export default function Dashboard() {
       <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "repeat(3, minmax(0, 1fr))" }, gap: 2, mb: 4 }}>
         {feeCards.map((card) => {
           const selectedPlatform = apiPlatforms.find((platform) => platform.id === selectedApi);
+          const exchangeFeePercent = portfolioMetrics.reinvestment > 0
+            ? (portfolioMetrics.fee / portfolioMetrics.reinvestment) * 100
+            : 0;
+          const percentageValue = card.key === "exchange"
+            ? `${new Intl.NumberFormat("es-ES", {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            }).format(exchangeFeePercent)}%`
+            : card.percentValue;
           const currentValue = feeView[card.key] === "usdt"
             ? formatBalanceValue(portfolioMetrics[card.amountField], "USDT")
-            : card.percentValue;
+            : percentageValue;
           const cardTitle = card.key === "exchange"
             ? `${card.title} ${selectedPlatform?.name || "EL EXCHANGE"}`
             : card.title;
