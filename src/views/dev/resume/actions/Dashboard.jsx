@@ -121,7 +121,7 @@ const normalizeApiPlatformOptions = (payload) => {
   return platforms;
 };
 
-const formatBalanceValue = (value, currency = "USDT") => {
+const formatBalanceValue = (value, currency = "USDT", maximumFractionDigits = 2) => {
   const numericValue = Number(value ?? 0);
   if (!Number.isFinite(numericValue)) {
     return `0 ${currency}`;
@@ -129,7 +129,8 @@ const formatBalanceValue = (value, currency = "USDT") => {
 
   const formattedValue = new Intl.NumberFormat("es-ES", {
     minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
+    maximumFractionDigits,
+    useGrouping: true,
   }).format(numericValue);
 
   return `${formattedValue} ${currency}`;
@@ -199,7 +200,6 @@ const feeCards = [
     key: "fyx",
     title: "FEE CARGADO POR FYXTOKEN",
     amountField: "companyFee",
-    percentValue: "0.05%",
     description: "Comisión aplicada por FyxToken por gestión y soporte.",
     accent: "#d7f28d",
   },
@@ -233,6 +233,7 @@ export default function Dashboard() {
     reinvestment: 0,
     fee: 0,
     companyFee: 0,
+    utilitiy_positive: 0,
   });
 
   useEffect(() => {
@@ -387,7 +388,7 @@ export default function Dashboard() {
 
       if (!userId || !selectedApi) {
         if (isActive) {
-          setPortfolioMetrics({ investment: 0, utility: 0, utilityCurrent: 0, currency: "USDT", reinvestment: 0, fee: 0, companyFee: 0 });
+          setPortfolioMetrics({ investment: 0, utility: 0, utilityCurrent: 0, currency: "USDT", reinvestment: 0, fee: 0, companyFee: 0, utilitiy_positive: 0 });
         }
         return;
       }
@@ -412,6 +413,7 @@ export default function Dashboard() {
                 reinvestment: Number(data?.reinvestment ?? 0),
                 fee: Number(data?.fee ?? 0),
                 companyFee: Number(data?.companyFee ?? 0),
+                utilitiy_positive: Number(data?.utilitiy_positive ?? 0),
               });
             }
           },
@@ -419,7 +421,7 @@ export default function Dashboard() {
       } catch (error) {
         console.error("Error cargando el resumen del exchange:", error);
         if (isActive) {
-          setPortfolioMetrics({ investment: 0, utility: 0, utilityCurrent: 0, currency: "USDT", reinvestment: 0, fee: 0, companyFee: 0 });
+          setPortfolioMetrics({ investment: 0, utility: 0, utilityCurrent: 0, currency: "USDT", reinvestment: 0, fee: 0, companyFee: 0, utilitiy_positive: 0 });
         }
       }
     };
@@ -673,18 +675,26 @@ export default function Dashboard() {
           const exchangeFeePercent = portfolioMetrics.reinvestment > 0
             ? (portfolioMetrics.fee / portfolioMetrics.reinvestment) * 100
             : 0;
+          const companyFeePercent = portfolioMetrics.utilitiy_positive > 0
+            ? (portfolioMetrics.companyFee / portfolioMetrics.utilitiy_positive) * 100
+            : 0;
           const percentageValue = card.key === "exchange"
-            ? `${new Intl.NumberFormat("es-ES", {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2,
-            }).format(exchangeFeePercent)}%`
-            : card.percentValue;
-          const currentValue = feeView[card.key] === "usdt"
-            ? formatBalanceValue(portfolioMetrics[card.amountField], "USDT")
-            : percentageValue;
-          const cardTitle = card.key === "exchange"
-            ? `${card.title} ${selectedPlatform?.name || "EL EXCHANGE"}`
-            : card.title;
+              ? `${new Intl.NumberFormat("es-ES", {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                }).format(exchangeFeePercent)}%`
+              : `${new Intl.NumberFormat("es-ES", {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                }).format(companyFeePercent)}%`;
+
+            const currentValue = feeView[card.key] === "usdt"
+              ? formatBalanceValue(portfolioMetrics[card.amountField], "USDT")
+              : percentageValue;
+
+            const cardTitle = card.key === "exchange"
+              ? `${card.title} ${selectedPlatform?.name || "EL EXCHANGE"}`
+              : card.title;
 
           return (
             <Box
@@ -980,8 +990,8 @@ export default function Dashboard() {
                     </Box>
                   </Stack>
                 </TableCell>
-                <TableCell sx={{ color: "#f0efeb", py: 2.2, borderBottom: "1px solid rgba(255,255,255,0.06)" }}>{asset.quantity}</TableCell>
-                <TableCell sx={{ color: "#f0efeb", py: 2.2, borderBottom: "1px solid rgba(255,255,255,0.06)" }}>{formatBalanceValue(asset.currentValue, asset.currency)}</TableCell>
+                <TableCell sx={{ color: "#f0efeb", py: 2.2, borderBottom: "1px solid rgba(255,255,255,0.06)" }}>{new Intl.NumberFormat("es-ES", { maximumFractionDigits: 20 }).format(Number(asset.quantity) || 0)}</TableCell>
+                <TableCell sx={{ color: "#f0efeb", py: 2.2, borderBottom: "1px solid rgba(255,255,255,0.06)" }}>{formatBalanceValue(asset.currentValue, asset.currency, 20)}</TableCell>
                 <TableCell sx={{ color: "#f0efeb", py: 2.2, borderBottom: "1px solid rgba(255,255,255,0.06)" }}>{formatBalanceValue(asset.purchased, asset.currency)}</TableCell>
                 <TableCell sx={{ color: "#f0efeb", py: 2.2, borderBottom: "1px solid rgba(255,255,255,0.06)" }}>{formatBalanceValue(asset.sold, asset.currency)}</TableCell>
                 <TableCell sx={{ color: asset.pnl < 0 ? "#ef5350" : asset.pnl === 0 ? "#fff" : "#d7f28d", fontWeight: 700, py: 2.2, borderBottom: "1px solid rgba(255,255,255,0.06)" }}>{formatBalanceValue(asset.pnl, asset.currency)}</TableCell>
